@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portal JLA Script Tools - Jaka Lintas Akses</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Sora:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-app: #f8fafc;
+  --surface: #ffffff;
+  --surface-sub: #f1f5f9;
+  --border: #e2e8f0;
+  --border-strong: #cbd5e1;
+  
+  --primary: #0284c7;
+  --primary-hover: #0369a1;
+  --primary-light: #e0f2fe;
+  
+  --accent-orange: #ff6600;
+  --accent-orange-hover: #e05500;
+  --accent-orange-light: #fff7ed;
+  
+  --accent-green: #16a34a;
+  --accent-yellow: #d97706;
+  --accent-red: #dc2626;
+  
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.06), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+  
+  --sidebar-width: 320px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Sora', sans-serif;
+  background-color: var(--bg-app);
+  color: var(--text-main);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent-orange); }
+
+.app-header {
+  height: 64px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--shadow-sm);
+}
+
+.brand { display: flex; align-items: center; gap: 12px; }
+.brand-logo {
+  width: 40px; height: 40px;
+  background: linear-gradient(135deg, var(--accent-orange), #ea580c);
+  border-radius: 10px; color: #fff;
+  font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 12px rgba(255, 102, 0, 0.3);
+}
+.brand-title h1 { font-size: 15px; font-weight: 800; color: var(--text-main); letter-spacing: 0.3px; line-height: 1.2; }
+.brand-title p { font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; font-weight: 500; }
+
+.header-actions { display: flex; align-items: center; gap: 12px; }
+
+.app-body {
+  display: flex;
+  flex: 1;
+  height: calc(100vh - 64px);
+  overflow: hidden;
+}
+
+.sidebar {
+  width: var(--sidebar-width);
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow-y: auto;
+}
+.sidebar-padding { padding: 18px; }
+
+.sidebar-title-box {
+  border-bottom: 2px solid var(--accent-orange);
+  padding-bottom: 8px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.sidebar-title {
+  font-size: 13px; font-weight: 800; text-transform: uppercase; color: var(--text-main); letter-spacing: 0.5px;
+}
+
+/* Alpha Quick Nav Bar */
+.alpha-nav {
+  display: flex; flex-wrap: wrap; gap: 4px; justify-content: flex-start;
+  margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid var(--border);
+}
+.alpha-nav a {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px; font-size: 11px; font-weight: 700; font-family: 'JetBrains Mono', monospace;
+  color: var(--text-muted); text-decoration: none; border-radius: 6px; background: var(--surface-sub);
+  border: 1px solid var(--border); transition: all 0.15s ease;
+}
+.alpha-nav a:hover { background: var(--accent-orange-light); color: var(--accent-orange); border-color: var(--accent-orange); }
+
+/* Search Tool Box */
+.search-box {
+  margin-bottom: 16px; position: relative;
+}
+.search-input {
+  width: 100%; background: var(--surface-sub); border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px 12px 8px 32px; font-family: 'Sora', sans-serif;
+  font-size: 12px; color: var(--text-main); outline: none; transition: border-color 0.2s;
+}
+.search-input:focus { border-color: var(--accent-orange); background: var(--surface); }
+.search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 12px; }
+
+/* Tool Directory List */
+.tool-list { list-style: none; padding: 0; margin: 0; }
+.tool-list li { margin-bottom: 4px; }
+.tool-category-header {
+  color: var(--accent-orange); display: flex; align-items: center; gap: 6px;
+  margin-top: 14px; margin-bottom: 6px; font-size: 11px; font-weight: 800;
+  text-transform: uppercase; font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.5px; background: var(--surface-sub); padding: 4px 8px; border-radius: 4px;
+}
+.tool-category-header.primary {
+  background: var(--text-main); color: var(--surface);
+}
+.tool-list a {
+  display: flex; align-items: center; justify-content: space-between;
+  color: #475569; text-decoration: none; font-size: 12.5px; padding: 8px 10px;
+  border-radius: 8px; font-weight: 500; border-left: 3px solid transparent;
+  transition: all 0.15s ease;
+}
+.tool-list a:hover { background: var(--surface-sub); color: var(--accent-orange); border-left-color: var(--accent-orange); padding-left: 14px; }
+.tool-list a.active { background: var(--accent-orange-light); color: var(--accent-orange); border-left-color: var(--accent-orange); font-weight: 700; }
+.tool-badge {
+  font-family: 'JetBrains Mono', monospace; font-size: 9px; padding: 2px 6px;
+  border-radius: 10px; font-weight: 600; text-transform: uppercase;
+}
+.badge-ready { background: rgba(22, 163, 74, 0.1); color: var(--accent-green); }
+.badge-dev { background: rgba(217, 119, 6, 0.1); color: var(--accent-yellow); }
+
+.main-workspace {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  background: var(--bg-app);
+  padding: 20px 24px;
+}
+
+.btn {
+  display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px;
+  border-radius: 8px; border: 1px solid transparent; font-family: 'Sora', sans-serif;
+  font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; white-space: nowrap; text-decoration: none;
+}
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-primary { background: var(--accent-orange); color: #ffffff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-orange-hover); box-shadow: 0 4px 12px rgba(255, 102, 0, 0.25); }
+.btn-secondary { background: var(--surface); color: var(--text-main); border-color: var(--border); }
+.btn-secondary:hover:not(:disabled) { background: var(--surface-sub); border-color: var(--border-strong); }
+.btn-wa { background: #25D366; color: white; border-radius: 20px; font-weight: 700; }
+.btn-wa:hover { background: #128C7E; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3); }
+
+.workspace-topbar {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 16px 20px; margin-bottom: 20px; display: flex; align-items: center;
+  justify-content: space-between; flex-wrap: wrap; gap: 12px; box-shadow: var(--shadow-sm);
+}
+
+.welcome-card {
+  background: linear-gradient(135deg, #ffffff 0%, #fffbf7 100%);
+  border: 1px solid #ffedd5;
+  border-radius: 14px;
+  padding: 28px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 20px rgba(255, 102, 0, 0.04);
+}
+.welcome-card h2 { font-size: 20px; font-weight: 800; color: var(--text-main); margin-bottom: 10px; }
+.welcome-card p { color: var(--text-muted); font-size: 13.5px; line-height: 1.7; }
+
+/* Feature Grid Cards */
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.feature-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);
+}
+.feature-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: #fdba74; }
+.feature-icon { font-size: 32px; margin-bottom: 10px; display: inline-block; }
+.feature-title { font-weight: 700; font-size: 14px; color: var(--text-main); margin-bottom: 6px; }
+.feature-desc { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+
+/* Quick Tools Grid */
+.section-title {
+  font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px;
+  color: var(--text-main); margin-bottom: 14px; font-family: 'JetBrains Mono', monospace;
+  display: flex; align-items: center; gap: 8px;
+}
+.tools-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.tool-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);
+}
+.tool-card:hover {
+  border-color: var(--accent-orange);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+.tool-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.tool-card-icon { width: 36px; height: 36px; border-radius: 8px; background: var(--surface-sub); display: flex; align-items: center; justify-content: center; font-size: 18px; }
+.tool-card-title { font-size: 14px; font-weight: 700; color: var(--text-main); margin-bottom: 6px; }
+.tool-card-desc { font-size: 12px; color: var(--text-muted); line-height: 1.5; flex: 1; margin-bottom: 14px; }
+
+/* Footer Styling */
+.app-footer {
+  margin-top: auto;
+  padding: 20px 0 10px 0;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-muted);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Modals & Toasts */
+.modal-overlay {
+  display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4);
+  z-index: 1000; align-items: center; justify-content: center; padding: 16px; backdrop-filter: blur(3px);
+}
+.modal-overlay.show { display: flex; }
+.modal {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  width: 100%; max-width: 500px; box-shadow: var(--shadow-lg); animation: slideIn 0.15s ease-out;
+}
+@keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.modal-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+.modal-header h3 { font-size: 15px; font-weight: 700; }
+.modal-close-btn { background: none; border: none; font-size: 20px; color: var(--text-muted); cursor: pointer; }
+.modal-body { padding: 20px; }
+.modal-footer { padding: 14px 20px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; }
+
+.toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 2000; display: flex; flex-direction: column; gap: 8px; }
+.toast {
+  background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow-lg);
+  border-radius: 8px; padding: 10px 16px; font-size: 12px; display: flex; align-items: center; gap: 10px;
+  animation: slideInRight 0.2s ease-out;
+}
+@keyframes slideInRight { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+.toast-success { border-left: 4px solid var(--accent-green); }
+.toast-error { border-left: 4px solid var(--accent-red); }
+.toast-info { border-left: 4px solid var(--primary); }
+
+@media screen and (max-width: 868px) {
+  .app-body { flex-direction: column; overflow: auto; }
+  .sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--border); max-height: 350px; }
+  .main-workspace { overflow: visible; padding: 16px; }
+  .mymenu .logo { position: static; transform: none; }
+}
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="brand">
+    <div class="brand-logo">JLA</div>
+    <div class="brand-title">
+      <h1>JAKA LINTAS AKSES GENERATOR</h1>
+      <p>Portal Script Generator Premium JLA</p>
+    </div>
+  </div>
+  <div class="header-actions">
+    <a href="index.html" target="_blank" class="btn btn-secondary">🏠 Beranda</a>
+    <a href="https://wa.me/62818386078" target="_blank" class="btn btn-wa">
+      <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      Hubungi Kami
+    </a>
+  </div>
+</header>
+
+<div class="app-body">
+  
+  <aside class="sidebar">
+    <div class="sidebar-padding">
+      
+      <div class="sidebar-title-box">
+        <span class="sidebar-title">📁 Direktori Script</span>
+        <span style="font-size: 10px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace;">ROSv6 / ROSv7</span>
+      </div>
+
+      <!-- Quick Jump Nav -->
+      <div class="alpha-nav">
+        <a href="#A">A</a>
+        <a href="#B">B</a>
+        <a href="#C">C</a>
+        <a href="#P">P</a>
+        <a href="#S">S</a>
+      </div>
+
+      <!-- Search Tool Box -->
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="toolSearch" class="search-input" placeholder="Cari script..." onkeyup="filterTools()">
+      </div>
+
+      <!-- Script Items List -->
+      <ul class="tool-list" id="toolList">
+        <li class="tool-category-header primary">MENU UTAMA</li>
+        <li>
+          <a href="index.html" target="_blank" class="active">
+            <span>🏠 Beranda / Welcome</span>
+            <span class="tool-badge badge-ready">OK</span>
+          </a>
+        </li>
+        
+        <li class="tool-category-header">GENERATOR TOOLS</li>
+
+        <!-- Kategori A -->
+        <li id="A" class="tool-category-header">A</li>
+        <li class="tool-item">
+          <a href="#" onclick="showToast('Script sedang dalam tahap pengembangan', 'info'); return false;">
+            <span>Auto Repair Passthrough In Mangle</span>
+            <span class="tool-badge badge-dev">DEV</span>
+          </a>
+        </li>
+        
+        <!-- Kategori B -->
+        <li id="B" class="tool-category-header">B</li>
+        <li class="tool-item">
+          <a href="#" onclick="showToast('Script sedang dalam tahap pengembangan', 'info'); return false;">
+            <span>Block Sites With Keywords</span>
+            <span class="tool-badge badge-dev">DEV</span>
+          </a>
+        </li>
+
+        <!-- Kategori C -->
+        <li id="C" class="tool-category-header">C</li>
+        <li class="tool-item">
+          <a href="Config_explorer.html" target="_blank">
+            <span>Config Explorer</span>
+            <span class="tool-badge badge-ready">READY</span>
+          </a>
+        </li>
+
+        <!-- Kategori P -->
+        <li id="P" class="tool-category-header">P</li>
+        <li class="tool-item">
+          <a href="Port_forwarding.html" target="_blank">
+            <span>Port Forwarding NAT</span>
+            <span class="tool-badge badge-ready">READY</span>
+          </a>
+                <li class="tool-item">
+          <a href="Ppp_secret_export.html" target="_blank">
+            <span>Ppp_secret_export</span>
+            <span class="tool-badge badge-ready">READY</span>
+          </a>
+        </li>
+        <li class="tool-item">
+          <a href="#" onclick="showToast('Script sedang dalam tahap pengembangan', 'info'); return false;">
+            <span>Port Game Online PC Games</span>
+            <span class="tool-badge badge-dev">DEV</span>
+          </a>
+        </li>
+
+        <!-- Kategori S -->
+        <li id="S" class="tool-category-header">S</li>
+        <li class="tool-item">
+          <a href="simple-queue.html" target="_blank">
+            <span>Simple Queue (BW Limit)</span>
+            <span class="tool-badge badge-ready">READY</span>
+          </a>
+        </li>
+        <li class="tool-item">
+          <a href="#" onclick="showToast('Script sedang dalam tahap pengembangan', 'info'); return false;">
+            <span>SNTP Client / Time Protocol</span>
+            <span class="tool-badge badge-dev">DEV</span>
+          </a>
+        </li>
+      </ul>
+
+    </div>
+  </aside>
+
+  <main class="main-workspace">
+    
+    <!-- Topbar Header -->
+    <div class="workspace-topbar">
+      <div>
+        <h2 style="font-size: 16px; font-weight: 800; color: var(--text-main);">Selamat Datang di Portal JLA Script Tools</h2>
+        <p style="font-size: 12px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace;">Generator Konfigurasi RouterOS MikroTik Otomatis & Presisi</p>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <button class="btn btn-secondary" onclick="openModal('infoModal')">ℹ Info Portal</button>
+        <a href="https://wa.me/62818386078" target="_blank" class="btn btn-primary">💬 Konsultasi</a>
+      </div>
+    </div>
+
+    <!-- Welcome Hero Card -->
+    <div class="welcome-card">
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px;">
+        <h2>Siapa Kami?</h2>
+        <span style="background: rgba(255,102,0,0.1); color: var(--accent-orange); padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; font-family: 'JetBrains Mono', monospace;">OFFICIAL JLA</span>
+      </div>
+      <p>
+        <strong>Jaka Lintas Akses (JLA)</strong> adalah penyedia solusi infrastruktur jaringan dan layanan internet berdedikasi tinggi. Portal <em>Script Generator Premium</em> ini dirancang khusus untuk mempermudah administrator jaringan dalam membuat, mengelola, serta mengoptimalkan konfigurasi router MikroTik secara cepat, aman, dan tanpa eror.
+      </p>
+    </div>
+
+    <!-- Feature Cards Grid -->
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <div class="feature-title">Cepat & Instan</div>
+        <div class="feature-desc">Hasilkan baris perintah script RouterOS MikroTik yang valid dan efisien dalam hitungan detik.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🛡️</div>
+        <div class="feature-title">Aman & Privat</div>
+        <div class="feature-desc">Proses pembuatan script berjalan penuh di browser Anda tanpa menyimpan konfigurasi privat.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">💎</div>
+        <div class="feature-title">Desain Premium</div>
+        <div class="feature-desc">Tampilan antarmuka yang modern, bersih, fleksibel, serta mudah digunakan di desktop maupun mobile.</div>
+      </div>
+    </div>
+
+    <!-- Quick Access Generator Tools -->
+    <div class="section-title">
+      <span>🚀 Quick Access Generator Tools</span>
+    </div>
+
+    <div class="tools-grid">
+      
+      <!-- Tool Item: Config Explorer -->
+      <a href="Config_explorer.html" target="_blank" class="tool-card">
+        <div>
+          <div class="tool-card-header">
+            <div class="tool-card-icon">🔍</div>
+            <span class="tool-badge badge-ready">Active Tool</span>
+          </div>
+          <div class="tool-card-title">Config Explorer</div>
+          <div class="tool-card-desc">Jelajahi, baca, dan analisis file backup atau ekspor rsc MikroTik Anda dengan visual yang interaktif.</div>
+        </div>
+        <div style="display: flex; justify-content: flex-end;">
+          <span class="btn btn-secondary" style="padding: 4px 10px; font-size: 11px;">Buka Tool ↗</span>
+        </div>
+      </a>
+
+      <!-- Tool Item: Port Forwarding NAT -->
+      <a href="port-forwarding.html" target="_blank" class="tool-card">
+        <div>
+          <div class="tool-card-header">
+            <div class="tool-card-icon">🔀</div>
+            <span class="tool-badge badge-ready">Active Tool</span>
+          </div>
+          <div class="tool-card-title">Port Forwarding NAT</div>
+          <div class="tool-card-desc">Buat aturan dst-nat untuk remote server, CCTV, Web server, atau service internal dengan cepat.</div>
+        </div>
+        <div style="display: flex; justify-content: flex-end;">
+          <span class="btn btn-secondary" style="padding: 4px 10px; font-size: 11px;">Buka Tool ↗</span>
+        </div>
+      </a>
+
+      <!-- Tool Item: Simple Queue -->
+      <a href="simple-queue.html" target="_blank" class="tool-card">
+        <div>
+          <div class="tool-card-header">
+            <div class="tool-card-icon">📊</div>
+            <span class="tool-badge badge-ready">Active Tool</span>
+          </div>
+          <div class="tool-card-title">Simple Queue (BW Limit)</div>
+          <div class="tool-card-desc">Atur pembatasan bandwidth download dan upload untuk IP client atau subnet jaringan secara otomatis.</div>
+        </div>
+        <div style="display: flex; justify-content: flex-end;">
+          <span class="btn btn-secondary" style="padding: 4px 10px; font-size: 11px;">Buka Tool ↗</span>
+        </div>
+      </a>
+
+      <!-- Tool Item: SNTP Client -->
+      <div class="tool-card" style="opacity: 0.85;">
+        <div>
+          <div class="tool-card-header">
+            <div class="tool-card-icon">⏱️</div>
+            <span class="tool-badge badge-dev">In Dev</span>
+          </div>
+          <div class="tool-card-title">SNTP Client & Time Zone</div>
+          <div class="tool-card-desc">Generator sinkronisasi jam dan waktu RouterOS menggunakan NTP server terdekat di Indonesia.</div>
+        </div>
+        <div style="display: flex; justify-content: flex-end;">
+          <button class="btn btn-secondary" disabled style="padding: 4px 10px; font-size: 11px;">Segera Hadir</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- App Footer -->
+    <footer class="app-footer">
+      Jaka Lintas Akses © 2026. Premium RouterOS Script Tools Portal.
+    </footer>
+
+  </main>
+</div>
+
+<!-- Modal Information -->
+<div class="modal-overlay" id="infoModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Tentang Portal JLA Tools</h3>
+      <button class="modal-close-btn" onclick="closeModal('infoModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size: 13px; color: var(--text-muted); line-height: 1.6; margin-bottom: 12px;">
+        Portal Script Generator ini dikembangkan untuk memudahkan teknisi dan admin jaringan dalam menggenerasi baris script MikroTik tanpa perlu mengetik manual.
+      </p>
+      <div style="background: var(--surface-sub); padding: 12px; border-radius: 8px; border: 1px solid var(--border); font-size: 12px; font-family: 'JetBrains Mono', monospace;">
+        <div>• Platform: RouterOS v6 & v7</div>
+        <div>• Developer: Jaka Lintas Akses</div>
+        <div>• Status: Active Development</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('infoModal')">Tutup</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+  // Open & Close Modal Functions
+  function openModal(modalId) {
+    document.getElementById(modalId).classList.add('show');
+  }
+
+  function closeModal(modalId) {
+    document.getElementById(modalId).classList.remove('show');
+  }
+
+  // Close Modal on backdrop click
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', function(e) {
+      if (e.target === this) {
+        this.classList.remove('show');
+      }
+    });
+  });
+
+  // Toast Notifications
+  function showToast(msg, type = 'info') {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    
+    let icon = 'ℹ';
+    if(type === 'success') icon = '✔';
+    if(type === 'error') icon = '⚠';
+
+    toast.innerHTML = `<span>${icon}</span><span>${msg}</span>`;
+    container.appendChild(toast);
+    
+    setTimeout(() => { 
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateX(20px)';
+      toast.style.transition = 'all 0.3s ease';
+      setTimeout(() => toast.remove(), 300);
+    }, 3000);
+  }
+
+  // Filter Tools in Sidebar Search
+  function filterTools() {
+    const input = document.getElementById('toolSearch');
+    const filter = input.value.toLowerCase();
+    const ul = document.getElementById('toolList');
+    const items = ul.getElementsByClassName('tool-item');
+
+    for (let i = 0; i < items.length; i++) {
+      const a = items[i].getElementsByTagName('a')[0];
+      const txtValue = a.textContent || a.innerText;
+      if (txtValue.toLowerCase().indexOf(filter) > -1) {
+        items[i].style.display = "";
+      } else {
+        items[i].style.display = "none";
+      }
+    }
+  }
+</script>
+
+</body>
+</html>
