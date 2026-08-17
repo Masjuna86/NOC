@@ -1,72 +1,89 @@
+<!-- Mendefinisikan tipe dokumen ini sebagai HTML5 -->
 <!DOCTYPE html>
 <html lang="id">
+<!-- Bagian HEAD: Berisi informasi latar belakang, seperti judul tab, font, dan desain (CSS) -->
 <head>
 <meta charset="utf-8">
+<!-- Meta viewport ini sangat penting agar tampilan web menyesuaikan layar HP (Responsif) -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Judul yang muncul di tab browser Anda -->
 <title>Portal JLA Script Tools - Jaka Lintas Akses</title>
+
+<!-- Mengambil font 'JetBrains Mono' dan 'Sora' dari Google Fonts -->
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Sora:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- Tag STYLE: Semua kode di dalam sini (CSS) berfungsi untuk MENGHIAS dan MENGATUR TATA LETAK elemen HTML -->
 <style>
+/* :root digunakan untuk menyimpan "Variabel Warna". 
+   Jika Anda ingin mengubah tema warna web, cukup ubah kode warna HEX (misal #0284c7) di sini, 
+   maka seluruh web akan otomatis berubah warnanya! */
 :root {
-  --bg-app: #f8fafc;
-  --surface: #ffffff;
-  --surface-sub: #f1f5f9;
-  --border: #e2e8f0;
+  --bg-app: #f8fafc; /* Warna background utama web */
+  --surface: #ffffff; /* Warna background kotak/kartu (putih) */
+  --surface-sub: #f1f5f9; /* Warna abu-abu sangat muda untuk efek */
+  --border: #e2e8f0; /* Warna garis batas / border */
   --border-strong: #cbd5e1;
   
-  --primary: #0284c7;
+  --primary: #0284c7; /* Biru utama */
   --primary-hover: #0369a1;
   --primary-light: #e0f2fe;
   
-  --accent-orange: #ff6600;
+  --accent-orange: #ff6600; /* Warna Oranye khas JLA */
   --accent-orange-hover: #e05500;
   --accent-orange-light: #fff7ed;
   
-  --accent-green: #16a34a;
-  --accent-yellow: #d97706;
+  --accent-green: #16a34a; /* Warna hijau untuk status OK/Ready */
+  --accent-yellow: #d97706; /* Warna kuning untuk status Dev/Warning */
   --accent-red: #dc2626;
   
-  --text-main: #0f172a;
-  --text-muted: #64748b;
+  --text-main: #0f172a; /* Warna teks utama (hitam pekat) */
+  --text-muted: #64748b; /* Warna teks pudar (abu-abu) */
   
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.06), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
   --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
   
-  --sidebar-width: 320px;
+  --sidebar-width: 320px; /* Lebar menu samping kiri */
 }
 
+/* Reset bawaan browser agar ukuran presisi */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
+/* Pengaturan dasar seluruh halaman web */
 body {
-  font-family: 'Sora', sans-serif;
+  font-family: 'Sora', sans-serif; /* Menggunakan font Sora yang diambil dari Google Font tadi */
   background-color: var(--bg-app);
   color: var(--text-main);
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+  height: 100vh; /* Mengunci tinggi halaman web pas 1 layar (100 Viewport Height) */
+  overflow: hidden; /* Mencegah seluruh halaman bisa digeser/scroll ke bawah */
+  display: flex; /* Menggunakan flexbox untuk tata letak */
+  flex-direction: column; /* Menyusun dari atas ke bawah (Header lalu Konten) */
 }
 
+/* Kustomisasi bentuk Scrollbar browser agar terlihat modern */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--accent-orange); }
 
+/* Desain untuk Navigasi Header Atas */
 .app-header {
   height: 64px;
   background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px); /* Efek kaca blur di belakang header */
   border-bottom: 1px solid var(--border);
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  align-items: center; /* Membuat teks di dalam header rata tengah secara vertikal */
+  justify-content: space-between; /* Membuat logo di kiri, tombol di kanan */
   padding: 0 24px;
-  position: sticky;
+  position: sticky; /* Membuat header tetap menempel di atas */
   top: 0;
-  z-index: 100;
+  z-index: 100; /* Memastikan header selalu berada di lapisan paling atas */
   box-shadow: var(--shadow-sm);
 }
 
 .brand { display: flex; align-items: center; gap: 12px; }
+/* Desain Kotak Logo JLA */
 .brand-logo {
   width: 40px; height: 40px;
   background: linear-gradient(135deg, var(--accent-orange), #ea580c);
@@ -80,23 +97,44 @@ body {
 
 .header-actions { display: flex; align-items: center; gap: 12px; }
 
+/* AREA TENGAH WEB: Membagi layar untuk Sidebar(Kiri) dan Workspace(Kanan) */
 .app-body {
   display: flex;
-  flex: 1;
-  height: calc(100vh - 64px);
-  overflow: hidden;
+  flex: 1; /* Memakan sisa tinggi layar setelah dipotong Header */
+  height: calc(100vh - 64px); /* 100% Layar dikurangi tinggi Header(64px) */
+  overflow: hidden; /* Mencegah kotak luar ini memiliki scroll */
 }
 
+/* SIDEBAR KIRI */
 .sidebar {
   width: var(--sidebar-width);
   background: var(--surface);
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
-  flex-shrink: 0;
-  overflow-y: auto;
+  flex-shrink: 0; /* Mencegah sidebar mengecil saat layar sempit */
+  overflow: hidden; /* Mematikan scroll utama sidebar */
+  height: 100%;
 }
-.sidebar-padding { padding: 18px; }
+
+/* Bagian Judul dan Kotak Pencarian (Tidak ikut bergeser saat discroll) */
+.sidebar-header-fixed {
+  padding: 18px 18px 0 18px;
+  flex-shrink: 0;
+}
+
+/* Bagian Daftar Menu yang BISA di-scroll */
+.sidebar-menu-scroll {
+  flex: 1; /* Mengisi sisa ruang kosong di dalam sidebar */
+  overflow-y: auto; /* Memunculkan scrollbar HANYA untuk bagian daftar menu */
+  padding: 0 18px 18px 18px;
+}
+
+/* Kustomisasi Scrollbar khusus untuk daftar menu Sidebar */
+.sidebar-menu-scroll::-webkit-scrollbar { width: 6px; }
+.sidebar-menu-scroll::-webkit-scrollbar-track { background: var(--surface-sub); border-radius: 8px; margin-top: 4px; margin-bottom: 4px; }
+.sidebar-menu-scroll::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 8px; }
+.sidebar-menu-scroll::-webkit-scrollbar-thumb:hover { background: var(--accent-orange); }
 
 .sidebar-title-box {
   border-bottom: 2px solid var(--accent-orange);
@@ -110,20 +148,7 @@ body {
   font-size: 13px; font-weight: 800; text-transform: uppercase; color: var(--text-main); letter-spacing: 0.5px;
 }
 
-/* Alpha Quick Nav Bar */
-.alpha-nav {
-  display: flex; flex-wrap: wrap; gap: 4px; justify-content: flex-start;
-  margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid var(--border);
-}
-.alpha-nav a {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 26px; height: 26px; font-size: 11px; font-weight: 700; font-family: 'JetBrains Mono', monospace;
-  color: var(--text-muted); text-decoration: none; border-radius: 6px; background: var(--surface-sub);
-  border: 1px solid var(--border); transition: all 0.15s ease;
-}
-.alpha-nav a:hover { background: var(--accent-orange-light); color: var(--accent-orange); border-color: var(--accent-orange); }
-
-/* Search Tool Box */
+/* Kotak Pencarian */
 .search-box {
   margin-bottom: 16px; position: relative;
 }
@@ -135,9 +160,10 @@ body {
 .search-input:focus { border-color: var(--accent-orange); background: var(--surface); }
 .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 12px; }
 
-/* Tool Directory List */
+/* Desain Daftar List Menu (Tombol-tombol script di sidebar) */
 .tool-list { list-style: none; padding: 0; margin: 0; }
 .tool-list li { margin-bottom: 4px; }
+/* Desain untuk Judul Kategori (Teks warna Oranye) */
 .tool-category-header {
   color: var(--accent-orange); display: flex; align-items: center; gap: 6px;
   margin-top: 14px; margin-bottom: 6px; font-size: 11px; font-weight: 800;
@@ -147,14 +173,18 @@ body {
 .tool-category-header.primary {
   background: var(--text-main); color: var(--surface);
 }
+/* Desain link / tautan di dalam list menu */
 .tool-list a {
   display: flex; align-items: center; justify-content: space-between;
   color: #475569; text-decoration: none; font-size: 12.5px; padding: 8px 10px;
-  border-radius: 8px; font-weight: 500; border-left: 3px solid transparent;
-  transition: all 0.15s ease;
+  border-radius: 8px; font-weight: 500; border-left: 3px solid transparent; /* Garis tepi kiri yang awalnya transparan */
+  transition: all 0.15s ease; /* Animasi mulus saat di-hover/disorot */
 }
+/* Saat menu disorot mouse (hover) */
 .tool-list a:hover { background: var(--surface-sub); color: var(--accent-orange); border-left-color: var(--accent-orange); padding-left: 14px; }
+/* Saat menu sedang aktif/diklik */
 .tool-list a.active { background: var(--accent-orange-light); color: var(--accent-orange); border-left-color: var(--accent-orange); font-weight: 700; }
+/* Desain label (READY/DEV/OK) di kanan menu */
 .tool-badge {
   font-family: 'JetBrains Mono', monospace; font-size: 9px; padding: 2px 6px;
   border-radius: 10px; font-weight: 600; text-transform: uppercase;
@@ -162,15 +192,18 @@ body {
 .badge-ready { background: rgba(22, 163, 74, 0.1); color: var(--accent-green); }
 .badge-dev { background: rgba(217, 119, 6, 0.1); color: var(--accent-yellow); }
 
+/* AREA KERJA KANAN (Workspace Utama) */
 .main-workspace {
-  flex: 1;
+  flex: 1; /* Mengisi seluruh sisa layar di sebelah kanan sidebar */
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
+  overflow-y: auto; /* Memunculkan scrollbar khusus area kerja jika isinya panjang */
+  height: 100%;
   background: var(--bg-app);
   padding: 20px 24px;
 }
 
+/* Desain Dasar Tombol-Tombol */
 .btn {
   display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px;
   border-radius: 8px; border: 1px solid transparent; font-family: 'Sora', sans-serif;
@@ -181,15 +214,18 @@ body {
 .btn-primary:hover:not(:disabled) { background: var(--accent-orange-hover); box-shadow: 0 4px 12px rgba(255, 102, 0, 0.25); }
 .btn-secondary { background: var(--surface); color: var(--text-main); border-color: var(--border); }
 .btn-secondary:hover:not(:disabled) { background: var(--surface-sub); border-color: var(--border-strong); }
+/* Desain khusus tombol WhatsApp */
 .btn-wa { background: #25D366; color: white; border-radius: 20px; font-weight: 700; }
 .btn-wa:hover { background: #128C7E; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3); }
 
+/* Bagian kotak judul di area atas (Selamat Datang...) */
 .workspace-topbar {
   background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
   padding: 16px 20px; margin-bottom: 20px; display: flex; align-items: center;
   justify-content: space-between; flex-wrap: wrap; gap: 12px; box-shadow: var(--shadow-sm);
 }
 
+/* Kartu Pengumuman / Info Utama */
 .welcome-card {
   background: linear-gradient(135deg, #ffffff 0%, #fffbf7 100%);
   border: 1px solid #ffedd5;
@@ -201,10 +237,10 @@ body {
 .welcome-card h2 { font-size: 20px; font-weight: 800; color: var(--text-main); margin-bottom: 10px; }
 .welcome-card p { color: var(--text-muted); font-size: 13.5px; line-height: 1.7; }
 
-/* Feature Grid Cards */
+/* Grid Fitur (Kotak 3 sejajar: Cepat & Instan, Aman & Privat, dll) */
 .feature-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); /* Mengatur kolom responsif otomatis */
   gap: 16px;
   margin-bottom: 24px;
 }
@@ -222,7 +258,7 @@ body {
 .feature-title { font-weight: 700; font-size: 14px; color: var(--text-main); margin-bottom: 6px; }
 .feature-desc { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
 
-/* Quick Tools Grid */
+/* Bagian Daftar Akses Cepat Alat (Quick Tools Grid) */
 .section-title {
   font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px;
   color: var(--text-main); margin-bottom: 14px; font-family: 'JetBrains Mono', monospace;
@@ -230,10 +266,11 @@ body {
 }
 .tools-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* Responsif minimal lebar kotak 280px */
   gap: 16px;
   margin-bottom: 24px;
 }
+/* Desain Kartu Alat Generator (Config Explorer, dll) */
 .tool-card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -249,7 +286,7 @@ body {
 }
 .tool-card:hover {
   border-color: var(--accent-orange);
-  transform: translateY(-2px);
+  transform: translateY(-2px); /* Efek melayang saat disentuh mouse */
   box-shadow: var(--shadow-md);
 }
 .tool-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
@@ -257,9 +294,9 @@ body {
 .tool-card-title { font-size: 14px; font-weight: 700; color: var(--text-main); margin-bottom: 6px; }
 .tool-card-desc { font-size: 12px; color: var(--text-muted); line-height: 1.5; flex: 1; margin-bottom: 14px; }
 
-/* Footer Styling */
+/* Desain Footer Bawah (Hak Cipta) */
 .app-footer {
-  margin-top: auto;
+  margin-top: auto; /* Memaksa footer selalu berada di bawah */
   padding: 20px 0 10px 0;
   border-top: 1px solid var(--border);
   text-align: center;
@@ -268,15 +305,15 @@ body {
   font-family: 'JetBrains Mono', monospace;
 }
 
-/* Modals & Toasts */
+/* JENDELA POP-UP (Modal Info) */
 .modal-overlay {
   display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4);
   z-index: 1000; align-items: center; justify-content: center; padding: 16px; backdrop-filter: blur(3px);
 }
-.modal-overlay.show { display: flex; }
+.modal-overlay.show { display: flex; } /* Class yang dipanggil Javascript untuk memunculkan modal */
 .modal {
   background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
-  width: 100%; max-width: 500px; box-shadow: var(--shadow-lg); animation: slideIn 0.15s ease-out;
+  width: 100%; max-width: 500px; box-shadow: var(--shadow-lg); animation: slideIn 0.15s ease-out; /* Efek slide masuk */
 }
 @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 .modal-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
@@ -285,6 +322,7 @@ body {
 .modal-body { padding: 20px; }
 .modal-footer { padding: 14px 20px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; }
 
+/* NOTIFIKASI KECIL DI SUDUT KANAN BAWAH (Toast) */
 .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 2000; display: flex; flex-direction: column; gap: 8px; }
 .toast {
   background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow-lg);
@@ -296,129 +334,305 @@ body {
 .toast-error { border-left: 4px solid var(--accent-red); }
 .toast-info { border-left: 4px solid var(--primary); }
 
+/* PENGATURAN RESPONSIF (TAMPILAN HP) */
+/* Tombol menu garis tiga (Hamburger Menu) untuk membuka Sidebar di HP */
+.mobile-menu-btn {
+  display: none; background: none; border: none; color: var(--text-main);
+  cursor: pointer; padding: 4px; border-radius: 6px; transition: background 0.2s;
+  display: flex; align-items: center; justify-content: center;
+}
+.mobile-menu-btn:hover { background: var(--surface-sub); }
+/* Layar gelap transparan di belakang sidebar saat terbuka di HP */
+.sidebar-overlay {
+  display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4);
+  z-index: 90; backdrop-filter: blur(2px);
+}
+.sidebar-overlay.show { display: block; }
+
+/* Aturan CSS ini HANYA aktif jika lebar layar 868px ke bawah (Tablet & HP) */
 @media screen and (max-width: 868px) {
-  .app-body { flex-direction: column; overflow: auto; }
-  .sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--border); max-height: 350px; }
-  .main-workspace { overflow: visible; padding: 16px; }
-  .mymenu .logo { position: static; transform: none; }
+  .mobile-menu-btn { display: flex; } /* Memunculkan tombol menu */
+  .app-header { padding: 0 16px; }
+  .brand { gap: 10px; }
+  .brand-title h1 { font-size: 13px; }
+  .brand-title p { display: none; } /* Menyembunyikan subtitle "Portal Script..." di HP agar header rapi */
+  
+  .header-actions { gap: 8px; }
+  .header-actions .btn { padding: 6px 12px; font-size: 11px; }
+  .header-actions .btn-secondary { display: none; } /* Menyembunyikan tombol 'Beranda' di HP karena sempit */
+  
+  .app-body { overflow: hidden; }
+  
+  /* SIDEBAR DI HP: Diubah posisinya melayang di sebelah kiri (Off-canvas) dan tersembunyi */
+  .sidebar { 
+    position: fixed; top: 64px; left: -100%; bottom: 0; height: calc(100vh - 64px);
+    width: 280px; z-index: 100; transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: var(--shadow-lg); border-right: none;
+  }
+  .sidebar.open { left: 0; } /* Class yang ditambahkan Javascript agar sidebar muncul (bergeser ke kanan) */
+  
+  .main-workspace { padding: 16px; overflow-y: auto; height: 100%; }
+  .workspace-topbar { flex-direction: column; align-items: flex-start; padding: 16px; gap: 12px; }
+  .welcome-card { padding: 20px; }
+  
+  /* Kotak Grid diubah menumpuk 1 kolom ke bawah untuk HP */
+  .feature-grid { grid-template-columns: 1fr; }
+  .tools-grid { grid-template-columns: 1fr; }
 }
 </style>
 </head>
+<!-- BODY HTML: Semua yang Anda lihat di browser dideklarasikan di sini -->
 <body>
 
+<!-- HEADER UTAMA (BAR ATAS) -->
 <header class="app-header">
   <div class="brand">
+    <!-- Tombol Menu HP (Hanya muncul di HP) -->
+    <button class="mobile-menu-btn" onclick="toggleSidebar()" aria-label="Toggle Menu">
+      <!-- Ikon SVG Garis Tiga (Hamburger) -->
+      <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+    </button>
+    <!-- Logo JLA Kotak Oranye -->
     <div class="brand-logo">JLA</div>
+    <!-- Nama Portal -->
     <div class="brand-title">
-      <h1>JAKA LINTAS AKSES GENERATOR</h1>
-      <p>Portal Script Generator Premium JLA</p>
+      <h1>JAKA LINTAS AKSES</h1>
+      <p>Portal Script Generator</p>
     </div>
   </div>
+  <!-- Tombol Aksi di Pojok Kanan Atas -->
   <div class="header-actions">
-    <a href="index.html" target="_blank" class="btn btn-secondary">🏠 Beranda</a>
+    <!-- Tombol Home -->
+    <a href="index.html" class="btn btn-secondary">🏠 Beranda</a>
+    <!-- Tombol WhatsApp Chat -->
     <a href="https://wa.me/62818386078" target="_blank" class="btn btn-wa">
+      <!-- Ikon SVG WhatsApp -->
       <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
       Hubungi Kami
     </a>
   </div>
 </header>
 
+<!-- PEMBUNGKUS KONTEN (Area di bawah header) -->
 <div class="app-body">
   
-  <aside class="sidebar">
-    <div class="sidebar-padding">
+  <!-- Overlay (Layar transparan hitam) yang muncul saat menu sidebar dibuka di HP -->
+  <!-- onclick: Menjalankan fungsi Javascript untuk menutup menu saat area hitam ini disentuh -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+  <!-- MENU SAMPING KIRI (SIDEBAR) -->
+  <aside class="sidebar" id="mainSidebar">
+    
+    <!-- Bagian Atas Sidebar yang Diam (Tidak ikut tergulung/scroll) -->
+    <div class="sidebar-header-fixed">
       
+      <!-- Judul Folder Direktori -->
       <div class="sidebar-title-box">
         <span class="sidebar-title">📁 Direktori Script</span>
         <span style="font-size: 10px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace;">ROSv6 / ROSv7</span>
       </div>
 
-      <!-- Quick Jump Nav -->
-      <div class="alpha-nav">
-        <a href="#A">A</a>
-        <a href="#B">B</a>
-        <a href="#C">C</a>
-        <a href="#P">P</a>
-        <a href="#S">S</a>
-      </div>
-
-      <!-- Search Tool Box -->
+      <!-- Kotak Alat Pencarian (Form Input) -->
+      <!-- onkeyup: Menjalankan fungsi Javascript filterTools setiap kali kita mengetik -->
       <div class="search-box">
         <span class="search-icon">🔍</span>
         <input type="text" id="toolSearch" class="search-input" placeholder="Cari script..." onkeyup="filterTools()">
       </div>
 
-      <!-- Script Items List -->
+    </div>
+
+    <!-- Bagian Bawah Sidebar yang Bisa di-Scroll (Menu List) -->
+    <!-- Di sinilah semua link menu diletakkan -->
+    <div class="sidebar-menu-scroll">
+
+      <!-- UL (Unordered List) : Daftar kumpulan list menu -->
       <ul class="tool-list" id="toolList">
+        <!-- Judul Kategori Pertama -->
         <li class="tool-category-header primary">MENU UTAMA</li>
+        <!-- Item list: Beranda -->
         <li>
           <a href="index.html" target="_blank" class="active">
             <span>🏠 Beranda / Welcome</span>
+            <!-- Label status warna Hijau (OK/READY) -->
             <span class="tool-badge badge-ready">OK</span>
           </a>
         </li>
         
-        <li class="tool-category-header">GENERATOR TOOLS</li>
-
-        <!-- Kategori A -->
-        <li id="A" class="tool-category-header">A</li>
+        <!-- Judul Kategori: Backup -->
+        <li class="tool-category-header">☰ BACKUP//EXPORT//GENERATOR</li>
         <li class="tool-item">
-          <a href="#" onclick="showToast('Script sedang dalam tahap pengembangan', 'info'); return false;">
-            <span>Auto Repair Passthrough In Mangle</span>
-            <span class="tool-badge badge-dev">DEV</span>
+          <!-- href: Alamat tujuan saat diklik (cth: Backup_script.html) -->
+          <!-- target="_blank": Membuka tab baru di browser -->
+          <a href="Backup_script.html" target="_blank">
+            <span>BACKUP SCRIPT</span>
+            <span class="tool-badge badge-ready">READY</span>
           </a>
         </li>
-        
-        <!-- Kategori B -->
-        <li id="B" class="tool-category-header">B</li>
         <li class="tool-item">
-          <a href="#" onclick="showToast('Script sedang dalam tahap pengembangan', 'info'); return false;">
-            <span>Block Sites With Keywords</span>
-            <span class="tool-badge badge-dev">DEV</span>
+          <a href="Ppp_secret_export.html" target="_blank">
+            <span>PPPoE SECRET EXPORT</span>
+            <span class="tool-badge badge-ready">READY</span>
           </a>
         </li>
-
-        <!-- Kategori C -->
-        <li id="C" class="tool-category-header">C</li>
         <li class="tool-item">
           <a href="Config_explorer.html" target="_blank">
-            <span>Config Explorer</span>
+            <span>CONFIG EXPLORER</span>
+            <span class="tool-badge badge-ready">READY</span>
+          </a>
+        </li> <!-- Note perbaikan: Saya tambahkan tutup </li> yang sebelumnya hilang di kode asli -->
+		        
+        <!-- Judul Kategori: VPN -->
+        <li class="tool-category-header">☰ VPN//L2TP//OVPN</li>
+        <li class="tool-item">
+          <a href="Backup_script.html" target="_blank">
+            <span>BACKUP SCRIPT</span>
+            <span class="tool-badge badge-ready">READY</span>
+          </a>
+        </li>
+        <li class="tool-item">
+          <a href="Ppp_secret_export.html" target="_blank">
+            <span>PPPoE SECRET EXPORT</span>
+            <span class="tool-badge badge-ready">READY</span>
+          </a>
+        </li>
+        <li class="tool-item">
+          <a href="Config_explorer.html" target="_blank">
+            <span>CONFIG EXPLORER</span>
+            <span class="tool-badge badge-ready">READY</span>
+          </a>
+        </li> <!-- Note perbaikan: Saya tambahkan tutup </li> yang sebelumnya hilang -->
+        
+        <!-- Judul Kategori: Queue (1) -->
+        <li class="tool-category-header">☰ SIMPLE QUEUE//QUEUE TREE//QUEUE TYPE</li>
+        <li class="tool-item">
+          <a href="DNS_over_HTTPS_DoH.html" target="_blank">
+            <span>DNS over HTTPS (DoH)</span>
+            <span class="tool-badge badge-ready">READY</span>
+          </a>
+        </li>
+        <li class="tool-item">
+          <!-- Jika menu belum siap (DEV), kita panggil Javascript 'showToast' untuk peringatan alih-alih pindah halaman -->
+          <a href="#" onclick="showToast('Script sedang dalam tahap pengembangan', 'info'); return false;">
+            <span>DNS_firewall_generator</span>
+            <!-- Label status warna Kuning/Oranye (DEV) -->
+            <span class="tool-badge badge-dev">DEV</span>
+          </a>
+        </li>
+        <li class="tool-item">
+          <a href="Isolir_mikrotik_generator.html" target="_blank">
+            <span>Isolir_mikrotik_generator</span>
+            <span class="tool-badge badge-ready">READY</span>
+          </a>
+        </li>
+        <li class="tool-item">
+          <a href="Telegram_generator.html" target="_blank">
+            <span>Telegram_generator</span>
+            <span class="tool-badge badge-ready">READY</span>
+          </a>
+        </li>
+        <li class="tool-item">
+          <a href="LB_ecmp_generator.html" target="_blank">
+            <span>LB_ecmp_generator</span>
             <span class="tool-badge badge-ready">READY</span>
           </a>
         </li>
 
-        <!-- Kategori P -->
-        <li id="P" class="tool-category-header">P</li>
+        <!-- Judul Kategori: Queue (2) -->
+        <li class="tool-category-header">☰ SIMPLE QUEUE//QUEUE TREE//QUEUE TYPE</li>
+        <li class="tool-item">
+          <a href="DNS_over_HTTPS_DoH.html" target="_blank">
+            <span>DNS over HTTPS (DoH)</span>
+            <span class="tool-badge badge-ready">READY</span>
+          </a>
+        </li>
+        <li class="tool-item">
+          <a href="#" onclick="showToast('Script sedang dalam tahap pengembangan', 'info'); return false;">
+            <span>DNS_firewall_generator</span>
+            <span class="tool-badge badge-dev">DEV</span>
+          </a>
+        </li>
+        <li class="tool-item">
+          <a href="Isolir_mikrotik_generator.html" target="_blank">
+            <span>Isolir_mikrotik_generator</span>
+            <span class="tool-badge badge-ready">READY</span>
+          </a>
+        </li>
+        <li class="tool-item">
+          <a href="Telegram_generator.html" target="_blank">
+            <span>Telegram_generator</span>
+            <span class="tool-badge badge-ready">READY</span>
+          </a>
+        </li>
+        <li class="tool-item">
+          <a href="LB_ecmp_generator.html" target="_blank">
+            <span>LB_ecmp_generator</span>
+            <span class="tool-badge badge-ready">READY</span>
+          </a>
+        </li>
+
+        <!-- Judul Kategori: Queue (3) -->
+        <li class="tool-category-header">☰ SIMPLE QUEUE//QUEUE TREE//QUEUE TYPE</li>
+        <li class="tool-item">
+          <a href="DNS_over_HTTPS_DoH.html" target="_blank">
+            <span>DNS over HTTPS (DoH)</span>
+            <span class="tool-badge badge-ready">READY</span>
+          </a>
+        </li>
+        <li class="tool-item">
+          <a href="#" onclick="showToast('Script sedang dalam tahap pengembangan', 'info'); return false;">
+            <span>DNS_firewall_generator</span>
+            <span class="tool-badge badge-dev">DEV</span>
+          </a>
+        </li>
+        <li class="tool-item">
+          <a href="Isolir_mikrotik_generator.html" target="_blank">
+            <span>Isolir_mikrotik_generator</span>
+            <span class="tool-badge badge-ready">READY</span>
+          </a>
+        </li>
+        <li class="tool-item">
+          <a href="Telegram_generator.html" target="_blank">
+            <span>Telegram_generator</span>
+            <span class="tool-badge badge-ready">READY</span>
+          </a>
+        </li>
+        <li class="tool-item">
+          <a href="LB_ecmp_generator.html" target="_blank">
+            <span>LB_ecmp_generator</span>
+            <span class="tool-badge badge-ready">READY</span>
+          </a>
+        </li>
+
+        <!-- Judul Kategori: Hotspot & Pppoe -->
+        <li class="tool-category-header">☰ HOTSPOT//PPPOE//VOUCHER</li>
+        <li class="tool-item">
+          <a href="LB_PCC_NTH_generator.html" target="_blank">
+            <span>LB_PCC+NTH_generator</span>
+            <span class="tool-badge badge-ready">READY</span>
+          </a>
+        </li>
+        <li class="tool-item">
+          <a href="Mikrotik_address-list_converter.html" target="_blank">
+            <span>Mikrotik_address-list_converter</span>
+            <span class="tool-badge badge-ready">READY</span>
+          </a>
+        </li>
         <li class="tool-item">
           <a href="Port_forwarding.html" target="_blank">
-            <span>Port Forwarding NAT</span>
+            <span>Port_forwarding</span>
             <span class="tool-badge badge-ready">READY</span>
           </a>
-                <li class="tool-item">
-          <a href="Ppp_secret_export.html" target="_blank">
+        </li>
+        <li class="tool-item">
+          <a href="#" onclick="showToast('Script sedang dalam tahap pengembangan', 'info'); return false;">
             <span>Ppp_secret_export</span>
-            <span class="tool-badge badge-ready">READY</span>
-          </a>
-        </li>
-        <li class="tool-item">
-          <a href="#" onclick="showToast('Script sedang dalam tahap pengembangan', 'info'); return false;">
-            <span>Port Game Online PC Games</span>
             <span class="tool-badge badge-dev">DEV</span>
           </a>
         </li>
-
-        <!-- Kategori S -->
-        <li id="S" class="tool-category-header">S</li>
         <li class="tool-item">
-          <a href="simple-queue.html" target="_blank">
-            <span>Simple Queue (BW Limit)</span>
+          <a href="Static_routing_generator.html" target="_blank">
+            <span>Static_routing_generator</span>
             <span class="tool-badge badge-ready">READY</span>
-          </a>
-        </li>
-        <li class="tool-item">
-          <a href="#" onclick="showToast('Script sedang dalam tahap pengembangan', 'info'); return false;">
-            <span>SNTP Client / Time Protocol</span>
-            <span class="tool-badge badge-dev">DEV</span>
           </a>
         </li>
       </ul>
@@ -426,21 +640,23 @@ body {
     </div>
   </aside>
 
+  <!-- WORKSPACE KANAN (Tempat menampilkan alat, info, grid dsb) -->
   <main class="main-workspace">
     
-    <!-- Topbar Header -->
+    <!-- Kotak Header di dalam Workspace (Bar Sambutan) -->
     <div class="workspace-topbar">
       <div>
         <h2 style="font-size: 16px; font-weight: 800; color: var(--text-main);">Selamat Datang di Portal JLA Script Tools</h2>
         <p style="font-size: 12px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace;">Generator Konfigurasi RouterOS MikroTik Otomatis & Presisi</p>
       </div>
       <div style="display: flex; gap: 8px;">
+        <!-- Tombol untuk membuka jendela Info Portal -->
         <button class="btn btn-secondary" onclick="openModal('infoModal')">ℹ Info Portal</button>
         <a href="https://wa.me/62818386078" target="_blank" class="btn btn-primary">💬 Konsultasi</a>
       </div>
     </div>
 
-    <!-- Welcome Hero Card -->
+    <!-- Kotak Pengumuman "Siapa Kami" (Kartu Pahlawan/Hero Card) -->
     <div class="welcome-card">
       <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px;">
         <h2>Siapa Kami?</h2>
@@ -451,18 +667,21 @@ body {
       </p>
     </div>
 
-    <!-- Feature Cards Grid -->
+    <!-- Area Grid Fitur (Kotak 3 sejajar) -->
     <div class="feature-grid">
+      <!-- Kotak Fitur 1 -->
       <div class="feature-card">
         <div class="feature-icon">⚡</div>
         <div class="feature-title">Cepat & Instan</div>
         <div class="feature-desc">Hasilkan baris perintah script RouterOS MikroTik yang valid dan efisien dalam hitungan detik.</div>
       </div>
+      <!-- Kotak Fitur 2 -->
       <div class="feature-card">
         <div class="feature-icon">🛡️</div>
         <div class="feature-title">Aman & Privat</div>
         <div class="feature-desc">Proses pembuatan script berjalan penuh di browser Anda tanpa menyimpan konfigurasi privat.</div>
       </div>
+      <!-- Kotak Fitur 3 -->
       <div class="feature-card">
         <div class="feature-icon">💎</div>
         <div class="feature-title">Desain Premium</div>
@@ -470,30 +689,34 @@ body {
       </div>
     </div>
 
-    <!-- Quick Access Generator Tools -->
+    <!-- Judul Bagian: Alat Akses Cepat -->
     <div class="section-title">
       <span>🚀 Quick Access Generator Tools</span>
     </div>
 
+    <!-- Kotak Grid untuk daftar Kartu Alat Generator -->
     <div class="tools-grid">
       
-      <!-- Tool Item: Config Explorer -->
-      <a href="Config_explorer.html" target="_blank" class="tool-card">
+      <!-- Kartu Alat 1: Config Explorer (Status Dev) -->
+      <!-- Opacity 0.85 membuatnya sedikit transparan / pudar karena belum siap -->
+      <div class="tool-card" style="opacity: 0.85;">
         <div>
           <div class="tool-card-header">
             <div class="tool-card-icon">🔍</div>
-            <span class="tool-badge badge-ready">Active Tool</span>
+            <span class="tool-badge badge-dev">In Dev</span>
           </div>
           <div class="tool-card-title">Config Explorer</div>
           <div class="tool-card-desc">Jelajahi, baca, dan analisis file backup atau ekspor rsc MikroTik Anda dengan visual yang interaktif.</div>
         </div>
         <div style="display: flex; justify-content: flex-end;">
-          <span class="btn btn-secondary" style="padding: 4px 10px; font-size: 11px;">Buka Tool ↗</span>
+          <!-- Atribut 'disabled' mencegah tombol ditekan -->
+          <button class="btn btn-secondary" disabled style="padding: 4px 10px; font-size: 11px;">Segera Hadir</button>
         </div>
-      </a>
+      </div>
 
-      <!-- Tool Item: Port Forwarding NAT -->
-      <a href="port-forwarding.html" target="_blank" class="tool-card">
+      <!-- Kartu Alat 2: Port Forwarding NAT (Status Aktif) -->
+      <!-- Menggunakan tag <a> agar kotaknya bisa di-klik dan membuka halaman alat -->
+      <a href="Port_forwarding.html" target="_blank" class="tool-card">
         <div>
           <div class="tool-card-header">
             <div class="tool-card-icon">🔀</div>
@@ -507,7 +730,7 @@ body {
         </div>
       </a>
 
-      <!-- Tool Item: Simple Queue -->
+      <!-- Kartu Alat 3: Simple Queue (Status Aktif) -->
       <a href="simple-queue.html" target="_blank" class="tool-card">
         <div>
           <div class="tool-card-header">
@@ -522,7 +745,7 @@ body {
         </div>
       </a>
 
-      <!-- Tool Item: SNTP Client -->
+      <!-- Kartu Alat 4: SNTP Client (Status Dev) -->
       <div class="tool-card" style="opacity: 0.85;">
         <div>
           <div class="tool-card-header">
@@ -539,21 +762,25 @@ body {
 
     </div>
 
-    <!-- App Footer -->
+    <!-- Teks Hak Cipta di bagian paling bawah web -->
     <footer class="app-footer">
-      Jaka Lintas Akses © 2026. Premium RouterOS Script Tools Portal.
+      Jaka Lintas Akses © 2019. Premium RouterOS Script Tools Portal.
     </footer>
 
   </main>
 </div>
 
-<!-- Modal Information -->
+<!-- KOTAK POP-UP INFORMASI (MODAL) -->
+<!-- Elemen ini aslinya tidak tampil (display: none). Baru akan muncul jika Class 'show' ditambahkan oleh Javascript -->
 <div class="modal-overlay" id="infoModal">
   <div class="modal">
+    <!-- Kepala Modal -->
     <div class="modal-header">
       <h3>Tentang Portal JLA Tools</h3>
+      <!-- Tombol Tutup (X) yang akan menjalankan fungsi Javascript closeModal -->
       <button class="modal-close-btn" onclick="closeModal('infoModal')">✕</button>
     </div>
+    <!-- Isi Badan Modal -->
     <div class="modal-body">
       <p style="font-size: 13px; color: var(--text-muted); line-height: 1.6; margin-bottom: 12px;">
         Portal Script Generator ini dikembangkan untuk memudahkan teknisi dan admin jaringan dalam menggenerasi baris script MikroTik tanpa perlu mengetik manual.
@@ -564,26 +791,40 @@ body {
         <div>• Status: Active Development</div>
       </div>
     </div>
+    <!-- Kaki Modal (Tombol Bawah) -->
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal('infoModal')">Tutup</button>
     </div>
   </div>
 </div>
 
-<!-- Toast Container -->
+<!-- WADAH NOTIFIKASI MENGAMBANG (Toast) -->
+<!-- Tempat di mana notifikasi-notifikasi kecil (seperti 'Script belum siap') akan dimunculkan oleh Javascript -->
 <div class="toast-container" id="toastContainer"></div>
 
+<!-- SCRIPT (JAVASCRIPT): Otak yang membuat web menjadi hidup / interaktif -->
 <script>
-  // Open & Close Modal Functions
+  /* FUNGSI 1: MEMBUKA MODAL (POP-UP)
+     Menambahkan kata 'show' pada CSS elemen agar modal terlihat di layar. */
   function openModal(modalId) {
     document.getElementById(modalId).classList.add('show');
   }
 
+  /* FUNGSI 2: MENUTUP MODAL (POP-UP)
+     Menghapus kata 'show' pada CSS elemen agar modal kembali disembunyikan. */
   function closeModal(modalId) {
     document.getElementById(modalId).classList.remove('show');
   }
 
-  // Close Modal on backdrop click
+  /* FUNGSI 3: MEMBUKA/MENUTUP SIDEBAR DI LAYAR HP
+     Logika ini mengecek: Kalau terbuka maka tutup, kalau tertutup maka buka (toggle). */
+  function toggleSidebar() {
+    document.getElementById('mainSidebar').classList.toggle('open');
+    document.getElementById('sidebarOverlay').classList.toggle('show');
+  }
+
+  /* FUNGSI 4: MENUTUP MODAL SAAT LAYAR HITAM DIKLIK
+     Jika pengguna mengeklik area di luar kotak putih (area gelap), maka modal akan tertutup. */
   document.querySelectorAll('.modal-overlay').forEach(overlay => {
     overlay.addEventListener('click', function(e) {
       if (e.target === this) {
@@ -592,41 +833,59 @@ body {
     });
   });
 
-  // Toast Notifications
+  /* FUNGSI 5: MENAMPILKAN NOTIFIKASI SINGKAT (TOAST)
+     Fungsi ini dipanggil ketika kita klik menu yang belum siap (DEV). */
   function showToast(msg, type = 'info') {
+    // 1. Cari wadahnya
     const container = document.getElementById('toastContainer');
+    
+    // 2. Buat elemen kotak HTML baru
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
     
+    // 3. Tentukan ikon sesuai tipe pesannya
     let icon = 'ℹ';
     if(type === 'success') icon = '✔';
     if(type === 'error') icon = '⚠';
 
+    // 4. Masukkan teks dan ikon ke dalam kotak HTML baru tadi
     toast.innerHTML = `<span>${icon}</span><span>${msg}</span>`;
+    
+    // 5. Dorong/tampilkan kotak tersebut ke layar
     container.appendChild(toast);
     
+    // 6. Atur penghitung waktu mundur (Timer) untuk menghapus notifikasi setelah 3 detik
     setTimeout(() => { 
       toast.style.opacity = '0';
-      toast.style.transform = 'translateX(20px)';
+      toast.style.transform = 'translateX(20px)'; // Animasi geser keluar
       toast.style.transition = 'all 0.3s ease';
+      // Hapus permanen dari sistem HTML setelah animasinya selesai
       setTimeout(() => toast.remove(), 300);
     }, 3000);
   }
 
-  // Filter Tools in Sidebar Search
+  /* FUNGSI 6: MENCARI ALAT (FILTER PENCARIAN)
+     Fungsi ini otomatis berjalan setiap Anda mengetik huruf di form pencarian atas sidebar. */
   function filterTools() {
+    // Ambil kata kunci ketikan pengguna
     const input = document.getElementById('toolSearch');
-    const filter = input.value.toLowerCase();
+    const filter = input.value.toLowerCase(); // Ubah ke huruf kecil semua agar pencarian tidak sensitif besar/kecil
+    
+    // Cari area daftar menu
     const ul = document.getElementById('toolList');
+    // Ambil seluruh menu yang memiliki label 'tool-item'
     const items = ul.getElementsByClassName('tool-item');
 
+    // Lakukan pengulangan/pemeriksaan ke setiap menu satu per satu
     for (let i = 0; i < items.length; i++) {
       const a = items[i].getElementsByTagName('a')[0];
-      const txtValue = a.textContent || a.innerText;
+      const txtValue = a.textContent || a.innerText; // Ambil teks yang ada pada nama alat tersebut
+      
+      // Jika teksnya COCOK dengan apa yang diketik...
       if (txtValue.toLowerCase().indexOf(filter) > -1) {
-        items[i].style.display = "";
+        items[i].style.display = ""; // Tetap tampilkan menu
       } else {
-        items[i].style.display = "none";
+        items[i].style.display = "none"; // Sembunyikan menu tersebut
       }
     }
   }
