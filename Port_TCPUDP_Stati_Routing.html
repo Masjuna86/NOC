@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<!-- Ini adalah deklarasi tipe dokumen, wajib ada di HTML5 -->
+<html lang="id">
+<head>
+  <!-- Bagian meta untuk pengaturan karakter dan responsivitas di HP -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>JLA Tools - MikroTik Port Routing</title>
+  
+  <style>
+    /* Mengambil font gratis dari Google Fonts */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap');
+    
+    /* Pengaturan dasar untuk semua elemen html agar transisinya halus */
+    * { 
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+      box-sizing: border-box; 
+    }
+    
+    /* Variabel warna agar mudah diubah-ubah (Tema JLA) */
+    :root {
+      --bg: #f4f7f6;
+      --text: #334155;
+      --text-dark: #0f172a;
+      --text-muted: #64748b;
+      --accent: #ff6600;
+      --border: #e2e8f0;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    }
+
+    /* Pengaturan tampilan layar utama (body) */
+    body { 
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
+      background: var(--bg);
+      color: var(--text); 
+      margin: 0; 
+      padding: 0; 
+      display: flex; 
+      flex-direction: column; 
+      min-height: 100vh;
+    }
+
+    /* CSS untuk bagian atas aplikasi (Header) */
+    .app-header {
+      height: 64px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-logo {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, var(--accent), #ea580c);
+      border-radius: 10px; color: #fff;
+      font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 16px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 12px rgba(255, 102, 0, 0.3);
+    }
+    .brand-title h1 { font-size: 15px; font-weight: 800; color: var(--text-dark); letter-spacing: 0.3px; line-height: 1.2; margin: 0;}
+    .brand-title p { font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; font-weight: 500; margin: 0;}
+
+    /* CSS untuk Tombol-tombol di Header */
+    .header-actions { display: flex; align-items: center; gap: 12px; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 9px 16px; border-radius: 8px; border: none; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; transition: all .15s; white-space: nowrap; text-decoration: none; }
+    .btn-secondary { background: #ffffff; color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: #f8fafc; }
+    .btn-wa { background: #25D366; color: white; border-radius: 20px; font-weight: 700; }
+    .btn-wa:hover { background: #128C7E; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3); }
+
+    /* Area Konten Utama */
+    .main-container { display: flex; flex: 1; max-width: 1000px; margin: 0 auto; width: 100%; padding: 40px 20px; gap: 30px; }
+    .content-area { flex: 1; background: #ffffff; border-radius: 16px; box-shadow: 0 10px 30px rgba(148, 163, 184, 0.1); border: 1px solid #f1f5f9; padding: 30px; min-width: 0; }
+    
+    /* CSS Grid untuk Form (Membagi kolom menjadi 2) */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px; }
+    .form-group { display: flex; flex-direction: column; gap: 8px; }
+    .form-group label { font-size: 13px; font-weight: 600; color: var(--text-dark); }
+    
+    /* Desain Input, Select, Textarea */
+    input[type="text"], select { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 14px; outline: none; }
+    input[type="text"]:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(255,102,0,0.1); }
+
+    /* CSS untuk Tabel Input Port */
+    .table-container { overflow-x: auto; margin-bottom: 20px; border: 1px solid var(--border); border-radius: 8px; }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th { background: #f8fafc; padding: 12px; font-size: 13px; color: var(--text-dark); border-bottom: 1px solid var(--border); }
+    td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+    
+    /* Tombol Aksi dalam tabel dan Form */
+    .btn-add { background: var(--accent); color: white; padding: 8px 12px; font-size: 12px; border-radius: 6px; cursor: pointer; border: none; font-weight: 600; }
+    .btn-add:hover { background: #e65c00; }
+    .btn-remove { background: #ef4444; color: white; padding: 8px 12px; font-size: 12px; border-radius: 6px; cursor: pointer; border: none; font-weight: 600; }
+    .btn-remove:hover { background: #dc2626; }
+    .btn-generate { background: var(--text-dark); color: white; padding: 12px 24px; font-size: 14px; border-radius: 8px; cursor: pointer; border: none; font-weight: 600; width: 100%; margin-top: 10px; }
+    .btn-generate:hover { background: #1e293b; }
+
+    /* ======= CSS UNTUK TAMPILAN TERMINAL (Sesuai Gambar Terminal.JPG) ======= */
+    .terminal-window {
+      background: #1e1e2e; /* Warna gelap background terminal */
+      border-radius: 8px;
+      overflow: hidden;
+      margin-top: 30px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      display: none; /* Disembunyikan dulu sampai tombol generate ditekan */
+    }
+    /* Bagian atas (header) terminal */
+    .terminal-header {
+      background: #2a2a35; /* Warna bar atas */
+      padding: 10px 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #000;
+    }
+    /* Bulatan merah, kuning, hijau khas Mac */
+    .terminal-dots { display: flex; gap: 8px; }
+    .dot { width: 12px; height: 12px; border-radius: 50%; }
+    .dot.red { background: #ff5f56; }
+    .dot.yellow { background: #ffbd2e; }
+    .dot.green { background: #27c93f; }
+    
+    /* Judul di tengah terminal */
+    .terminal-title { color: #a6accd; font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600;}
+    
+    /* Tombol Copy Script Oranye */
+    .btn-copy {
+      background: #ff6600;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .btn-copy:hover { background: #e65c00; }
+    
+    /* Area teks scriptnya */
+    .terminal-body {
+      padding: 15px;
+      color: #a6accd; /* Warna teks kode */
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      overflow-x: auto;
+      white-space: pre-wrap; /* Agar teks otomatis turun ke bawah jika kepanjangan */
+      min-height: 150px;
+      max-height: 400px;
+    }
+
+    /* CSS Footer */
+    .footer { text-align: center; font-size: 13px; color: #94a3b8; padding: 30px; width: 100%; margin-top: auto; }
+
+    /* CSS Popup Pesan Custom (Pengganti Alert) */
+    .custom-alert { position: fixed; top: 20px; right: 20px; background: #ef4444; color: white; padding: 15px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transform: translateX(150%); opacity: 0; transition: all 0.3s; z-index: 9999; }
+    .custom-alert.show { transform: translateX(0); opacity: 1; }
+    .custom-alert.success { background: #22c55e; }
+
+    /* Responsivitas HP */
+    @media screen and (max-width: 768px) { 
+      .form-grid { grid-template-columns: 1fr; } 
+      .app-header { flex-direction: column; height: auto; padding: 15px 20px; gap: 15px; align-items: center; text-align: center;}
+    }
+  </style>
+</head>
+<body>
+
+  <!-- BAGIAN HEADER (Bagian Atas) -->
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-logo">JLA</div>
+      <div class="brand-title">
+        <h1>JAKA LINTAS AKSES</h1>
+        <p>Port Routing Generator</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <a href="#" class="btn btn-secondary">🏠 Beranda</a>
+      <a href="#" class="btn btn-wa">Hubungi Kami</a>
+    </div>
+  </header>
+
+  <!-- BAGIAN KONTEN UTAMA -->
+  <main class="main-container">
+    <div class="content-area">
+      <h2 style="margin-top: 0; margin-bottom: 20px; color: var(--text-dark);">MikroTik Port TCP/UDP Static Routing</h2>
+      
+      <!-- FORM INPUT DASAR -->
+      <div class="form-grid">
+        <!-- Pilihan Routing -->
+        <div class="form-group">
+          <label>Routing Option</label>
+          <select id="route-option">
+            <option value="mangle">Only Port Mangle Routing</option>
+            <option value="route">Mangle + IP Route</option>
+          </select>
+        </div>
+        <!-- Pilihan Versi RouterOS -->
+        <div class="form-group">
+          <label>RouterOS Version</label>
+          <select id="ros-version">
+            <option value="v6">RouterOS v6.xx</option>
+            <option value="v7">RouterOS v7.xx</option>
+          </select>
+        </div>
+        <!-- Input Gateway -->
+        <div class="form-group">
+          <label>IP Gateway ISP / VPN</label>
+          <input type="text" id="target-ip" placeholder="Contoh: 192.168.2.1">
+        </div>
+        <!-- Input Nama Mark Routing -->
+        <div class="form-group">
+          <label>Routing Mark / Table</label>
+          <input type="text" id="target-route" placeholder="Contoh: route-game">
+        </div>
+      </div>
+
+      <!-- TABEL DAFTAR PORT -->
+      <div class="table-container">
+        <table id="port-table">
+          <thead>
+            <tr>
+              <th width="80"><button type="button" class="btn-add" onclick="tambahBaris()">Add +</button></th>
+              <th width="150">Protocol</th>
+              <th>Target Port</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody id="table-body">
+            <!-- Baris pertama (Default) -->
+            <tr>
+              <td><button type="button" class="btn-remove" onclick="hapusBaris(this)">Del</button></td>
+              <td>
+                <select class="input-protocol">
+                  <option value="tcp">TCP</option>
+                  <option value="udp">UDP</option>
+                </select>
+              </td>
+              <td><input type="text" class="input-port" placeholder="Contoh: 80,443"></td>
+              <td><input type="text" class="input-desc" placeholder="Contoh: Browsing"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Tombol Eksekusi -->
+      <button type="button" class="btn-generate" onclick="generateScript()">🚀 Generate Script</button>
+
+      <!-- TAMPILAN OUTPUT TERMINAL (Awalnya disembunyikan menggunakan display:none di CSS) -->
+      <div class="terminal-window" id="terminal-output">
+        <div class="terminal-header">
+          <!-- Titik-titik macOS -->
+          <div class="terminal-dots">
+            <div class="dot red"></div>
+            <div class="dot yellow"></div>
+            <div class="dot green"></div>
+          </div>
+          <!-- Judul Terminal -->
+          <div class="terminal-title">Terminal Winbox</div>
+          <!-- Tombol Copy (Sesuai Gambar) -->
+          <button class="btn-copy" onclick="copyScript()">
+            <!-- Icon Copy SVG -->
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            Copy Script
+          </button>
+        </div>
+        <!-- Tempat teks script muncul -->
+        <div class="terminal-body" id="script-result"></div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    Jaka Lintas Akses © 2026. Premium RouterOS Script Tools Portal.
+  </footer>
+
+  <!-- Tempat munculnya popup notifikasi -->
+  <div id="custom-alert" class="custom-alert">Pesan di sini</div>
+
+  <!-- BAGIAN JAVASCRIPT (Logika Aplikasi) -->
+  <script>
+    // Fungsi untuk menampilkan pesan popup (Pengganti fungsi alert() yang jelek)
+    function tampilkanPesan(pesan, isSuccess = false) {
+      const alertBox = document.getElementById('custom-alert');
+      alertBox.textContent = pesan;
+      
+      // Ubah warna jika sukses (hijau) atau gagal (merah)
+      if (isSuccess) {
+        alertBox.classList.add('success');
+      } else {
+        alertBox.classList.remove('success');
+      }
+      
+      // Munculkan popup
+      alertBox.classList.add('show');
+      
+      // Hilangkan otomatis setelah 3 detik
+      setTimeout(() => {
+        alertBox.classList.remove('show');
+      }, 3000);
+    }
+
+    // Fungsi untuk menambah baris baru di tabel port
+    function tambahBaris() {
+      // Mengambil elemen <tbody> tempat kita akan menaruh baris baru
+      const tbody = document.getElementById('table-body');
+      // Membuat elemen <tr> (baris) baru
+      const tr = document.createElement('tr');
+      
+      // Mengisi HTML ke dalam baris baru tersebut
+      tr.innerHTML = `
+        <td><button type="button" class="btn-remove" onclick="hapusBaris(this)">Del</button></td>
+        <td>
+          <select class="input-protocol">
+            <option value="tcp">TCP</option>
+            <option value="udp">UDP</option>
+          </select>
+        </td>
+        <td><input type="text" class="input-port" placeholder="Contoh: 80,443"></td>
+        <td><input type="text" class="input-desc" placeholder="Contoh: Browsing"></td>
+      `;
+      // Memasukkan baris baru ke dalam tabel
+      tbody.appendChild(tr);
+    }
+
+    // Fungsi untuk menghapus baris di tabel port
+    // 'btn' adalah tombol Delete yang di-klik
+    function hapusBaris(btn) {
+      // Kita naik 2 level (dari tombol -> <td> -> <tr>) lalu hapus <tr> tersebut
+      const row = btn.parentNode.parentNode;
+      
+      // Jangan hapus jika hanya tersisa 1 baris
+      const tbody = document.getElementById('table-body');
+      if (tbody.children.length > 1) {
+        row.parentNode.removeChild(row);
+      } else {
+        tampilkanPesan("Minimal harus ada 1 baris port!");
+      }
+    }
+
+    // Fungsi utama untuk memproses input dan menghasilkan Script MikroTik
+    function generateScript() {
+      // 1. Ambil semua nilai dari inputan atas
+      const routeOption = document.getElementById('route-option').value;
+      const rosVersion = document.getElementById('ros-version').value;
+      const targetIp = document.getElementById('target-ip').value.trim();
+      const targetRoute = document.getElementById('target-route').value.trim();
+
+      // Validasi: pastikan Gateway dan Mark Route diisi
+      if (targetIp === "" || targetRoute === "") {
+        tampilkanPesan("IP Gateway dan Routing Mark tidak boleh kosong!");
+        return; // Hentikan eksekusi kode di bawahnya
+      }
+
+      // Variabel untuk menampung teks script final
+      let scriptOutput = "";
+      
+      // Tambahkan komentar pembuka pada script
+      scriptOutput += `#==================================================\n`;
+      scriptOutput += `# Generated by JLA Tools - Policy Based Routing\n`;
+      scriptOutput += `# RouterOS: ${rosVersion.toUpperCase()} | Gateway: ${targetIp}\n`;
+      scriptOutput += `#==================================================\n\n`;
+
+      // 2. Ambil semua baris dari tabel
+      const barisTabel = document.querySelectorAll('#table-body tr');
+      
+      // 3. Looping (Ulangi) setiap baris tabel untuk membuat script Mangle
+      scriptOutput += `/ip firewall mangle\n`;
+      
+      // Variabel penanda jika tabel kosong/port belum diisi
+      let adaPort = false;
+
+      barisTabel.forEach((row) => {
+        // Ambil nilai protocol, port, dan deskripsi dari masing-masing baris
+        const protokol = row.querySelector('.input-protocol').value;
+        const port = row.querySelector('.input-port').value.trim();
+        const deskripsi = row.querySelector('.input-desc').value.trim();
+
+        // Jika port diisi, buatkan script manglenya
+        if (port !== "") {
+          adaPort = true;
+          // Format pembuatan mangle rule
+          scriptOutput += `add chain=prerouting action=mark-routing new-routing-mark=${targetRoute} passthrough=yes protocol=${protokol} dst-port=${port} comment="${deskripsi}"\n`;
+        }
+      });
+
+      // Validasi jika user tidak memasukkan port sama sekali
+      if (!adaPort) {
+        tampilkanPesan("Target Port belum diisi di tabel!");
+        return;
+      }
+
+      // 4. Buat Script Route (Jika Opsi Mangle + Route dipilih)
+      if (routeOption === "route") {
+        scriptOutput += `\n# Route Configuration\n`;
+        
+        // Logika berbeda untuk RouterOS v6 dan v7
+        if (rosVersion === "v7") {
+          // Di ROS v7, harus daftar tabel routing dulu
+          scriptOutput += `/routing/table/add name=${targetRoute} fib\n`;
+          scriptOutput += `/ip route\n`;
+          scriptOutput += `add dst-address=0.0.0.0/0 gateway=${targetIp} routing-table=${targetRoute} comment="Route for ${targetRoute}"\n`;
+        } else {
+          // ROS v6 langsung route
+          scriptOutput += `/ip route\n`;
+          scriptOutput += `add dst-address=0.0.0.0/0 gateway=${targetIp} routing-mark=${targetRoute} comment="Route for ${targetRoute}"\n`;
+        }
+      }
+
+      // 5. Tampilkan hasilnya ke terminal box
+      document.getElementById('script-result').textContent = scriptOutput;
+      
+      // Munculkan terminal box yang sebelumnya display:none
+      document.getElementById('terminal-output').style.display = 'block';
+      
+      // Scroll halaman ke bawah agar terminal terlihat
+      document.getElementById('terminal-output').scrollIntoView({ behavior: 'smooth' });
+      
+      // Tampilkan notifikasi sukses
+      tampilkanPesan("Script berhasil di-generate!", true);
+    }
+
+    // Fungsi untuk menyalin (Copy) teks ke clipboard perangkat
+    function copyScript() {
+      // Ambil teks script dari kotak terminal
+      const textToCopy = document.getElementById('script-result').textContent;
+      
+      // Pastikan ada teks yang mau di copy
+      if (!textToCopy) {
+        tampilkanPesan("Tidak ada script yang disalin!");
+        return;
+      }
+
+      // Membuat elemen textarea sementara untuk membantu proses copy (solusi paling aman)
+      const tempTextArea = document.createElement("textarea");
+      tempTextArea.value = textToCopy;
+      document.body.appendChild(tempTextArea);
+      
+      // Seleksi isi textarea
+      tempTextArea.select();
+      
+      try {
+        // Jalankan perintah copy dari browser
+        document.execCommand('copy');
+        tampilkanPesan("Script berhasil disalin ke Clipboard!", true);
+      } catch (err) {
+        // Jika gagal
+        tampilkanPesan("Gagal menyalin script!");
+      }
+      
+      // Hapus textarea sementara dari tampilan
+      document.body.removeChild(tempTextArea);
+    }
+  </script>
+</body>
+</html>

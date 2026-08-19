@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<!-- Tag html adalah pembungkus utama seluruh isi halaman web. lang="id" berarti bahasa Indonesia -->
+<html lang="id">
+<head>
+    <!-- Pengaturan agar tulisan/karakter terbaca dengan benar -->
+    <meta charset="utf-8">
+    <!-- Pengaturan wajib agar tampilan web rapi di layar HP (Responsive) -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Judul yang akan muncul di tab browser Anda -->
+    <title>JLA Tools - Mikrotik Script Generator</title>
+    
+    <!-- Memuat jenis huruf 'Inter' dan 'JetBrains Mono' dari Google (gratis) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tag style adalah tempat kita menulis kode CSS untuk mengatur desain (warna, ukuran, letak) -->
+    <style>
+        /* Pengaturan dasar untuk semua elemen web (*) */
+        * { 
+            box-sizing: border-box; /* Agar padding/jarak dalam tidak merusak ukuran lebar asli kotak */
+            transition: all 0.2s ease; /* Memberi efek animasi halus saat tombol disentuh dll */
+        }
+        
+        /* :root digunakan untuk menyimpan "Variabel Warna". 
+           Kalau mau ganti tema, cukup ganti kode warna (hex) di sini saja. */
+        :root {
+            --bg-main: #f4f7f6; /* Warna latar belakang web abu-abu sangat muda */
+            --text-main: #334155; /* Warna teks utama abu-abu gelap */
+            --color-accent: #ff6600; /* Warna Orange ciri khas JLA dan Buananet */
+            --border-color: #e2e8f0; /* Warna garis batas / border */
+            
+            /* Warna khusus untuk kotak Terminal */
+            --term-bg: #282c34; /* Warna background terminal (gelap ala editor code) */
+            --term-header: #1e2227; /* Warna header atas terminal (lebih gelap) */
+            --term-text: #abb2bf; /* Warna teks biasa di dalam terminal */
+        }
+
+        /* Mengatur area body (seluruh halaman yang terlihat) */
+        body { 
+            font-family: 'Inter', sans-serif; /* Pakai font Inter */
+            background: var(--bg-main); 
+            color: var(--text-main); 
+            margin: 0; 
+            padding: 0; 
+            display: flex; 
+            flex-direction: column; 
+            min-height: 100vh; /* Tinggi minimal sama dengan tinggi layar browser */
+        }
+
+        /* --- GAYA HEADER (Template JLA) --- */
+        .app-header {
+            height: 64px;
+            background: rgba(255, 255, 255, 0.95);
+            border-bottom: 1px solid var(--border-color);
+            display: flex; /* Menyusun isi sejajar menyamping */
+            align-items: center; /* Posisikan isi di tengah secara vertikal */
+            justify-content: space-between; /* Pisahkan logo ke kiri dan tombol ke kanan */
+            padding: 0 24px;
+            position: sticky; /* Membuat header tetap menempel di atas saat layar discroll */
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .brand { display: flex; align-items: center; gap: 12px; }
+        
+        /* Kotak Logo JLA */
+        .brand-logo {
+            width: 40px; height: 40px;
+            background: linear-gradient(135deg, var(--color-accent), #ea580c);
+            border-radius: 10px; color: #fff;
+            font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 16px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        
+        .brand-title h1 { font-size: 16px; font-weight: 800; color: #0f172a; margin: 0; line-height: 1.2;}
+        .brand-title p { font-size: 12px; color: #64748b; margin: 0;}
+
+        /* --- GAYA TOMBOL HEADER (Dari Template JLA) --- */
+        .header-actions { display: flex; align-items: center; gap: 12px; }
+        
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 9px 16px; border-radius: 8px; border: none; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; transition: all .15s; white-space: nowrap; text-decoration: none; }
+        .btn-secondary { background: #ffffff; color: var(--text-main); border: 1px solid var(--border-color); }
+        .btn-secondary:hover { background: #f8fafc; }
+        .btn-wa { background: #25D366; color: white; border-radius: 20px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-wa:hover { background: #128C7E; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3); }
+
+        /* --- TATA LETAK UTAMA --- */
+        .main-container { 
+            display: flex; flex: 1; max-width: 1400px; 
+            margin: 0 auto; width: 100%; padding: 20px; gap: 20px; 
+        }
+
+        /* grid-template-columns mengatur pembagian kolom. 
+           350px untuk kotak kiri (form), 1fr (sisanya) untuk kotak kanan (terminal) */
+        .layout-grid {
+            display: grid;
+            grid-template-columns: 350px 1fr; 
+            gap: 20px; width: 100%;
+        }
+
+        /* Kotak putih tempat Form Pengaturan berada */
+        .form-card {
+            background: #ffffff; border-radius: 12px; 
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); 
+            border: 1px solid var(--border-color);
+            padding: 20px; height: fit-content;
+        }
+
+        /* --- GAYA FORM INPUT --- */
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #1e293b; }
+        .form-control { 
+            width: 100%; padding: 10px; border: 1px solid #cbd5e1; 
+            border-radius: 6px; font-size: 13px; font-family: 'Inter', sans-serif; outline: none;
+        }
+        .form-control:focus { border-color: var(--color-accent); } /* Ganti warna garis saat diklik */
+        
+        /* Kotak daftar game yang bisa di-scroll ke bawah */
+        .game-list-container {
+            border: 1px solid #cbd5e1; border-radius: 6px;
+            height: 350px; /* Tinggi kotak daftar game */
+            overflow-y: auto; /* Memunculkan scrollbar jika isinya panjang */
+            padding: 10px; background: #f8fafc;
+        }
+        
+        .game-category-title { font-size: 12px; font-weight: 700; color: var(--color-accent); margin: 10px 0 5px 0; }
+        .game-item { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 13px; cursor: pointer; }
+        .game-item label { margin:0; cursor: pointer; font-weight: 500;}
+
+        /* Gaya tombol-tombol */
+        .btn-action {
+            width: 100%; padding: 12px; background: var(--color-accent); color: white;
+            border: none; border-radius: 6px; font-weight: 600; cursor: pointer; margin-top: 10px;
+        }
+        .btn-action:hover { background: #e65c00; }
+        .btn-outline { background: transparent; color: #475569; border: 1px solid #cbd5e1; }
+        .btn-outline:hover { background: #f1f5f9; }
+
+        /* --- GAYA KOTAK TERMINAL WINBOX (Sesuai gambar Terminal.JPG) --- */
+        .terminal-card {
+            background-color: var(--term-bg);
+            border-radius: 10px; /* Sudut melengkung */
+            overflow: hidden; /* Mencegah warna meluber dari sudut lengkung */
+            display: flex; flex-direction: column;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+            height: calc(100vh - 120px); /* Tingginya otomatis menyesuaikan layar */
+        }
+
+        /* Bagian atas Terminal (Header bar) */
+        .terminal-header {
+            background-color: var(--term-header);
+            padding: 12px 16px; display: flex;
+            align-items: center; justify-content: space-between;
+            border-bottom: 1px solid #111;
+        }
+
+        /* 3 Titik khas macOS di sebelah kiri header terminal */
+        .terminal-dots { display: flex; gap: 8px; align-items: center;}
+        .dot { width: 12px; height: 12px; border-radius: 50%; }
+        .dot.red { background-color: #ff5f56; } /* Merah */
+        .dot.yellow { background-color: #ffbd2e; } /* Kuning */
+        .dot.green { background-color: #27c93f; } /* Hijau */
+
+        /* Teks "Terminal Winbox" di header */
+        .terminal-title { color: #8a93a5; font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; margin-left: 10px;}
+
+        /* Tombol Copy berwarna orange di terminal */
+        .btn-copy {
+            background-color: var(--color-accent); color: white;
+            border: none; padding: 6px 14px; border-radius: 6px;
+            font-size: 13px; font-weight: 700; cursor: pointer;
+            display: flex; align-items: center; gap: 6px; font-family: 'Inter', sans-serif;
+        }
+        .btn-copy:hover { background-color: #e65c00; transform: scale(1.03); }
+
+        /* Area tempat tulisan script muncul */
+        .terminal-body { padding: 20px; overflow-y: auto; flex: 1; }
+
+        /* Pengaturan teks script (Syntax Highlighting ala editor kode) */
+        #script-output {
+            color: var(--term-text); font-family: 'JetBrains Mono', monospace;
+            font-size: 13px; line-height: 1.6; margin: 0; white-space: pre-wrap; 
+        }
+        /* Pewarnaan spesifik bagian text di terminal */
+        .hl-comment { color: #5c6370; font-style: italic;} /* Warna abu-abu untuk komentar (#) */
+        .hl-command { color: #61afef; font-weight: bold; } /* Biru untuk perintah (/ip firewall) */
+        .hl-param { color: #c678dd; } /* Ungu untuk nama parameter */
+        .hl-string { color: #98c379; } /* Hijau untuk teks di dalam tanda kutip ("...") */
+
+        .footer { text-align: center; font-size: 13px; color: #94a3b8; padding: 20px; margin-top: auto;}
+
+        /* Responsive: Mengubah susunan menjadi atas-bawah jika dibuka di layar HP */
+        @media screen and (max-width: 900px) { 
+            .layout-grid { grid-template-columns: 1fr; } 
+            .terminal-card { height: 600px; } 
+            .app-header { flex-direction: column; height: auto; padding: 15px 20px; gap: 15px; align-items: center; justify-content: center; text-align: center;}
+            .brand { flex-direction: column; gap: 8px; }
+            .header-actions { width: 100%; display: flex; justify-content: center; gap: 10px;}
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header class="app-header">
+        <div class="brand">
+            <div class="brand-logo">JLA</div>
+            <div class="brand-title">
+                <h1>MIKROTIK ROUTING GENERATOR</h1>
+                <p>Filter Raw Games Auto Script - Buananet Mod</p>
+            </div>
+        </div>
+        <div class="header-actions">
+            <!-- Tombol Beranda -->
+            <a href="index.html" class="btn btn-secondary">🏠 Beranda</a>
+            <!-- Tombol WhatsApp dengan SVG -->
+            <a href="https://wa.me/62818386078?text=Halo%20JLA%20Tools,%20saya%20ingin%20bertanya..." target="_blank" class="btn btn-wa">
+                <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                Hubungi Kami
+            </a>
+        </div>
+    </header>
+
+    <!-- KONTEN UTAMA -->
+    <main class="main-container">
+        <!-- layout-grid membagi layar jadi 2: kiri (form) dan kanan (terminal) -->
+        <div class="layout-grid">
+            
+            <!-- KOLOM KIRI: Kotak Form -->
+            <div class="form-card">
+                
+                <!-- Pilihan RouterOS -->
+                <div class="form-group">
+                    <label>RouterOS Version</label>
+                    <!-- onchange="generateScript()" artinya: jika pilihan diubah, otomatis jalankan pembaruan script -->
+                    <select id="os-version" class="form-control" onchange="generateScript()">
+                        <option value="v6">RouterOS v6.xx</option>
+                        <option value="v7">RouterOS v7.xx</option>
+                    </select>
+                </div>
+
+                <!-- Input IP Gateway -->
+                <div class="form-group">
+                    <label>Gateway to WAN / ISP Game</label>
+                    <!-- onkeyup artinya: setiap kali selesai mengetik 1 huruf, langsung perbarui script -->
+                    <input type="text" id="gateway-input" class="form-control" placeholder="Contoh: 192.168.2.1 atau pppoe-out" onkeyup="generateScript()">
+                </div>
+
+                <!-- Fitur Cari Game -->
+                <div class="form-group">
+                    <label>Pilih Mangle Games</label>
+                    <!-- Saat mengetik nama game, fungsi filterGames() dipanggil untuk mencari -->
+                    <input type="text" id="search-game" class="form-control" placeholder="Cari nama game..." onkeyup="filterGames()" style="margin-bottom: 8px;">
+                    
+                    <!-- Kotak ini awalnya kosong. Nanti akan diisi daftar game otomatis oleh Javascript -->
+                    <div class="game-list-container" id="game-list-container">
+                        <!-- Javascript akan memunculkan Checkbox di sini -->
+                    </div>
+                </div>
+
+                <!-- Tombol aksi -->
+                <button class="btn-action" onclick="generateScript()">🚀 Generate Script</button>
+                <button class="btn-action btn-outline" onclick="location.reload()">Bersihkan / Reset</button>
+            </div>
+
+            <!-- KOLOM KANAN: Terminal Winbox -->
+            <div class="terminal-card">
+                
+                <!-- Header Terminal -->
+                <div class="terminal-header">
+                    <!-- Titik-titik warna macOS -->
+                    <div class="terminal-dots">
+                        <div class="dot red"></div>
+                        <div class="dot yellow"></div>
+                        <div class="dot green"></div>
+                        <span class="terminal-title">Terminal Winbox</span>
+                    </div>
+                    
+                    <!-- Tombol Copy -->
+                    <button class="btn-copy" onclick="copyToTerminal()" id="copy-btn">
+                        <!-- Ini adalah ikon kotak copy berbentuk SVG -->
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                        <span id="copy-text">Copy Script</span>
+                    </button>
+                </div>
+
+                <!-- Isi Terminal -->
+                <div class="terminal-body">
+                    <!-- <pre> digunakan agar teks kode tetap mempertahankan spasi dan baris baru (enter) -->
+                    <pre id="script-output">Silakan centang game di sebelah kiri untuk menghasilkan script...</pre>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        Jaka Lintas Akses © 2019. Premium RouterOS Script Tools Portal.<br>
+
+    </footer>
+
+    <!-- JAVASCRIPT: Tempat logika aplikasi berjalan -->
+    <script>
+        /**
+         * 1. DATABASE GAME (Modifikasi dari Data Buananet)
+         * BELAJAR: Kita menggunakan "Array" (daftar) yang berisi "Object" (data tiap game).
+         * Dengan cara ini, Anda tidak perlu repot membuat HTML checkbox satu per satu.
+         * Cukup tambahkan data di bawah ini, dan script otomatis akan membuat checkbox-nya!
+         */
+        const gamesDatabase = [
+            // --- MOBILE GAMES ---
+            { category: "MOBILE GAMES", id: "ml", name: "Mobile Legends (ML)", rules: `add action=add-dst-to-address-list address-list="List-IP-Games" address-list-timeout=1d chain=prerouting comment="Mobile Legends - Mobile" dst-address-list=!LOCAL-IP dst-port=5000-5221,5224-5227,5229-5241,5243-5508,5551-5559,5601-5700,9000-9010,9443  protocol=tcp\nadd action=add-dst-to-address-list address-list="List-IP-Games" address-list-timeout=1d chain=prerouting dst-address-list=!LOCAL-IP dst-port=5520-5529,10003,30000-30300,8443  protocol=tcp\nadd action=add-dst-to-address-list address-list="List-IP-Games" address-list-timeout=1d chain=prerouting dst-address-list=!LOCAL-IP dst-port=4001-4009,5000-5221,5224-5241,5243-5509,5551-5559,5601-5700,8130,8443,9120  protocol=udp\nadd action=add-dst-to-address-list address-list="List-IP-Games" address-list-timeout=1d chain=prerouting dst-address-list=!LOCAL-IP dst-port=2702,3702,5517,5520-5529,8001,9000-9010,9992,10003,30000-30300  protocol=udp` },
+            { category: "MOBILE GAMES", id: "ff", name: "Free Fire (FF)", rules: `add action=add-dst-to-address-list address-list="List-IP-Games" address-list-timeout=1d chain=prerouting comment="Free Fire - Mobile" dst-address-list=!LOCAL-IP dst-port=6006,6674,7006,7889,8001-8012,9006,9137,10000-10012,11000-11019 protocol=tcp\nadd action=add-dst-to-address-list address-list="List-IP-Games" address-list-timeout=1d chain=prerouting  dst-address-list=!LOCAL-IP dst-port=12006,12008,13006,15006,20561,39003,39006,39698,39779,39800 protocol=tcp\nadd action=add-dst-to-address-list address-list="List-IP-Games" address-list-timeout=1d chain=prerouting dst-address-list=!LOCAL-IP dst-port=6006,6008,7008,8008,8130,8443,9008,9120,10000-10015,10100,11000-11019,12008,13008  protocol=udp` },
+            { category: "MOBILE GAMES", id: "pubgm", name: "PUBG Mobile", rules: `add action=add-dst-to-address-list address-list="List-IP-Games" address-list-timeout=1d chain=prerouting comment="PUBG - Mobile" dst-address-list=!LOCAL-IP dst-port=7889,10012,13004,14000,17000,17500,18081,20000-20002,20371  protocol=tcp\nadd action=add-dst-to-address-list address-list="List-IP-Games" address-list-timeout=1d chain=prerouting dst-address-list=!LOCAL-IP dst-port=8011,9030,10491,10612,12235,13004,13748,17000,17500,20000-20002 protocol=udp\nadd action=add-dst-to-address-list address-list="List-IP-Games" address-list-timeout=1d chain=prerouting dst-address-list=!LOCAL-IP dst-port=7086-7995,10039,10096,11455,12070-12460,13894,13972,41182-41192 protocol=udp` },
+            { category: "MOBILE GAMES", id: "aov", name: "Arena Of Valor (AOV)", rules: `add action=add-dst-to-address-list address-list="List-IP-Games" address-list-timeout=1d chain=prerouting comment="Arena Of Valor - Mobile" dst-address-list=!LOCAL-IP dst-port=10001-10094  protocol=tcp\nadd action=add-dst-to-address-list address-list="List-IP-Games" address-list-timeout=1d chain=prerouting dst-address-list=!LOCAL-IP dst-port=10101-10201,10080-10110,17000-18000 protocol=udp` },
+            { category: "MOBILE GAMES", id: "genshin", name: "Genshin Impact", rules: `add action=add-dst-to-address-list address-list="List-IP-Games" address-list-timeout=1d chain=prerouting comment="Genshin Impact - Mobile" dst-address-list=!LOCAL-IP dst-port=42472  protocol=tcp\nadd action=add-dst-to-address-list address-list="List-IP-Games" address-list-timeout=1d chain=prerouting dst-address-list=!LOCAL-IP dst-port=42472,22101-22102 protocol=udp` },
+            { category: "MOBILE GAMES", id: "codm", name: "Call of Duty (CODM)", rules: `add action=add-dst-to-address-list address-list="List-IP-Games" address-list-timeout=1d chain=prerouting comment="Call Of Duty - Mobile" dst-address-list=!LOCAL-IP dst-port=3013,10000-10019,18082,50000,65010,65050  protocol=tcp\nadd action=add-dst-to-address-list address-list="List-IP-Games" address-list-timeout=1d chain=prerouting dst-address-list=!LOCAL-IP dst-port=7085-7995,8700,9030,10010-10019,17000-20100  protocol=udp` },
+            { category: "MOBILE GAMES", id: "roblox", name: "Roblox", rules: `add action=add-dst-to-address-list address-list="List-IP-Games" address-list-timeout=1d chain=prerouting comment="Roblox - Mobile" dst-address-list=!LOCAL-IP dst-port=3074  protocol=tcp\nadd action=add-dst-to-address-list address-list="List-IP-Games" address-list-timeout=1d chain=prerouting dst-address-list=!LOCAL-IP dst-port=88,500,3074,3544,4500,49152-65535 protocol=udp` },
+            
+            // --- WEB GAMES ---
+            { category: "WEB GAMES", id: "8ball", name: "8 Ball Pool", rules: `add action=add-dst-to-address-list address-list="List-IP-Games" address-list-timeout=1d chain=prerouting comment="8 Ball Pool (Miniclips - Web Games)" dst-address-list=!LOCAL-IP dst-port=4000  protocol=tcp` },
+            
+            // --- PC GAMES ---
+            { category: "PC GAMES", id: "valorant", name: "Valorant (RIOT)", rules: `add action=add-dst-to-address-list address-list="List-IP-Games" address-list-timeout=1d chain=prerouting comment="Valorant - PC Games" dst-address-list=!LOCAL-IP dst-port=2099,5222-5223,8088,8393-8400  protocol=tcp\nadd action=add-dst-to-address-list address-list="List-IP-Games" address-list-timeout=1d chain=prerouting dst-address-list=!LOCAL-IP dst-port=7000-7500,8088  protocol=udp` },
+            { category: "PC GAMES", id: "csgo", name: "CS:GO Steam", rules: `add action=add-dst-to-address-list address-list="List-IP-Games" address-list-timeout=1d chain=prerouting comment="CSGO Steam - PC" dst-address-list=!LOCAL-IP dst-port=27015-27030,27036-27037  protocol=tcp\nadd action=add-dst-to-address-list address-list="List-IP-Games" address-list-timeout=1d chain=prerouting dst-address-list=!LOCAL-IP dst-port=4380,27000-27031,27036  protocol=udp` },
+            { category: "PC GAMES", id: "dota2", name: "DOTA 2 Steam", rules: `add action=add-dst-to-address-list address-list="List-IP-Games" address-list-timeout=1d chain=prerouting comment="Dota 2 Steam - PC" dst-address-list=!LOCAL-IP dst-port=9100-9200,8230-8250,8110-8120  protocol=tcp\nadd action=add-dst-to-address-list address-list="List-IP-Games" address-list-timeout=1d chain=prerouting dst-address-list=!LOCAL-IP dst-port=28010-28200,27010-27200,39000  protocol=udp` },
+            { category: "PC GAMES", id: "apex", name: "APEX Legends", rules: `add action=add-dst-to-address-list address-list="List-IP-Games" address-list-timeout=1d chain=prerouting comment="Origin APEX Legends - PC" dst-address-list=!LOCAL-IP dst-port=9960-9969,1024-1124,3216,18000,18120,18060,27900,28910,29900  protocol=tcp\nadd action=add-dst-to-address-list address-list="List-IP-Games" address-list-timeout=1d chain=prerouting dst-address-list=!LOCAL-IP dst-port=1024-1124,18000,29900,37000-40000  protocol=udp` }
+            // Jika mau menambah game lain, ikuti format di atas: { category: "...", id: "...", name: "...", rules: `...` }
+        ];
+
+        /**
+         * 2. RENDER DAFTAR GAME
+         * Fungsi ini membaca data dari Array di atas, lalu membuatkan HTML-nya
+         * (berupa checkbox dan teks label) secara otomatis ke dalam kotak putih di layar.
+         */
+        function renderGames() {
+            const container = document.getElementById('game-list-container');
+            container.innerHTML = ''; // Kosongkan div terlebih dahulu
+
+            let currentCategory = ''; // Untuk menyimpan status kategori (supaya judul kategori tidak dobel)
+
+            // Lakukan perulangan (looping) ke setiap game yang ada di database
+            gamesDatabase.forEach(game => {
+                
+                // Jika kategorinya baru (berbeda dari yang sebelumnya), buat judul kategori
+                if (game.category !== currentCategory) {
+                    const title = document.createElement('div');
+                    title.className = 'game-category-title';
+                    title.innerText = game.category;
+                    container.appendChild(title);
+                    currentCategory = game.category;
+                }
+
+                // Buat pembungkus untuk Checkbox dan Label (nama game)
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'game-item';
+                // Saat kotaknya diklik, checkbox ikut terklik
+                itemDiv.onclick = function(e) {
+                    // Cegah klik dobel jika user mengeklik langsung pada kotaknya
+                    if (e.target.tagName !== 'INPUT') {
+                        const checkbox = document.getElementById(`chk-${game.id}`);
+                        checkbox.checked = !checkbox.checked;
+                        generateScript(); // Generate ulang script
+                    }
+                };
+                
+                // Isi pembungkus dengan HTML checkbox
+                itemDiv.innerHTML = `
+                    <input type="checkbox" id="chk-${game.id}" value="${game.id}" onchange="generateScript()">
+                    <label for="chk-${game.id}">${game.name}</label>
+                `;
+                
+                // Masukkan ke dalam halaman web
+                container.appendChild(itemDiv);
+            });
+        }
+
+        // Jalankan fungsi renderGames() ketika web baru saja selesai dibuka/dimuat
+        window.onload = renderGames;
+
+        /**
+         * 3. FUNGSI PENCARIAN (FILTER)
+         * Fungsi ini menyembunyikan game yang tidak cocok dengan kata yang diketik.
+         */
+        function filterGames() {
+            // Ambil ketikan user dan ubah ke huruf kecil semua (agar tidak sensitif huruf besar/kecil)
+            const keyword = document.getElementById("search-game").value.toLowerCase(); 
+            // Ambil semua elemen daftar game
+            const gameItems = document.querySelectorAll(".game-item");
+
+            gameItems.forEach(item => {
+                // Ambil teks label dari masing-masing game
+                const labelText = item.querySelector("label").innerText.toLowerCase();
+                // Tampilkan jika teks cocok, sembunyikan jika tidak cocok
+                if (labelText.includes(keyword)) {
+                    item.style.display = "flex";
+                } else {
+                    item.style.display = "none";
+                }
+            });
+        }
+
+        /**
+         * 4. FUNGSI GENERATE SCRIPT
+         * Ini adalah fungsi yang menggabungkan teks-teks pengaturan mikrotik
+         * (routing, mangle, filter) menjadi satu kesatuan script di Terminal.
+         */
+        function generateScript() {
+            // Ambil data yang diketik user
+            const gateway = document.getElementById('gateway-input').value || '192.168.2.1'; // Kalau kosong, pakai default
+            const osVersion = document.getElementById('os-version').value;
+            
+            // Ambil jam saat ini untuk komentar di script
+            const now = new Date();
+            const dateString = now.toLocaleDateString('id-ID') + ', ' + now.toLocaleTimeString('id-ID');
+
+            // --- HEADER SCRIPT ---
+            // Kita bungkus dengan <span class="..."> agar memiliki warna berbeda di layar
+            let script = `<span class="hl-comment">#########################################################
+# Static Routing Games Using Filter Raw Generator
+# Date/Time: ${dateString}
+# Modified By: JLA Template 
+#########################################################</span>\n\n`;
+
+            // --- ADDRESS LIST ---
+            script += `<span class="hl-command">/ip firewall address-list</span>
+add list=LOCAL-IP address=10.0.0.0/8 comment=<span class="hl-string">"Routing Games by JLA"</span>
+add list=LOCAL-IP address=172.16.0.0/12 comment=<span class="hl-string">"Routing Games by JLA"</span>
+add list=LOCAL-IP address=192.168.0.0/16 comment=<span class="hl-string">"Routing Games by JLA"</span>\n\n`;
+
+            // --- ROUTING TABLE (Jika menggunakan RouterOS v7) ---
+            if(osVersion === 'v7') {
+                script += `<span class="hl-command">/routing table</span>
+add name=routing-game fib comment=<span class="hl-string">"Routing Games by JLA"</span>\n\n`;
+            }
+
+            // --- IP ROUTE ---
+            script += `<span class="hl-command">/ip route</span>
+add gateway=<span class="hl-param">${gateway}</span> routing-mark=routing-game comment=<span class="hl-string">"Routing Games by JLA"</span>\n\n`;
+
+            // --- MANGLE ---
+            script += `<span class="hl-command">/ip firewall mangle</span>
+add action=mark-routing chain=prerouting connection-mark=conn-game new-routing-mark=routing-game passthrough=no src-address-list=LOCAL-IP comment=<span class="hl-string">"Routing Games by JLA"</span> place-before=*0
+add action=mark-connection chain=prerouting dst-address-list=List-IP-Games new-connection-mark=conn-game passthrough=yes comment=<span class="hl-string">"Routing Games by JLA"</span> place-before=*0\n\n`;
+
+            // --- FILTER RAW (Untuk game-game yang dicentang) ---
+            script += `<span class="hl-comment">##############################################################
+# FILTER RAW RULES FOR SELECTED GAMES
+##############################################################</span>\n`;
+            script += `<span class="hl-command">/ip firewall raw</span>\n`;
+
+            let hasCheckedGames = false;
+
+            // Loop database, cek mana saja checkbox yang sedang dalam status 'checked' (dicentang)
+            gamesDatabase.forEach(game => {
+                const checkbox = document.getElementById(`chk-${game.id}`);
+                if (checkbox && checkbox.checked) {
+                    hasCheckedGames = true;
+                    // Tambahkan teks rules yang ada di database ke dalam output
+                    script += `<span class="hl-comment"># ${game.name}</span>\n`;
+                    // Kita hilangkan dulu tag span pada string rules asli (jika ada), 
+                    // lalu warnai manual bagian teks yang ada kutipnya agar keren
+                    let coloredRules = game.rules.replace(/"(.*?)"/g, '<span class="hl-string">"$1"</span>');
+                    coloredRules = coloredRules.replace(/=([a-zA-Z0-9-!]+)/g, '=<span class="hl-param">$1</span>'); // Warnai value dari parameter
+                    script += `${coloredRules}\n`;
+                }
+            });
+
+            // Jika belum ada game yang dicentang, beri tahu user di dalam layar terminal
+            if (!hasCheckedGames) {
+                script += `\n<span class="hl-comment"># Belum ada game yang dipilih. Silakan centang game di sidebar kiri.</span>`;
+            }
+
+            // Masukkan gabungan teks script tadi ke elemen <pre> dengan id "script-output"
+            document.getElementById('script-output').innerHTML = script;
+        }
+
+        /**
+         * 5. FUNGSI COPY TO CLIPBOARD
+         * Memudahkan user mencopy semua script di terminal hanya dengan klik 1 tombol.
+         */
+        function copyToTerminal() {
+            // Ambil elemen yang isinya script
+            const outputElement = document.getElementById('script-output');
+            // innerText akan mengambil teksnya saja (mengabaikan tag span/warna html)
+            const plainText = outputElement.innerText;
+
+            // Membuat textarea tak terlihat untuk membantu proses copy (trik JS kuno yang sangat handal)
+            const textArea = document.createElement("textarea");
+            textArea.value = plainText;
+            document.body.appendChild(textArea);
+            textArea.select();
+            
+            try {
+                // Eksekusi perintah salin bawaan browser
+                document.execCommand('copy'); 
+                
+                // Ubah tulisan tombol agar user tahu berhasil
+                const copyTextSpan = document.getElementById('copy-text');
+                copyTextSpan.innerText = "Tersalin!";
+                
+                // Kembalikan ke teks awal setelah 2 detik
+                setTimeout(() => {
+                    copyTextSpan.innerText = "Copy Script";
+                }, 2000);
+
+            } catch (err) {
+                console.error('Browser tidak mendukung copy script otomatis.', err);
+            }
+            
+            // Hapus textarea bantuan tadi
+            document.body.removeChild(textArea);
+        }
+    </script>
+</body>
+</html>

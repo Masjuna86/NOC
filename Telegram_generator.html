@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>JLA - MikroTik Telegram Reporter Generator</title>
+  
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap');
+    
+    * { 
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+      box-sizing: border-box; 
+    }
+    
+    :root {
+      --bg: #f4f7f6;
+      --text: #334155;
+      --text-dark: #0f172a;
+      --text-muted: #64748b;
+      --accent: #ff6600;
+      --accent-hover: #e65c00;
+      --border: #e2e8f0;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    body { 
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
+      background: var(--bg);
+      color: var(--text); 
+      margin: 0; 
+      padding: 0; 
+      display: flex; 
+      flex-direction: column; 
+      min-height: 100vh;
+    }
+
+    .app-header {
+      height: 64px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-logo {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, var(--accent), #ea580c);
+      border-radius: 10px; color: #fff;
+      font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 16px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 12px rgba(255, 102, 0, 0.3);
+    }
+    .brand-title h1 { font-size: 15px; font-weight: 800; color: var(--text-dark); letter-spacing: 0.3px; line-height: 1.2; margin: 0;}
+    .brand-title p { font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; font-weight: 500; margin: 0;}
+
+    .header-actions { display: flex; align-items: center; gap: 12px; }
+
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 9px 16px; border-radius: 8px; border: none; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; transition: all .15s; white-space: nowrap; text-decoration: none; }
+    .btn-secondary { background: #ffffff; color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: #f8fafc; }
+    .btn-wa { background: #25D366; color: white; border-radius: 20px; font-weight: 700; }
+    .btn-wa:hover { background: #128C7E; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3); }
+
+    .main-container { 
+      display: flex; 
+      flex: 1; 
+      max-width: 1200px; 
+      margin: 0 auto; 
+      width: 100%; 
+      padding: 40px 20px; 
+      gap: 30px; 
+    }
+    
+    .content-area { 
+      flex: 1; 
+      background: #ffffff; 
+      border-radius: 16px; 
+      box-shadow: 0 10px 30px rgba(148, 163, 184, 0.1); 
+      border: 1px solid #f1f5f9;
+      padding: 30px; 
+      line-height: 1.6; 
+      min-width: 0;
+    }
+
+    .footer { 
+      text-align: center; 
+      font-size: 13px; 
+      color: #94a3b8; 
+      padding: 30px; 
+      width: 100%; 
+      margin-top: auto;
+    }
+
+    .tool-header {
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .tool-header h2 {
+      margin: 0 0 8px 0;
+      color: var(--text-dark);
+      font-size: 24px;
+      font-weight: 700;
+    }
+    
+    .tool-header p {
+      margin: 0;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    .tool-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+    }
+
+    /* Form Styles */
+    .form-group { margin-bottom: 20px; }
+    .form-group label { 
+      display: block; 
+      margin-bottom: 8px; 
+      font-weight: 600; 
+      font-size: 13px; 
+      color: var(--text-dark); 
+    }
+    .form-control { 
+      width: 100%; 
+      padding: 12px 14px; 
+      border: 1px solid var(--border); 
+      border-radius: 8px; 
+      font-family: inherit; 
+      font-size: 14px; 
+      color: var(--text);
+      background-color: #fff;
+      outline: none; 
+      transition: all 0.2s; 
+      box-shadow: var(--shadow-sm);
+    }
+    .form-control:focus { 
+      border-color: var(--accent); 
+      box-shadow: 0 0 0 3px rgba(255, 102, 0, 0.1);
+    }
+    textarea.form-control { 
+      resize: vertical; 
+      min-height: 100px; 
+    }
+    
+    select.form-control {
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2364748b%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px top 50%;
+      background-size: 10px auto;
+      padding-right: 30px;
+    }
+
+    /* Buttons inside tool */
+    .btn-primary { 
+      background: var(--accent); 
+      color: white; 
+      border: none; 
+      padding: 12px 24px; 
+      border-radius: 8px; 
+      cursor: pointer; 
+      font-weight: 600; 
+      font-size: 14px;
+      width: 100%; 
+      box-shadow: 0 4px 6px rgba(255, 102, 0, 0.2);
+    }
+    .btn-primary:hover { 
+      background: var(--accent-hover); 
+      transform: translateY(-1px);
+    }
+
+    /* Output Area */
+    .output-section {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    #outputScript { 
+      flex-grow: 1;
+      height: 100%;
+      min-height: 250px; 
+      font-family: 'JetBrains Mono', monospace; 
+      background: #0f172a; 
+      color: #e2e8f0;
+      font-size: 13px; 
+      border: none;
+      border-radius: 8px;
+      padding: 15px;
+    }
+    
+    .help-text {
+      font-size: 12px;
+      color: var(--text-muted);
+      background: #f8fafc;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      margin-top: 10px;
+    }
+
+    .hidden { display: none !important; }
+
+    /* Instructions Section */
+    .instruction-box { 
+      background: #f8fafc; 
+      border: 1px solid var(--border); 
+      padding: 24px; 
+      border-radius: 12px; 
+      margin-top: 40px; 
+    }
+    .instruction-box h3 { 
+      margin-top: 0; 
+      margin-bottom: 15px;
+      font-size: 15px; 
+      color: var(--text-dark); 
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .instruction-box ol { 
+      padding-left: 20px; 
+      margin-bottom: 25px; 
+      font-size: 13px;
+      color: var(--text);
+    }
+    .instruction-box li { margin-bottom: 8px; }
+    .highlight { 
+      background: #fff; 
+      color: var(--accent); 
+      padding: 2px 6px; 
+      border-radius: 4px; 
+      font-family: 'JetBrains Mono', monospace; 
+      font-size: 12px;
+      border: 1px solid var(--border);
+    }
+
+    /* Notification Toast */
+    .notification {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #10b981;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 14px;
+      box-shadow: var(--shadow-md);
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 1000;
+    }
+    .notification.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    @media screen and (max-width: 900px) { 
+      .app-header { flex-direction: column; height: auto; padding: 15px 20px; gap: 15px; align-items: center; justify-content: center; text-align: center;}
+      .brand { flex-direction: column; gap: 8px; }
+      .header-actions { width: 100%; display: flex; justify-content: center; gap: 10px;}
+      .main-container { padding: 20px 15px; }
+    }
+    
+    @media screen and (max-width: 768px) {
+      .tool-layout { grid-template-columns: 1fr; }
+      #outputScript { min-height: 200px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-logo">JLA</div>
+      <div class="brand-title">
+        <h1>JAKA LINTAS AKSES GENERATOR</h1>
+        <p>Portal Script Generator Premium JLA</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <a href="#" class="btn btn-secondary">🏠 Beranda</a>
+      <a href="https://wa.me/62818386078?text=Halo%20JLA%20Tools,%20saya%20ingin%20bertanya..." target="_blank" class="btn btn-wa">
+        <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Hubungi Kami
+      </a>
+    </div>
+  </header>
+
+  <main class="main-container">
+    <div class="content-area">
+      
+      <div class="tool-header">
+        <h2>MikroTik Telegram Reporter</h2>
+        <p>Generate automatic MikroTik router alert and notification scripts to Telegram instantly.</p>
+      </div>
+
+      <div class="tool-layout">
+        <!-- Input Section -->
+        <div class="input-section">
+          <div class="form-group">
+            <label for="botToken">Telegram Bot Token</label>
+            <input type="text" id="botToken" class="form-control" placeholder="e.g. 5633162xxx:AAFU1ds...">
+          </div>
+          
+          <div class="form-group">
+            <label for="chatId">Telegram Chat / Group ID</label>
+            <input type="text" id="chatId" class="form-control" placeholder="e.g. 5537582xxx or -100xxx">
+          </div>
+          
+          <div class="form-group">
+            <label for="routerOSVersion">RouterOS Version</label>
+            <select id="routerOSVersion" class="form-control" onchange="generateScript()">
+              <option value="v6">RouterOS v6.xx</option>
+              <option value="v7">RouterOS v7.xx</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="reportType">Report Type</label>
+            <select id="reportType" class="form-control" onchange="toggleInputFields()">
+              <option value="pppoeLogin">PPPoE Login Notification</option>
+              <option value="pppoeLogout">PPPoE Logout Notification</option>
+              <option value="hotspotLogin">Hotspot Login Notification</option>
+              <option value="hotspotLogout">Hotspot Logout Notification</option>
+              <option value="routerReport">Router Status Report (System, Traffic)</option>
+              <option value="custom">Custom Message Script</option>
+            </select>
+          </div>
+          
+          <!-- Dynamic Fields -->
+          <div id="customMessageContainer" class="form-group hidden">
+            <label for="customMessage">Custom Message Content</label>
+            <textarea id="customMessage" class="form-control" placeholder="Write the message you want the router to send..."></textarea>
+          </div>
+          
+          <div id="interfaceNamesContainer" class="form-group hidden">
+            <label for="interfaceNames">Interface for Traffic Report</label>
+            <input type="text" id="interfaceNames" class="form-control" placeholder="e.g. ether1, pppoe-out1">
+          </div>
+          
+          <div id="scheduleIntervalContainer" class="form-group hidden">
+            <label for="scheduleInterval">Report Send Interval</label>
+            <input type="text" id="scheduleInterval" class="form-control" value="1d" placeholder="e.g. 1d, 12h, 30m">
+          </div>
+          
+          <div id="scriptNameContainer" class="form-group">
+            <label for="scriptName">MikroTik Script Name</label>
+            <input type="text" id="scriptName" class="form-control" value="telegram-reporter" placeholder="Name for the script">
+          </div>
+          
+          <button onclick="generateScript()" class="btn-primary">Generate Script</button>
+        </div>
+
+        <!-- Output Section -->
+        <div class="output-section">
+          <label style="font-weight: 600; font-size: 13px; color: var(--text-dark);">Generated Script Output</label>
+          <textarea id="outputScript" readonly placeholder="Your generated script will appear here..."></textarea>
+          <button onclick="copyScript()" class="btn-secondary" style="width: 100%; padding: 12px; font-size: 14px;">📋 Copy Script to Clipboard</button>
+          
+          <p class="help-text">
+            <strong>Usage Tip:</strong><br>
+            For <em>Login/Logout</em> notifications, paste the script into the <code>on-up</code> or <code>on-down</code> tab of your Hotspot or PPPoE Profile.<br><br>
+            For <em>Reports</em> or <em>Custom Messages</em>, paste the script directly into the New Terminal in Winbox to create a Scheduled Task.
+          </p>
+        </div>
+      </div>
+
+      <div class="instruction-box">
+        <h3>HOW TO GET BOT / API / TOKEN TELEGRAM:</h3>
+        <ol>
+          <li>Search in your Telegram <span class="highlight">@BotFather</span> or <a href="https://t.me/BotFather" target="_blank" style="color: var(--accent); text-decoration: none;">https://t.me/BotFather</a></li>
+          <li>Send <span class="highlight">/newbot</span></li>
+          <li>Create name like this -&gt; Example: <span class="highlight">YourName_bot</span> and input again with same name <span class="highlight">YourName_bot</span></li>
+          <li>Save your <span class="highlight">TOKEN / BOT / API</span> -&gt; Example: <code>5633162xxx:AAFU1dsXcARJlAH_jJmvF1D4Bp8LLTLJjaX</code></li>
+          <li>Search in your Telegram <span class="highlight">@YourName_bot</span> and then click <strong>START</strong> Button</li>
+        </ol>
+
+        <h3 style="margin-top: 25px;">HOW TO GET CHAT ID TELEGRAM:</h3>
+        <ol>
+          <li>Search in your Telegram <span class="highlight">@get_id_bot</span> or <a href="https://t.me/get_id_bot" target="_blank" style="color: var(--accent); text-decoration: none;">https://t.me/get_id_bot</a></li>
+          <li>Send <span class="highlight">/start</span></li>
+          <li>Save your Chat ID like this -&gt; Example: <code>5537582xxx</code></li>
+        </ol>
+
+        <p style="margin-top: 20px; font-size: 13px; padding: 12px; background: #fff; border: 1px dashed var(--border); border-radius: 8px;">
+          <strong>Finaly test from your Browser:</strong><br>
+          <span style="word-break: break-all; color: var(--text-muted); display: inline-block; margin-top: 5px; font-family: 'JetBrains Mono', monospace; font-size: 11px;">https://api.telegram.org/bot&lt;TOKEN&gt;/sendMessage?chat_id=&lt;CHAT_ID&gt;&amp;text=Hello%20World</span>
+        </p>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    Jaka Lintas Akses © <span id="year"></span>. Premium RouterOS Script Tools Portal.
+  </footer>
+
+  <div id="toast" class="notification">Script copied to clipboard!</div>
+
+  <script>
+    // Set current year in footer
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // UI Logic to show/hide specific fields based on selection
+    function toggleInputFields() {
+      const type = document.getElementById('reportType').value;
+      
+      // Hide specific containers first
+      document.getElementById('customMessageContainer').classList.add('hidden');
+      document.getElementById('interfaceNamesContainer').classList.add('hidden');
+      document.getElementById('scheduleIntervalContainer').classList.add('hidden');
+      document.getElementById('scriptNameContainer').classList.remove('hidden');
+
+      // Show based on selection
+      if (type === 'custom') {
+        document.getElementById('customMessageContainer').classList.remove('hidden');
+      } else if (type === 'routerReport') {
+        document.getElementById('interfaceNamesContainer').classList.remove('hidden');
+        document.getElementById('scheduleIntervalContainer').classList.remove('hidden');
+      } else {
+        // For login/logout scripts, we usually don't need a script name as it goes directly into profile
+        document.getElementById('scriptNameContainer').classList.add('hidden');
+      }
+      
+      // Auto-generate if we change type
+      generateScript();
+    }
+
+    // Core logic to generate MikroTik Scripts
+    function generateScript() {
+      const token = document.getElementById('botToken').value || "YOUR_BOT_TOKEN";
+      const chatId = document.getElementById('chatId').value || "YOUR_CHAT_ID";
+      const rosVer = document.getElementById('routerOSVersion').value;
+      const type = document.getElementById('reportType').value;
+      const name = document.getElementById('scriptName').value || "telegram-script";
+
+      let scriptOutput = "";
+      
+      // Helper function to format the fetch command based on ROS version
+      const getFetchCmd = (msgVar) => {
+        if (rosVer === 'v7') {
+           return `/tool fetch url="https://api.telegram.org/bot$botToken/sendMessage\\?chat_id=$chatId&text=$${msgVar}" keep-result=no;\r\n`;
+        } else {
+           // v6 sometimes handles URLs slightly differently, but standard format usually works. 
+           // We will use standard format for both, ensuring parameters are passed correctly.
+           return `/tool fetch url="https://api.telegram.org/bot$botToken/sendMessage\\?chat_id=$chatId&text=$${msgVar}" keep-result=no;\r\n`;
+        }
+      };
+
+      const header = `# Script Generated by JLA Tools\r\n:local botToken "${token}";\r\n:local chatId "${chatId}";\r\n`;
+
+      if (type === 'hotspotLogin') {
+        scriptOutput = header + 
+          `:local userMessage "Hotspot Login:\\nUser: $user\\nIP: $%24ip";\r\n` + 
+          getFetchCmd("userMessage");
+      } 
+      else if (type === 'hotspotLogout') {
+        scriptOutput = header + 
+          `:local userMessage "Hotspot Logout:\\nUser: $user\\nIP: $%24ip\\nUptime: $uptime\\nBytes In: $bytes-in\\nBytes Out: $bytes-out";\r\n` + 
+          getFetchCmd("userMessage");
+      } 
+      else if (type === 'pppoeLogin') {
+        if (rosVer === 'v7') {
+          scriptOutput = `# CLIENT UP Script
+:local bot "${token}";
+:local chat "${chatId}";
+
+:local line "==========================";
+:local title "📡 CLIENT UP";
+:local online "ONLINE ✅";
+
+:local datetime "$[/system clock get date]  $[/system clock get time]";
+:local nama "$user";
+:local paket [/ppp secret get [find name=$nama] profile];
+:local service [/ppp active get [find name=$nama] service];
+:local ips [/ppp active get [find name=$nama] address];
+:local mac [/ppp active get [find name=$nama] caller];
+:local secret [/ppp secret print count];
+:local active [/ppp active print count];
+:local logout [/ppp secret get [find name=$nama] last-logged-out];
+:local reason [/ppp secret get [find name=$nama] last-disconnect-reason];
+
+:if ($logout = "") do={:set logout "N/A"};
+:if ($reason = "") do={:set reason "N/A"};
+
+:local message "$title%0A$line%0A$datetime%0A$line%0A\\
+%0A📋 INFO LAYANAN :%0A🔹 PAKET : $paket\\
+%0A%0A💻 INFO PERANGKAT :%0A👤 User Name : $nama%0A⚙️ Service : $service%0A🌐 IP : $ips%0A🔗 MAC : $mac%0A📅 Last Logout : $logout%0A❌ Last Reason : $reason%0A📶 Status : $online\\
+%0A%0A$line%0A👥 Total Client : $secret%0A🟢 Active : $active%0A$line%0A\\
+Powered by : JAKA LINTAS AKSES%0Ahttps://jakalintasakses.net";
+
+/tool fetch http-method=post url="https://api.telegram.org/bot$bot/sendMessage" http-data="chat_id=$chat&text=$message" keep-result=no;`;
+        } else {
+          scriptOutput = `:local nama "$user";
+:local bot "${token}";
+:local chat "${chatId}";
+:local ips [/ppp active get [find name=$nama] address];
+:local up [/ppp active get [find name=$nama] uptime];
+:local caller [/ppp active get [find name=$nama] caller-id];
+:local service [/ppp active get [find name=$nama] service];
+:local active [/ppp active print count];
+
+# Mengganti spasi pada datetime dengan %20
+:local datetime "Tanggal:%20$[/system clock get date]%0AJam:%20$[/system clock get time]";
+:local lastdisc [/ppp secret get [find name=$user] last-disconnect-reason];
+:local lastlogout [/ppp secret get [find name=$user] last-logged-out];
+:local lastcall [/ppp secret get [find name=$user] last-caller-id];
+
+# Mengubah semua spasi mentah menjadi %20 agar URL valid
+:local textMsg "\\E2\\9C\\85%20Client-ONLINE%0A$datetime%0AUser:%20$user%0AIP:%20$ips%0AMac:%20$caller%0AUptime:%20$up%0AClient%20ON:%20$active%20Client%0AService:%20$service%0ALast%20Disconnect%20Reason:%20$lastdisc%0ALast%20Logout:%20$lastlogout%0ALast%20Caller%20ID:%20$lastcall";
+
+# Menggunakan http-method=post dan menghapus mode=http
+/tool fetch url="https://api.telegram.org/bot$bot/sendMessage" http-method=post http-data="chat_id=$chat&text=$textMsg" keep-result=no;`;
+        }
+      } 
+      else if (type === 'pppoeLogout') {
+        if (rosVer === 'v7') {
+          scriptOutput = `# CLIENT DOWN Script
+:local bot "${token}";
+:local chat "${chatId}";
+
+:local line "==========================";
+:local title "📴 CLIENT DOWN";
+:local offline "OFFLINE ❌";
+
+:local datetime "$[/system clock get date]  $[/system clock get time]";
+:local nama "$user";
+:local paket [/ppp secret get [find name=$nama] profile];
+:local service [/ppp secret get [find name=$nama] service];
+:local ips [/ppp secret get [find name=$nama] remote-address];
+:local secret [/ppp secret print count];
+:local active [/ppp active print count];
+:local logout [/ppp secret get [find name=$nama] last-logged-out];
+:local reason [/ppp secret get [find name=$nama] last-disconnect-reason];
+
+:if ($logout = "") do={:set logout "N/A"};
+:if ($reason = "") do={:set reason "N/A"};
+:if ($ips = "") do={:set ips "N/A"};
+
+:local message "$title%0A$line%0A$datetime%0A$line%0A\\
+%0A📋 INFO LAYANAN :%0A🔹 PAKET : $paket\\
+%0A%0A💻 INFO PERANGKAT :%0A👤 User Name : $nama%0A⚙️ Service : $service%0A🌐 Last IP : $ips%0A📅 Last Logout : $logout%0A❌ Disconnect Reason : $reason%0A📶 Status : $offline\\
+%0A%0A$line%0A👥 Total Client : $secret%0A🟢 Active : $active%0A$line%0A\\
+Powered by : JAKA LINTAS AKSES%0Ahttps://jakalintasakses.net";
+
+/tool fetch http-method=post url="https://api.telegram.org/bot$bot/sendMessage" http-data="chat_id=$chat&text=$message" keep-result=no;`;
+        } else {
+          scriptOutput = `:local bot "${token}";
+:local chat "${chatId}";
+
+:local active [/ppp active print count];
+:local datetime "Tanggal:%20$[/system clock get date]%0AJam:%20$[/system clock get time]";
+
+:local lastdisc [/ppp secret get [find name=$user] last-disconnect-reason];
+:local lastlogout [/ppp secret get [find name=$user] last-logged-out];
+:local service [/ppp secret get [find name=$user] service];
+
+:local textMsg "\\E2\\9D\\8C%20Client-OFFLINE%0A$datetime%0AUser:%20$user%0AMac:%20$\\"caller-id\\"%0ASisa%20Client%20ON:%20$active%20Client%0AService:%20$service%0AReason:%20$lastdisc%0ALast%20Logout:%20$lastlogout";
+
+/tool fetch url="https://api.telegram.org/bot$bot/sendMessage" http-method=post http-data="chat_id=$chat&text=$textMsg" keep-result=no;`;
+        }
+      } 
+      else if (type === 'custom') {
+        let rawMsg = document.getElementById('customMessage').value || "Hello from MikroTik!";
+        // Basic URL encoding for space and newline for Mikrotik string
+        let encMsg = rawMsg.replace(/\n/g, "\\n").replace(/ /g, "%20");
+        
+        scriptOutput = `/system script add name="${name}" policy=read,write,policy,test source="\r\n` +
+          `  :local botToken \\"${token}\\";\r\n` +
+          `  :local chatId \\"${chatId}\\";\r\n` +
+          `  :local customMsg \\"${encMsg}\\";\r\n` +
+          `  /tool fetch url=\\"https://api.telegram.org/bot\$botToken/sendMessage\\?chat_id=\$chatId&text=\$customMsg\\" keep-result=no;\r\n` +
+          `"`;
+      } 
+      else if (type === 'routerReport') {
+        const intf = document.getElementById('interfaceNames').value || "ether1";
+        const interval = document.getElementById('scheduleInterval').value || "1d";
+        
+        scriptOutput = `/system script add name="${name}" policy=read,write,policy,test source="\r\n` +
+          `  :local botToken \\"${token}\\";\r\n` +
+          `  :local chatId \\"${chatId}\\";\r\n` +
+          `  :local routerName [/system identity get name];\r\n` +
+          `  :local cpuLoad [/system resource get cpu-load];\r\n` +
+          `  :local freeMem [/system resource get free-memory];\r\n` +
+          `  :local totalMem [/system resource get total-memory];\r\n` +
+          `  :local memPercent (\$freeMem * 100 / \$totalMem);\r\n` +
+          `  :local reportMsg \\"Router Report: \$routerName%0ACPU: \$cpuLoad%25%0AFree Mem: \$memPercent%25\\";\r\n` +
+          `  /tool fetch url=\\"https://api.telegram.org/bot\$botToken/sendMessage\\?chat_id=\$chatId&text=\$reportMsg\\" keep-result=no;\r\n` +
+          `"\r\n`;
+          
+        scriptOutput += `/system scheduler add name="${name}-schedule" interval=${interval} on-event="${name}" start-time=startup\r\n`;
+      }
+
+      document.getElementById('outputScript').value = scriptOutput;
+    }
+
+    // Function to copy textarea content to clipboard and show toast
+    function copyScript() {
+      const copyText = document.getElementById("outputScript");
+      if(!copyText.value) return;
+      
+      // Create a temporary textarea to hold the text to copy
+      const tempTextArea = document.createElement("textarea");
+      tempTextArea.value = copyText.value;
+      document.body.appendChild(tempTextArea);
+      
+      tempTextArea.select();
+      tempTextArea.setSelectionRange(0, 99999); // For mobile devices
+
+      try {
+        // Execute the copy command
+        document.execCommand('copy');
+        showToast();
+      } catch (err) {
+        console.error('Fallback: Oops, unable to copy', err);
+      }
+      
+      document.body.removeChild(tempTextArea);
+    }
+
+    function showToast() {
+      const toast = document.getElementById("toast");
+      toast.classList.add("show");
+      setTimeout(() => {
+        toast.classList.remove("show");
+      }, 3000);
+    }
+
+    // Initialize layout on load
+    document.addEventListener('DOMContentLoaded', () => {
+      toggleInputFields();
+    });
+  </script>
+</body>
+</html>

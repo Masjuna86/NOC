@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MikroTik Timezone Generator - JLA Tools</title>
+  
+  <!-- Memuat font Inter untuk teks umum dan JetBrains Mono untuk teks coding/terminal -->
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap');
+    
+    /* Reset transisi dan box-sizing dasar */
+    * { 
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+      box-sizing: border-box; 
+    }
+    
+    /* Variabel warna bawaan template JLA Tools */
+    :root {
+      --bg: #f4f7f6;
+      --text: #334155;
+      --text-dark: #0f172a;
+      --text-muted: #64748b;
+      --accent: #ff6600;
+      --border: #e2e8f0;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    }
+
+    /* Styling dasar Body halaman */
+    body { 
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
+      background: var(--bg);
+      color: var(--text); 
+      margin: 0; 
+      padding: 0; 
+      display: flex; 
+      flex-direction: column; 
+      min-height: 100vh;
+    }
+
+    /* Header Template JLA */
+    .app-header {
+      height: 64px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-logo {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, var(--accent), #ea580c);
+      border-radius: 10px; color: #fff;
+      font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 16px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 12px rgba(255, 102, 0, 0.3);
+    }
+    .brand-title h1 { font-size: 15px; font-weight: 800; color: var(--text-dark); letter-spacing: 0.3px; line-height: 1.2; margin: 0;}
+    .brand-title p { font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; font-weight: 500; margin: 0;}
+
+    .header-actions { display: flex; align-items: center; gap: 12px; }
+
+    /* Desain Tombol Global */
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 9px 16px; border-radius: 8px; border: none; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; transition: all .15s; white-space: nowrap; text-decoration: none; }
+    .btn-secondary { background: #ffffff; color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: #f8fafc; }
+    .btn-wa { background: #25D366; color: white; border-radius: 20px; font-weight: 700; }
+    .btn-wa:hover { background: #128C7E; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3); }
+
+    /* Container untuk bagian tengah konten */
+    .main-container { 
+      display: flex; 
+      flex: 1; 
+      max-width: 1000px; /* Diperkecil agar lebih fokus ke generator */
+      margin: 0 auto; 
+      width: 100%; 
+      padding: 40px 20px; 
+      gap: 30px; 
+    }
+    
+    .content-area { 
+      flex: 1; 
+      background: #ffffff; 
+      border-radius: 16px; 
+      box-shadow: 0 10px 30px rgba(148, 163, 184, 0.1); 
+      border: 1px solid #f1f5f9;
+      padding: 40px; 
+      line-height: 1.6; 
+      min-width: 0;
+    }
+
+    .footer { 
+      text-align: center; 
+      font-size: 13px; 
+      color: #94a3b8; 
+      padding: 30px; 
+      width: 100%; 
+      margin-top: auto;
+    }
+
+    /* Tampilan Form Dropdown Provinsi */
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--text-dark);
+    }
+    .form-select {
+      width: 100%;
+      max-width: 400px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      color: var(--text-dark);
+      background-color: #fff;
+      cursor: pointer;
+      outline: none;
+    }
+    .form-select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(255, 102, 0, 0.1);
+    }
+
+    /* Informasi Regional Area */
+    .info-box {
+      background-color: #f8fafc;
+      border: 1px dashed var(--border);
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 24px;
+      display: inline-block;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .info-box span { color: #16a34a; font-weight: 700; } /* Warna Hijau untuk area */
+
+    /* Desain Terminal Script Box meniru Terminal.JPG */
+    .terminal-container {
+      background-color: #1e293b; /* Warna gelap background terminal */
+      border-radius: 8px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      overflow: hidden;
+      margin-top: 20px;
+    }
+
+    /* Header Terminal (Barisan Titik & Judul) */
+    .terminal-header {
+      background-color: #283548; /* Warna keabu-abuan header mac */
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .terminal-header-left {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    .terminal-dots {
+      display: flex;
+      gap: 8px;
+    }
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+    /* Warna 3 Titik seperti MacOS */
+    .dot.red { background-color: #ff5f56; }
+    .dot.yellow { background-color: #ffbd2e; }
+    .dot.green { background-color: #27c93f; }
+
+    .terminal-title {
+      color: #94a3b8;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+    }
+
+    /* Tombol Copy Script bergaya Oranye (Sesuai contoh gambar) */
+    .btn-copy-script {
+      background-color: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-copy-script:hover {
+      background-color: #e65c00;
+    }
+
+    /* Body Terminal / Teks Script */
+    .terminal-body {
+      padding: 20px;
+      color: #e2e8f0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      overflow-x: auto; /* Agar teks bisa di-scroll ke samping jika panjang */
+      white-space: pre-wrap; /* Mempertahankan spasi dan enter */
+    }
+
+    /* Warna khusus teks dalam terminal */
+    .text-orange { color: #f97316; }
+    .text-green { color: #22c55e; }
+    .text-comment { color: #64748b; }
+
+    /* Desain Pesan Sukses Copy (Toast) */
+    #toast {
+      visibility: hidden;
+      min-width: 250px;
+      background-color: #333;
+      color: #fff;
+      text-align: center;
+      border-radius: 8px;
+      padding: 16px;
+      position: fixed;
+      z-index: 1000;
+      left: 50%;
+      bottom: 30px;
+      font-size: 14px;
+      font-weight: 500;
+      transform: translateX(-50%);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    #toast.show {
+      visibility: visible;
+      animation: fadein 0.5s, fadeout 0.5s 2.5s;
+    }
+
+    @keyframes fadein {
+      from {bottom: 0; opacity: 0;}
+      to {bottom: 30px; opacity: 1;}
+    }
+    @keyframes fadeout {
+      from {bottom: 30px; opacity: 1;}
+      to {bottom: 0; opacity: 0;}
+    }
+
+    /* Mode Responsif untuk HP */
+    @media screen and (max-width: 768px) { 
+      .app-header { flex-direction: column; height: auto; padding: 15px 20px; gap: 15px; align-items: center; justify-content: center; text-align: center;}
+      .brand { flex-direction: column; gap: 8px; }
+      .header-actions { width: 100%; display: flex; justify-content: center; gap: 10px;}
+      .main-container { flex-direction: column; padding: 20px 15px; }
+      .content-area { padding: 20px; }
+      .terminal-header { flex-direction: column; gap: 15px; align-items: flex-start; }
+      .btn-copy-script { width: 100%; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header JLA Tools -->
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-logo">JLA</div>
+      <div class="brand-title">
+        <h1>JAKA LINTAS AKSES GENERATOR</h1>
+        <p>Portal Script Generator Premium JLA</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <a href="#" class="btn btn-secondary">🏠 Beranda</a>
+      <a href="https://wa.me/62818386078?text=Halo%20JLA%20Tools" target="_blank" class="btn btn-wa">
+        <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Hubungi Kami
+      </a>
+    </div>
+  </header>
+
+  <!-- Konten Utama -->
+  <main class="main-container">
+    <div class="content-area">
+      
+      <h2 style="margin-top: 0; color: #0f172a; margin-bottom: 5px;">Time Zone & NTP Client Generator</h2>
+      <p style="color: #64748b; margin-bottom: 25px;">Pilih provinsi Anda untuk mendapatkan script konfigurasi waktu (Clock & NTP) otomatis untuk router MikroTik.</p>
+
+      <!-- Dropdown Pilihan Provinsi -->
+      <!-- Menggunakan atribut "data-*" untuk mempermudah pengambilan data Timezone dan GMT menggunakan Javascript -->
+      <div class="form-group">
+        <label class="form-label">Pilih Provinsi / Wilayah</label>
+        <select class="form-select" id="input-kota" onchange="generateScript()">
+          <optgroup label="Waktu Indonesia Barat (WIB)">
+            <option value="Aceh" data-tz="Asia/Jakarta" data-gmt="+07:00" data-label="Asia/Jakarta (+07:00 WIB)">Aceh</option>
+            <option value="Sumatera Utara" data-tz="Asia/Jakarta" data-gmt="+07:00" data-label="Asia/Jakarta (+07:00 WIB)">Sumatera Utara</option>
+            <option value="Sumatera Barat" data-tz="Asia/Jakarta" data-gmt="+07:00" data-label="Asia/Jakarta (+07:00 WIB)">Sumatera Barat</option>
+            <option value="Riau" data-tz="Asia/Jakarta" data-gmt="+07:00" data-label="Asia/Jakarta (+07:00 WIB)">Riau</option>
+            <option value="Jambi" data-tz="Asia/Jakarta" data-gmt="+07:00" data-label="Asia/Jakarta (+07:00 WIB)">Jambi</option>
+            <option value="Sumatera Selatan" data-tz="Asia/Jakarta" data-gmt="+07:00" data-label="Asia/Jakarta (+07:00 WIB)">Sumatera Selatan</option>
+            <option value="Bengkulu" data-tz="Asia/Jakarta" data-gmt="+07:00" data-label="Asia/Jakarta (+07:00 WIB)">Bengkulu</option>
+            <option value="Lampung" data-tz="Asia/Jakarta" data-gmt="+07:00" data-label="Asia/Jakarta (+07:00 WIB)">Lampung</option>
+            <option value="Kepulauan Bangka Belitung" data-tz="Asia/Jakarta" data-gmt="+07:00" data-label="Asia/Jakarta (+07:00 WIB)">Kepulauan Bangka Belitung</option>
+            <option value="Kepulauan Riau" data-tz="Asia/Jakarta" data-gmt="+07:00" data-label="Asia/Jakarta (+07:00 WIB)">Kepulauan Riau</option>
+            <option value="DKI Jakarta" data-tz="Asia/Jakarta" data-gmt="+07:00" data-label="Asia/Jakarta (+07:00 WIB)">DKI Jakarta</option>
+            <option value="Jawa Barat" data-tz="Asia/Jakarta" data-gmt="+07:00" data-label="Asia/Jakarta (+07:00 WIB)">Jawa Barat</option>
+            <option value="Jawa Tengah" data-tz="Asia/Jakarta" data-gmt="+07:00" data-label="Asia/Jakarta (+07:00 WIB)">Jawa Tengah</option>
+            <option value="DI Yogyakarta" data-tz="Asia/Jakarta" data-gmt="+07:00" data-label="Asia/Jakarta (+07:00 WIB)">DI Yogyakarta</option>
+            <option value="Jawa Timur" data-tz="Asia/Jakarta" data-gmt="+07:00" data-label="Asia/Jakarta (+07:00 WIB)">Jawa Timur</option>
+            <option value="Banten" data-tz="Asia/Jakarta" data-gmt="+07:00" data-label="Asia/Jakarta (+07:00 WIB)">Banten</option>
+            <option value="Kalimantan Barat" data-tz="Asia/Jakarta" data-gmt="+07:00" data-label="Asia/Jakarta (+07:00 WIB)">Kalimantan Barat</option>
+            <option value="Kalimantan Tengah" data-tz="Asia/Jakarta" data-gmt="+07:00" data-label="Asia/Jakarta (+07:00 WIB)">Kalimantan Tengah</option>
+          </optgroup>
+          <optgroup label="Waktu Indonesia Tengah (WITA)">
+            <option value="Bali" data-tz="Asia/Makassar" data-gmt="+08:00" data-label="Asia/Makassar (+08:00 WITA)">Bali</option>
+            <option value="Nusa Tenggara Barat" data-tz="Asia/Makassar" data-gmt="+08:00" data-label="Asia/Makassar (+08:00 WITA)">Nusa Tenggara Barat</option>
+            <option value="Nusa Tenggara Timur" data-tz="Asia/Makassar" data-gmt="+08:00" data-label="Asia/Makassar (+08:00 WITA)">Nusa Tenggara Timur</option>
+            <option value="Kalimantan Selatan" data-tz="Asia/Makassar" data-gmt="+08:00" data-label="Asia/Makassar (+08:00 WITA)">Kalimantan Selatan</option>
+            <option value="Kalimantan Timur" data-tz="Asia/Makassar" data-gmt="+08:00" data-label="Asia/Makassar (+08:00 WITA)">Kalimantan Timur</option>
+            <option value="Kalimantan Utara" data-tz="Asia/Makassar" data-gmt="+08:00" data-label="Asia/Makassar (+08:00 WITA)">Kalimantan Utara</option>
+            <option value="Sulawesi Utara" data-tz="Asia/Makassar" data-gmt="+08:00" data-label="Asia/Makassar (+08:00 WITA)">Sulawesi Utara</option>
+            <option value="Sulawesi Tengah" data-tz="Asia/Makassar" data-gmt="+08:00" data-label="Asia/Makassar (+08:00 WITA)">Sulawesi Tengah</option>
+            <option value="Sulawesi Selatan" data-tz="Asia/Makassar" data-gmt="+08:00" data-label="Asia/Makassar (+08:00 WITA)">Sulawesi Selatan</option>
+            <option value="Sulawesi Tenggara" data-tz="Asia/Makassar" data-gmt="+08:00" data-label="Asia/Makassar (+08:00 WITA)">Sulawesi Tenggara</option>
+            <option value="Gorontalo" data-tz="Asia/Makassar" data-gmt="+08:00" data-label="Asia/Makassar (+08:00 WITA)">Gorontalo</option>
+            <option value="Sulawesi Barat" data-tz="Asia/Makassar" data-gmt="+08:00" data-label="Asia/Makassar (+08:00 WITA)">Sulawesi Barat</option>
+          </optgroup>
+          <optgroup label="Waktu Indonesia Timur (WIT)">
+            <option value="Maluku" data-tz="Asia/Jayapura" data-gmt="+09:00" data-label="Asia/Jayapura (+09:00 WIT)">Maluku</option>
+            <option value="Maluku Utara" data-tz="Asia/Jayapura" data-gmt="+09:00" data-label="Asia/Jayapura (+09:00 WIT)">Maluku Utara</option>
+            <option value="Papua" data-tz="Asia/Jayapura" data-gmt="+09:00" data-label="Asia/Jayapura (+09:00 WIT)">Papua</option>
+            <option value="Papua Barat" data-tz="Asia/Jayapura" data-gmt="+09:00" data-label="Asia/Jayapura (+09:00 WIT)">Papua Barat</option>
+          </optgroup>
+        </select>
+      </div>
+
+      <!-- Menampilkan Status Regional -->
+      <div class="info-box">
+        Regional Area: <span id="input-regional">Asia/Jakarta (+07:00 WIB)</span>
+      </div>
+
+      <!-- Container Terminal Mirip Gambar -->
+      <div class="terminal-container">
+        
+        <!-- Header Terminal -->
+        <div class="terminal-header">
+          <div class="terminal-header-left">
+            <!-- 3 Titik ala MacOS -->
+            <div class="terminal-dots">
+              <div class="dot red"></div>
+              <div class="dot yellow"></div>
+              <div class="dot green"></div>
+            </div>
+            <!-- Judul Terminal -->
+            <div class="terminal-title">Terminal Winbox</div>
+          </div>
+          
+          <!-- Tombol Copy Script -->
+          <button class="btn-copy-script" onclick="copyTerminalText()">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+            Copy Script
+          </button>
+        </div>
+
+        <!-- Body / Isi Teks Terminal Script MikroTik -->
+        <!-- Jangan ada spasi ekstra di awal baris karena div ini mengaktifkan pre-wrap -->
+        <div class="terminal-body" id="script-output">
+<span class="text-comment">###############################################################
+# MIKROTIK: INDONESIA TIME ZONE NTP/SNTP CLIENT GENERATOR
+# Created By: JLA Tools
+###############################################################</span>
+
+/system clock manual set time-zone="<span class="text-orange" id="out-gmt">+07:00</span>"
+/system clock set time-zone-autodetect=<span class="text-orange">no</span>
+/system clock set time-zone-name="<span class="text-orange" id="out-tz">Asia/Jakarta</span>"
+/ip cloud set update-time=<span class="text-orange">no</span>
+/system ntp client set enabled=<span class="text-orange">yes</span> 
+
+<span class="text-green"># Untuk RouterOS v6.xx</span>
+/system ntp client set primary-ntp=<span class="text-orange">202.65.114.202</span> 
+/system ntp client set secondary-ntp=<span class="text-orange">212.26.18.41</span> 
+/system ntp client set server-dns-names=<span class="text-orange">asia.pool.ntp.org</span>
+
+<span class="text-green"># Untuk RouterOS v7.xx</span>
+/system ntp client servers add address=<span class="text-orange">202.118.1.81</span>
+/system ntp client servers add address=<span class="text-orange">202.112.29.82</span>
+/system ntp client servers add address=<span class="text-orange">asia.pool.ntp.org</span></div>
+      </div>
+      <!-- End of Terminal Container -->
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    Jaka Lintas Akses © 2019-<span id="currentYear"></span>. Premium RouterOS Script Tools Portal.
+  </footer>
+
+  <!-- Element Notifikasi/Toast untuk Copy Script (Menggantikan Alert) -->
+  <div id="toast">Script berhasil disalin ke clipboard!</div>
+
+  <!-- Script JavaScript untuk memproses perubahan dropdown dan fungsi copy -->
+  <script>
+    // Set Tahun Otomatis di Footer
+    document.getElementById("currentYear").textContent = new Date().getFullYear();
+
+    // Fungsi ini dipanggil ketika user memilih provinsi lain di Dropdown
+    function generateScript() {
+      // Dapatkan elemen select dropdown
+      const selectBox = document.getElementById("input-kota");
+      // Dapatkan option yang sedang dipilih
+      const selectedOption = selectBox.options[selectBox.selectedIndex];
+      
+      // Ambil nilai dari atribut "data" yang sudah kita siapkan di HTML
+      const timezoneName = selectedOption.getAttribute("data-tz");
+      const gmtOffset = selectedOption.getAttribute("data-gmt");
+      const labelArea = selectedOption.getAttribute("data-label");
+
+      // Perbarui label Regional Area di atas terminal
+      document.getElementById("input-regional").innerText = labelArea;
+
+      // Perbarui teks di dalam script terminal
+      document.getElementById("out-gmt").innerText = gmtOffset;
+      document.getElementById("out-tz").innerText = timezoneName;
+    }
+
+    // Fungsi untuk menyalin isi terminal script
+    function copyTerminalText() {
+      // Dapatkan seluruh text yang ada di dalam box terminal (id: script-output)
+      const scriptText = document.getElementById("script-output").innerText;
+      
+      // Karena penggunaan navigator.clipboard kadang dibatasi (iframe/http),
+      // Kita pakai metode textarea fallback untuk menyalin teks.
+      const tempTextArea = document.createElement("textarea");
+      tempTextArea.value = scriptText;
+      
+      // Agar tidak mengganggu UI, buat opacity 0
+      tempTextArea.style.position = "absolute";
+      tempTextArea.style.opacity = "0";
+      
+      document.body.appendChild(tempTextArea);
+      
+      // Select dan Copy teksnya
+      tempTextArea.select();
+      document.execCommand("copy");
+      
+      // Hapus textarea setelah selesai copy
+      document.body.removeChild(tempTextArea);
+      
+      // Tampilkan pesan "Toast" bahwa copy berhasil (Pengganti alert)
+      showToastMessage();
+    }
+
+    // Fungsi untuk menampilkan pesan pop-up singkat (Toast)
+    function showToastMessage() {
+      const toast = document.getElementById("toast");
+      // Tambahkan class 'show' yang akan menjalankan animasi CSS
+      toast.className = "show";
+      
+      // Hilangkan pesan setelah 3 detik (3000 milliseconds)
+      setTimeout(function(){
+        toast.className = toast.className.replace("show", "");
+      }, 3000);
+    }
+  </script>
+
+</body>
+</html>

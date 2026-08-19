@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mikrotik DoH Generator - JLA Tools</title>
+  <meta content='Mikrotik DNS over HTTPS (DoH) Server Script Generator' name='description'>
+  
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap');
+    
+    * { 
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+      box-sizing: border-box; 
+    }
+    
+    :root {
+      --bg: #f4f7f6;
+      --text: #334155;
+      --text-dark: #0f172a;
+      --text-muted: #64748b;
+      --accent: #ff6600;
+      --accent-hover: #e05a00;
+      --border: #e2e8f0;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    body { 
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
+      background: var(--bg);
+      color: var(--text); 
+      margin: 0; 
+      padding: 0; 
+      display: flex; 
+      flex-direction: column; 
+      min-height: 100vh;
+    }
+
+    .app-header {
+      height: 64px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-logo {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, var(--accent), #ea580c);
+      border-radius: 10px; color: #fff;
+      font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 16px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 12px rgba(255, 102, 0, 0.3);
+    }
+    .brand-title h1 { font-size: 15px; font-weight: 800; color: var(--text-dark); letter-spacing: 0.3px; line-height: 1.2; margin: 0;}
+    .brand-title p { font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; font-weight: 500; margin: 0;}
+
+    .header-actions { display: flex; align-items: center; gap: 12px; }
+
+    .btn { 
+      display: inline-flex; align-items: center; justify-content: center; gap: 7px; 
+      padding: 9px 16px; border-radius: 8px; border: none; 
+      font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; 
+      cursor: pointer; transition: all .15s; white-space: nowrap; text-decoration: none; 
+    }
+    .btn-secondary { background: #ffffff; color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: #f8fafc; }
+    .btn-wa { background: #25D366; color: white; border-radius: 20px; font-weight: 700; }
+    .btn-wa:hover { background: #128C7E; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3); }
+
+    .main-container { 
+      display: flex; 
+      flex: 1; 
+      max-width: 1000px; 
+      margin: 0 auto; 
+      width: 100%; 
+      padding: 40px 20px; 
+      gap: 30px; 
+    }
+    
+    .content-area { 
+      flex: 1; 
+      background: #ffffff; 
+      border-radius: 16px; 
+      box-shadow: 0 10px 30px rgba(148, 163, 184, 0.1); 
+      border: 1px solid #f1f5f9;
+      padding: 40px; 
+      line-height: 1.6; 
+      min-width: 0;
+    }
+
+    .footer { 
+      text-align: center; 
+      font-size: 13px; 
+      color: #94a3b8; 
+      padding: 30px; 
+      width: 100%; 
+      margin-top: auto;
+    }
+
+    .header-title {
+      margin-top: 0;
+      margin-bottom: 24px;
+      color: var(--text-dark);
+      font-size: 24px;
+      font-weight: 800;
+      border-bottom: 2px solid #f1f5f9;
+      padding-bottom: 16px;
+    }
+    .header-title span { color: var(--accent); }
+
+    .form-group { margin-bottom: 24px; }
+    .form-label {
+      display: block; font-size: 14px; font-weight: 600;
+      color: var(--text-dark); margin-bottom: 8px;
+    }
+
+    .custom-select {
+      width: 100%; padding: 12px 16px; font-size: 15px; font-family: 'Inter', sans-serif;
+      color: var(--text-dark); background-color: #fff;
+      border: 2px solid var(--border); border-radius: 10px;
+      appearance: none; cursor: pointer; outline: none;
+      background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2364748b%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+      background-repeat: no-repeat; background-position: right 16px top 50%;
+      background-size: 12px auto;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .custom-select:focus {
+      border-color: var(--accent); box-shadow: 0 0 0 3px rgba(255, 102, 0, 0.15);
+    }
+
+    .info-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px; margin-bottom: 24px;
+    }
+    .info-card {
+      background: #f8fafc; border: 1px solid var(--border);
+      border-radius: 10px; padding: 16px;
+    }
+    .info-label { font-size: 12px; text-transform: uppercase; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; }
+    .info-value { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--text-dark); word-break: break-all; }
+    .info-value.highlight { color: var(--accent); font-weight: 600; }
+
+    .script-section { margin-top: 32px; }
+    
+    .terminal-container {
+      background: #121212;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      border: 1px solid #333;
+    }
+    
+    .terminal-header {
+      background: #252526;
+      padding: 10px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #000;
+    }
+    
+    .terminal-title {
+      color: #cccccc;
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .terminal-title::before {
+      content: ">_";
+      color: var(--accent);
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 800;
+    }
+
+    .terminal-copy-btn {
+      background: #333333;
+      border: 1px solid #444;
+      color: #ffffff;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    
+    .terminal-copy-btn:hover { background: #444444; border-color: #555; transform: translateY(-1px); }
+    .terminal-copy-btn:active { transform: translateY(0); }
+    .terminal-copy-btn.success { background: #10b981; border-color: #059669; }
+
+    .terminal-body {
+      padding: 16px;
+      overflow-x: auto;
+      background: #1e1e1e;
+    }
+
+    .terminal-body pre {
+      margin: 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: #00ff00; /* Warna khas terminal */
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+
+    /* Syntax Highlighting Virtual */
+    .term-cmd { color: #56b6c2; } /* Cyan */
+    .term-arg { color: #e5c07b; } /* Yellow */
+    .term-val { color: #98c379; } /* Green */
+    .term-comment { color: #7f848e; font-style: italic; } /* Gray */
+
+    /* Notifikasi (Toast) */
+    .toast {
+      position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px);
+      background: #10b981; color: white; padding: 12px 24px; border-radius: 30px;
+      font-weight: 600; font-size: 14px; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
+      opacity: 0; transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      z-index: 1000; display: flex; align-items: center; gap: 8px;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+    @media screen and (max-width: 900px) { 
+      .app-header { flex-direction: column; height: auto; padding: 15px 20px; gap: 15px; align-items: center; justify-content: center; text-align: center;}
+      .brand { flex-direction: column; gap: 8px; }
+      .header-actions { width: 100%; display: flex; justify-content: center; gap: 10px;}
+      .main-container { flex-direction: column; padding: 20px 15px; }
+      .content-area { padding: 24px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-logo">JLA</div>
+      <div class="brand-title">
+        <h1>JAKA LINTAS AKSES GENERATOR</h1>
+        <p>Portal Script Generator Premium JLA</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <a href="#" class="btn btn-secondary">🏠 Beranda</a>
+      <a href="https://wa.me/62818386078?text=Halo%20JLA%20Tools,%20saya%20ingin%20bertanya..." target="_blank" class="btn btn-wa">
+        <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Hubungi Kami
+      </a>
+    </div>
+  </header>
+
+  <main class="main-container">
+    <div class="content-area">
+      <h2 class="header-title">Mikrotik <span>DNS over HTTPS (DoH)</span> Generator</h2>
+      
+      <!-- Pilihan DNS yang lebih lengkap (Dari kode lama) -->
+      <div class="form-group">
+        <label class="form-label" for="dns-list">Pilih Penyedia DNS Server</label>
+        <select id="dns-list" class="custom-select" onchange="generateScripts()">
+          <optgroup label="DNS Populer (Rekomendasi)">
+            <option value="adguard">AdGuard DNS - 94.140.14.14</option>
+            <option value="cloudflare">Cloudflare DNS - 1.1.1.1</option>
+            <option value="google">Google DNS - 8.8.8.8</option>
+            <option value="quad9">Quad9 DNS - 9.9.9.9</option>
+            <option value="opendns">Cisco OpenDNS - 208.67.222.222</option>
+            <option value="nextdns">NextDNS - 45.90.28.0</option>
+          </optgroup>
+          <optgroup label="DNS Alternatif (Privacy & Regional)">
+            <option value="alidns">Ali DNS - 223.5.5.5</option>
+            <option value="controld">ControlD DNS - 76.76.2.0</option>
+            <option value="mullvad">Mullvad DNS - 194.242.2.4</option>
+            <option value="dns_sb">DNS.SB - 185.222.222.222</option>
+            <option value="cleanbrowsing">CleanBrowsing - 185.228.168.168</option>
+            <option value="dnspod">DNSPod - 119.29.29.29</option>
+          </optgroup>
+        </select>
+      </div>
+
+      <!-- Informasi Parameter -->
+      <div class="info-grid">
+        <div class="info-card">
+          <div class="info-label">IPv4 Server</div>
+          <div class="info-value highlight" id="info-ipv4">-</div>
+        </div>
+        <div class="info-card">
+          <div class="info-label">IPv6 Server</div>
+          <div class="info-value highlight" id="info-ipv6">-</div>
+        </div>
+        <div class="info-card">
+          <div class="info-label">DoH URL</div>
+          <div class="info-value" id="info-doh">-</div>
+        </div>
+        <div class="info-card">
+          <div class="info-label">DoH Hostname</div>
+          <div class="info-value" id="info-host">-</div>
+        </div>
+      </div>
+
+      <div class="script-section">
+        <div class="terminal-container">
+          <div class="terminal-header">
+            <span class="terminal-title">Winbox Terminal - Script IPv4</span>
+            <button class="terminal-copy-btn" onclick="copyTerminalScript(this, 'raw-ipv4')">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              Salin Script
+            </button>
+          </div>
+          <div class="terminal-body">
+            <pre id="display-ipv4"></pre>
+            <textarea id="raw-ipv4" style="display:none;"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="script-section">
+        <div class="terminal-container">
+          <div class="terminal-header">
+            <span class="terminal-title">Winbox Terminal - Script IPv6</span>
+            <button class="terminal-copy-btn" onclick="copyTerminalScript(this, 'raw-ipv6')">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              Salin Script
+            </button>
+          </div>
+          <div class="terminal-body">
+            <pre id="display-ipv6"></pre>
+            <textarea id="raw-ipv6" style="display:none;"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="script-section">
+        <div class="terminal-container">
+          <div class="terminal-header">
+            <span class="terminal-title">Winbox Terminal - Verify DoH Certificate (Opsional)</span>
+            <button class="terminal-copy-btn" onclick="copyTerminalScript(this, 'raw-cert')">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              Salin Script
+            </button>
+          </div>
+          <div class="terminal-body">
+            <pre id="display-cert"></pre>
+            <textarea id="raw-cert" style="display:none;"></textarea>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <div id="toastMessage" class="toast">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+    Script Berhasil Disalin! Siap dipaste ke Winbox.
+  </div>
+
+  <footer class="footer">
+    Jaka Lintas Akses © 2024. Premium RouterOS Script Tools Portal.
+  </footer>
+
+  <script>
+    // Database Extended Provider DNS
+    const dnsProviders = {
+      "adguard": {
+        ip4_1: "94.140.14.14", ip4_2: "94.140.15.15",
+        ip6_1: "2a10:50c0::ad1:ff", ip6_2: "2a10:50c0::ad2:ff",
+        doh_url: "https://dns.adguard.com/dns-query",
+        host: "dns.adguard.com"
+      },
+      "cloudflare": {
+        ip4_1: "1.1.1.1", ip4_2: "1.0.0.1",
+        ip6_1: "2606:4700:4700::1111", ip6_2: "2606:4700:4700::1001",
+        doh_url: "https://cloudflare-dns.com/dns-query",
+        host: "cloudflare-dns.com"
+      },
+      "google": {
+        ip4_1: "8.8.8.8", ip4_2: "8.8.4.4",
+        ip6_1: "2001:4860:4860::8888", ip6_2: "2001:4860:4860::8844",
+        doh_url: "https://dns.google/dns-query",
+        host: "dns.google"
+      },
+      "quad9": {
+        ip4_1: "9.9.9.9", ip4_2: "149.112.112.112",
+        ip6_1: "2620:fe::fe", ip6_2: "2620:fe::9",
+        doh_url: "https://dns.quad9.net/dns-query",
+        host: "dns.quad9.net"
+      },
+      "opendns": {
+        ip4_1: "208.67.222.222", ip4_2: "208.67.220.220",
+        ip6_1: "2620:119:35::35", ip6_2: "2620:119:53::53",
+        doh_url: "https://doh.opendns.com/dns-query",
+        host: "doh.opendns.com"
+      },
+      "nextdns": {
+        ip4_1: "45.90.28.0", ip4_2: "45.90.30.0",
+        ip6_1: "2a07:a8c0::", ip6_2: "2a07:a8c1::",
+        doh_url: "https://dns.nextdns.io",
+        host: "dns.nextdns.io"
+      },
+      "alidns": {
+        ip4_1: "223.5.5.5", ip4_2: "223.6.6.6",
+        ip6_1: "2400:3200::1", ip6_2: "2400:3200:baba::1",
+        doh_url: "https://dns.alidns.com/dns-query",
+        host: "dns.alidns.com"
+      },
+      "controld": {
+        ip4_1: "76.76.2.0", ip4_2: "76.76.10.0",
+        ip6_1: "2606:1a40::", ip6_2: "2606:1a40:1::",
+        doh_url: "https://freedns.controld.com/p0",
+        host: "freedns.controld.com"
+      },
+      "mullvad": {
+        ip4_1: "194.242.2.4", ip4_2: "193.19.108.2",
+        ip6_1: "2a07:e340::2", ip6_2: "2a07:e340::1",
+        doh_url: "https://doh.mullvad.net/dns-query",
+        host: "doh.mullvad.net"
+      },
+      "dns_sb": {
+        ip4_1: "185.222.222.222", ip4_2: "185.184.222.222",
+        ip6_1: "2a09::", ip6_2: "2a09::1",
+        doh_url: "https://doh.dns.sb/dns-query",
+        host: "doh.dns.sb"
+      },
+      "cleanbrowsing": {
+        ip4_1: "185.228.168.168", ip4_2: "185.228.169.168",
+        ip6_1: "2a0d:2a00:1::", ip6_2: "2a0d:2a00:2::",
+        doh_url: "https://doh.cleanbrowsing.org/doh/family-filter/",
+        host: "doh.cleanbrowsing.org"
+      },
+      "dnspod": {
+        ip4_1: "119.29.29.29", ip4_2: "1.2.4.8",
+        ip6_1: "2402:4e00::", ip6_2: "2402:4e00:1::",
+        doh_url: "https://doh.pub/dns-query",
+        host: "doh.pub"
+      }
+    };
+
+    // Fungsi utama untuk mengupdate konten berdasarkan pilihan dropdown
+    function generateScripts() {
+      const selectedKey = document.getElementById('dns-list').value;
+      const data = dnsProviders[selectedKey];
+
+      // Update Info Cards
+      document.getElementById('info-ipv4').innerText = `${data.ip4_1}, ${data.ip4_2}`;
+      document.getElementById('info-ipv6').innerText = `${data.ip6_1}, ${data.ip6_2}`;
+      document.getElementById('info-doh').innerText = data.doh_url;
+      document.getElementById('info-host').innerText = data.host;
+
+      // Syntax Highlighter Helper untuk tampilan di HTML
+      const scCmd = (text) => `<span class="term-cmd">${text}</span>`;
+      const scArg = (text) => `<span class="term-arg">${text}</span>`;
+      const scVal = (text) => `<span class="term-val">${text}</span>`;
+      const scCom = (text) => `<span class="term-comment">${text}</span>`;
+
+      // 1. Script IPv4
+      const rawIpv4 = `/ip dns set allow-remote-requests=yes cache-max-ttl=1d servers=${data.ip4_1},${data.ip4_2} use-doh-server="${data.doh_url}"\n/ip dns static\nadd address=${data.ip4_1} name="${data.host}"\nadd address=${data.ip4_2} name="${data.host}"`;
+      
+      const displayIpv4 = `${scCom('# Konfigurasi DNS Utama (IPv4)')}\n${scCmd('/ip dns set')} ${scArg('allow-remote-requests=')}yes ${scArg('cache-max-ttl=')}1d ${scArg('servers=')}${scVal(data.ip4_1+','+data.ip4_2)} ${scArg('use-doh-server=')}${scVal('"' + data.doh_url + '"')}\n\n${scCom('# Static DNS Routing (Penting untuk Resolve DoH Host)')}\n${scCmd('/ip dns static')}\n${scCmd('add')} ${scArg('address=')}${scVal(data.ip4_1)} ${scArg('name=')}${scVal('"' + data.host + '"')}\n${scCmd('add')} ${scArg('address=')}${scVal(data.ip4_2)} ${scArg('name=')}${scVal('"' + data.host + '"')}`;
+
+      // 2. Script IPv6
+      const rawIpv6 = `/ip dns set allow-remote-requests=yes cache-max-ttl=1d servers=${data.ip6_1},${data.ip6_2} use-doh-server="${data.doh_url}"\n/ip dns static\nadd address=${data.ip6_1} name="${data.host}"\nadd address=${data.ip6_2} name="${data.host}"`;
+      
+      const displayIpv6 = `${scCom('# Konfigurasi DNS Utama (IPv6)')}\n${scCmd('/ip dns set')} ${scArg('allow-remote-requests=')}yes ${scArg('cache-max-ttl=')}1d ${scArg('servers=')}${scVal(data.ip6_1+','+data.ip6_2)} ${scArg('use-doh-server=')}${scVal('"' + data.doh_url + '"')}\n\n${scCom('# Static DNS Routing (Penting untuk Resolve DoH Host)')}\n${scCmd('/ip dns static')}\n${scCmd('add')} ${scArg('address=')}${scVal(data.ip6_1)} ${scArg('name=')}${scVal('"' + data.host + '"')}\n${scCmd('add')} ${scArg('address=')}${scVal(data.ip6_2)} ${scArg('name=')}${scVal('"' + data.host + '"')}`;
+
+      // 3. Script Certificate
+      const rawCert = `/tool fetch url="https://cacerts.digicert.com/DigiCertGlobalRootCA.crt.pem"\n/certificate import file-name="DigiCertGlobalRootCA.crt.pem" passphrase=""\n/ip dns set verify-doh-cert=yes`;
+      
+      const displayCert = `${scCom('# Langkah 1: Download Root Certificate dari DigiCert')}\n${scCmd('/tool fetch')} ${scArg('url=')}${scVal('"https://cacerts.digicert.com/DigiCertGlobalRootCA.crt.pem"')}\n\n${scCom('# Langkah 2: Import Certificate ke Router')}\n${scCmd('/certificate import')} ${scArg('file-name=')}${scVal('"DigiCertGlobalRootCA.crt.pem"')} ${scArg('passphrase=')}${scVal('""')}\n\n${scCom('# Langkah 3: Aktifkan Verifikasi')}\n${scCmd('/ip dns set')} ${scArg('verify-doh-cert=')}${scVal('yes')}`;
+
+      // Set Display Data (Syntax Highlighted)
+      document.getElementById('display-ipv4').innerHTML = displayIpv4;
+      document.getElementById('display-ipv6').innerHTML = displayIpv6;
+      document.getElementById('display-cert').innerHTML = displayCert;
+
+      // Set Raw Data (Siap Copy Paste)
+      document.getElementById('raw-ipv4').value = rawIpv4;
+      document.getElementById('raw-ipv6').value = rawIpv6;
+      document.getElementById('raw-cert').value = rawCert;
+    }
+
+    function copyTerminalScript(btnElement, rawElementId) {
+      const rawText = document.getElementById(rawElementId).value;
+      
+      // Fallback Eksekusi Copy Textarea untuk kestabilan iframe/browser
+      const textArea = document.createElement("textarea");
+      textArea.value = rawText;
+      document.body.appendChild(textArea);
+      textArea.select();
+      
+      try {
+        document.execCommand('copy');
+        showToast();
+        
+        // Visual Feedback di Tombol Terminal
+        const originalHTML = btnElement.innerHTML;
+        btnElement.classList.add("success");
+        btnElement.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Tersalin!`;
+        
+        setTimeout(() => {
+          btnElement.classList.remove("success");
+          btnElement.innerHTML = originalHTML;
+        }, 2000);
+
+      } catch (err) {
+        console.error('Gagal menyalin teks', err);
+      }
+      
+      document.body.removeChild(textArea);
+    }
+
+    // Fungsi Menampilkan Notifikasi Toast
+    let toastTimeout;
+    function showToast() {
+      const toast = document.getElementById('toastMessage');
+      toast.classList.add('show');
+      
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+
+    // Eksekusi generator pada saat pertama load
+    window.onload = function() {
+      generateScripts();
+    };
+  </script>
+</body>
+</html>

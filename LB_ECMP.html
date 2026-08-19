@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mikrotik LB ECMP Script Generator | JLA Tools</title>
+  
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap');
+    
+    * { 
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+      box-sizing: border-box; 
+    }
+    
+    :root {
+      --bg: #f4f7f6;
+      --text: #334155;
+      --text-dark: #0f172a;
+      --text-muted: #64748b;
+      --accent: #ff6600;
+      --accent-hover: #ea580c;
+      --border: #e2e8f0;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      --radius: 8px;
+    }
+
+    body { 
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
+      background: var(--bg);
+      color: var(--text); 
+      margin: 0; 
+      padding: 0; 
+      display: flex; 
+      flex-direction: column; 
+      min-height: 100vh;
+    }
+
+    .app-header {
+      height: 64px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+    .brand-logo {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+      border-radius: 10px; color: #fff;
+      font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 16px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 12px rgba(255, 102, 0, 0.3);
+    }
+    .brand-title h1 { font-size: 15px; font-weight: 800; color: var(--text-dark); letter-spacing: 0.3px; line-height: 1.2; margin: 0;}
+    .brand-title p { font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; font-weight: 500; margin: 0;}
+
+    .header-actions { display: flex; align-items: center; gap: 12px; }
+
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 9px 16px; border-radius: var(--radius); border: none; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; text-decoration: none; }
+    .btn-secondary { background: #ffffff; color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: #f8fafc; }
+    .btn-wa { background: #25D366; color: white; border-radius: 20px; font-weight: 700; }
+    .btn-wa:hover { background: #128C7E; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3); }
+
+    .main-container { display: flex; flex: 1; max-width: 1400px; margin: 0 auto; width: 100%; padding: 40px 20px; gap: 30px; }
+    .content-area { flex: 1; background: #ffffff; border-radius: 16px; box-shadow: 0 10px 30px rgba(148, 163, 184, 0.1); border: 1px solid #f1f5f9; padding: 30px; min-width: 0;}
+    .footer { text-align: center; font-size: 13px; color: #94a3b8; padding: 30px; width: 100%; margin-top: auto;}
+
+    .tool-header { margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+    .tool-header h2 { margin: 0 0 8px 0; color: var(--text-dark); font-size: 20px; }
+    .tool-header p { margin: 0; color: var(--text-muted); font-size: 14px; }
+
+    .grid-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: stretch; }
+    .panel { display: flex; flex-direction: column; gap: 16px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+
+    label { font-size: 13px; font-weight: 600; color: var(--text-dark); }
+    input[type="text"], input[type="number"], select { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 14px; font-family: 'Inter', sans-serif; color: var(--text-dark); background: #fff; }
+    input:focus, select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(255, 102, 0, 0.1); }
+
+    .info-box { background: #fff7ed; border-left: 4px solid var(--accent); padding: 12px 16px; border-radius: 4px; font-size: 12px; color: #9a3412; }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+
+    .terminal-container { display: flex; flex-direction: column; height: 100%; background: #0f172a; border-radius: 12px; overflow: hidden; border: 1px solid #1e293b; }
+    .terminal-header { background: #1e293b; padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; }
+    .terminal-title { color: #94a3b8; font-size: 12px; font-family: 'JetBrains Mono', monospace; font-weight: 600; }
+    .terminal-body { flex: 1; padding: 16px; min-height: 300px; }
+    textarea#script-output { width: 100%; height: 100%; min-height: 400px; background: transparent; border: none; color: #a7f3d0; font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.5; resize: none; outline: none; }
+    .terminal-footer { padding: 12px 16px; background: #1e293b; display: flex; justify-content: space-between; align-items: center; }
+    .copy-msg { color: #10b981; font-size: 12px; font-weight: 600; opacity: 0; transition: opacity 0.3s; }
+    .copy-msg.show { opacity: 1; }
+
+    .wan-card { background: #f8fafc; border: 1px solid var(--border); padding: 12px; border-radius: var(--radius); margin-bottom: 8px;}
+    .wan-card-title { font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; }
+
+    @media screen and (max-width: 900px) { 
+      .app-header { flex-direction: column; padding: 15px; gap: 15px; }
+      .main-container { flex-direction: column; padding: 20px 15px; }
+      .grid-layout { grid-template-columns: 1fr; }
+      .form-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="app-header">
+    <a href="index.html" class="brand">
+      <div class="brand-logo">JLA</div>
+      <div class="brand-title">
+        <h1>JAKA LINTAS AKSES GENERATOR</h1>
+        <p>Portal Script Generator Premium JLA</p>
+      </div>
+    </a>
+    <div class="header-actions">
+      <a href="index.html" class="btn btn-secondary">🏠 Beranda</a>
+      <a href="https://wa.me/62818386078?text=Halo%20JLA%20Tools" target="_blank" class="btn btn-wa">Hubungi Kami</a>
+    </div>
+  </header>
+
+  <main class="main-container">
+    <div class="content-area">
+      <div class="tool-header">
+        <h2>MikroTik Load Balancing ECMP Generator</h2>
+        <p>Hasilkan script otomatis untuk Load Balancing Equal Cost Multi Path (ECMP) RouterOS v6 & v7.</p>
+      </div>
+
+      <div class="grid-layout">
+        <!-- Left Panel -->
+        <div class="panel">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Jumlah Jalur (WAN)</label>
+                    <select id="num-wan">
+                        <option value="2">2 Line WAN ISP</option>
+                        <option value="3">3 Line WAN ISP</option>
+                        <option value="4">4 Line WAN ISP</option>
+                        <option value="5">5 Line WAN ISP</option>
+                        <option value="6">6 Line WAN ISP</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Versi RouterOS</label>
+                    <select id="ros-version">
+                        <option value="v6">RouterOS v6.xx</option>
+                        <option value="v7">RouterOS v7.xx</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="info-box">
+                Ganti Nama Interface WAN dengan kondisi Router Anda. Anda dapat menggunakan notasi <b>%</b> seperti <span style="font-family: monospace">192.168.1.1%ether1</span> untuk gateway IP yang sama. Untuk PPPoE, cukup masukkan nama interface (tanpa IP).
+            </div>
+
+            <div id="wan-container" class="panel"></div>
+
+            <div class="form-row" style="margin-top: 8px;">
+                <button id="btn-generate" class="btn btn-primary" style="font-size: 14px; padding: 12px;">Generate Script</button>
+                <button id="btn-clear" class="btn btn-secondary" style="font-size: 14px; padding: 12px;">Clear All</button>
+            </div>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="terminal-container">
+            <div class="terminal-header">
+                <span class="terminal-title">~/terminal/ecmp_loadbalance.rsc</span>
+            </div>
+            <div class="terminal-body">
+                <textarea id="script-output" readonly placeholder="Klik 'Generate Script' untuk melihat hasil..."></textarea>
+            </div>
+            <div class="terminal-footer">
+                <span id="copy-msg" class="copy-msg">✓ Script berhasil disalin!</span>
+                <button id="btn-copy" class="btn btn-primary" style="background: #3b82f6;">📋 Copy Script</button>
+            </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">Jaka Lintas Akses © 2024. Premium RouterOS Script Tools Portal.</footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const numWanSelect = document.getElementById('num-wan');
+        const wanContainer = document.getElementById('wan-container');
+        const btnGenerate = document.getElementById('btn-generate');
+        const btnClear = document.getElementById('btn-clear');
+        const btnCopy = document.getElementById('btn-copy');
+        const scriptOutput = document.getElementById('script-output');
+        const copyMsg = document.getElementById('copy-msg');
+
+        function renderInputs() {
+            const count = parseInt(numWanSelect.value);
+            wanContainer.innerHTML = '';
+            for(let i=1; i<=count; i++) {
+                wanContainer.innerHTML += `
+                    <div class="wan-card">
+                        <div class="wan-card-title">Jalur WAN ISP ${i}</div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Interface (ether/pppoe)</label>
+                                <input type="text" id="wan-iface-${i}" value="ether${i}">
+                            </div>
+                            <div class="form-group">
+                                <label>IP Gateway</label>
+                                <input type="text" id="wan-ip-${i}" value="192.168.${i}0.1">
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function generateScript() {
+            const count = parseInt(numWanSelect.value);
+            const ros = document.getElementById('ros-version').value;
+            let s = "";
+
+            s += `###############################################################\n`;
+            s += `# Load Balancing ECMP Script Generator\n`;
+            s += `# Created by: JLA Tools\n`;
+            s += `###############################################################\n\n`;
+
+            s += `/ip firewall address-list\n`;
+            s += `add address=192.168.0.0/16 list=LOCAL-IP comment="LB ECMP by JLA Tools"\n`;
+            s += `add address=172.16.0.0/12 list=LOCAL-IP comment="LB ECMP by JLA Tools"\n`;
+            s += `add address=10.0.0.0/8 list=LOCAL-IP comment="LB ECMP by JLA Tools"\n\n`;
+
+            s += `/ip firewall nat\n`;
+            for(let i=1; i<=count; i++) {
+                let iface = document.getElementById(`wan-iface-${i}`).value || `ether${i}`;
+                s += `add chain=srcnat out-interface="${iface}" action=masquerade comment="LB ECMP ISP ${i}"\n`;
+            }
+
+            if(ros === 'v7') {
+                s += `\n/routing table\n`;
+                for(let i=1; i<=count; i++) {
+                    s += `add name="to_ISP${i}" fib comment="LB ECMP ISP ${i}"\n`;
+                }
+            }
+
+            s += `\n/ip route\n`;
+            let gateways = [];
+            for(let i=1; i<=count; i++) {
+                gateways.push(document.getElementById(`wan-ip-${i}`).value || `192.168.${i}0.1`);
+            }
+
+            if(ros === 'v6') {
+                s += `add check-gateway=ping distance=1 gateway="${gateways.join(',')}" comment="LB ECMP Main"\n`;
+                for(let i=1; i<=count; i++) {
+                    let gw = document.getElementById(`wan-ip-${i}`).value || `192.168.${i}0.1`;
+                    s += `add check-gateway=ping distance=1 gateway="${gw}" routing-mark="to_ISP${i}" comment="LB ECMP ISP ${i}"\n`;
+                }
+            } else {
+                for(let i=1; i<=count; i++) {
+                    let gw = document.getElementById(`wan-ip-${i}`).value || `192.168.${i}0.1`;
+                    s += `add check-gateway=ping distance=1 gateway="${gw}" routing-table="main" comment="LB ECMP ISP ${i}"\n`;
+                }
+                for(let i=1; i<=count; i++) {
+                    let gw = document.getElementById(`wan-ip-${i}`).value || `192.168.${i}0.1`;
+                    s += `add check-gateway=ping distance=1 gateway="${gw}" routing-table="to_ISP${i}" comment="LB ECMP ISP ${i}"\n`;
+                }
+            }
+
+            s += `\n/ip firewall mangle\n`;
+            s += `add action=accept chain=prerouting dst-address-list=LOCAL-IP src-address-list=LOCAL-IP comment="LB ECMP Local"\n`;
+            s += `add action=accept chain=postrouting dst-address-list=LOCAL-IP src-address-list=LOCAL-IP\n`;
+            s += `add action=accept chain=forward dst-address-list=LOCAL-IP src-address-list=LOCAL-IP\n`;
+            s += `add action=accept chain=input dst-address-list=LOCAL-IP src-address-list=LOCAL-IP\n`;
+            s += `add action=accept chain=output dst-address-list=LOCAL-IP src-address-list=LOCAL-IP\n\n`;
+
+            for(let i=1; i<=count; i++) {
+                let iface = document.getElementById(`wan-iface-${i}`).value || `ether${i}`;
+                s += `add action=mark-connection chain=input in-interface="${iface}" new-connection-mark="conn_ISP${i}" passthrough=yes comment="Mark Conn ISP ${i}"\n`;
+            }
+            s += `\n`;
+            for(let i=1; i<=count; i++) {
+                s += `add action=mark-routing chain=output connection-mark="conn_ISP${i}" new-routing-mark="to_ISP${i}" passthrough=yes comment="Mark Route ISP ${i}"\n`;
+            }
+
+            scriptOutput.value = s;
+        }
+
+        numWanSelect.addEventListener('change', renderInputs);
+        btnGenerate.addEventListener('click', generateScript);
+        btnClear.addEventListener('click', () => {
+            numWanSelect.value = '2';
+            renderInputs();
+            scriptOutput.value = '';
+        });
+
+        btnCopy.addEventListener('click', () => {
+            if(!scriptOutput.value) return;
+            scriptOutput.select();
+            document.execCommand('copy');
+            window.getSelection().removeAllRanges();
+            copyMsg.classList.add('show');
+            setTimeout(() => copyMsg.classList.remove('show'), 2000);
+        });
+
+        renderInputs();
+    });
+  </script>
+</body>
+</html>

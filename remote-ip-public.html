@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <!-- Meta tag standar untuk karakter dan tampilan di perangkat mobile -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>JLA Tools - MikroTik Public IP Script</title>
+  
+  <style>
+    /* Mengambil font dari Google Fonts agar tulisan terlihat modern */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap');
+    
+    /* Reset CSS dasar untuk semua elemen */
+    * { 
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+      box-sizing: border-box; 
+    }
+    
+    /* Variabel warna (Custom Properties) agar mudah diubah dari satu tempat */
+    :root {
+      --bg: #f4f7f6;
+      --text: #334155;
+      --text-dark: #0f172a;
+      --text-muted: #64748b;
+      --accent: #ff6600; /* Warna orange utama */
+      --border: #e2e8f0;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      /* Warna untuk Terminal */
+      --term-bg: #1e293b;
+      --term-header: #293548;
+      --term-text: #e2e8f0;
+    }
+
+    /* Pengaturan untuk seluruh halaman (body) */
+    body { 
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
+      background: var(--bg);
+      color: var(--text); 
+      margin: 0; 
+      padding: 0; 
+      display: flex; 
+      flex-direction: column; 
+      min-height: 100vh;
+    }
+
+    /* --- GAYA HEADER (Bawaan Template) --- */
+    .app-header {
+      height: 64px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-logo {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, var(--accent), #ea580c);
+      border-radius: 10px; color: #fff;
+      font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 16px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 12px rgba(255, 102, 0, 0.3);
+    }
+    .brand-title h1 { font-size: 15px; font-weight: 800; color: var(--text-dark); letter-spacing: 0.3px; line-height: 1.2; margin: 0;}
+    .brand-title p { font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; font-weight: 500; margin: 0;}
+
+    .header-actions { display: flex; align-items: center; gap: 12px; }
+
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 9px 16px; border-radius: 8px; border: none; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; transition: all .15s; white-space: nowrap; text-decoration: none; }
+    .btn-secondary { background: #ffffff; color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: #f8fafc; }
+    .btn-wa { background: #25D366; color: white; border-radius: 20px; font-weight: 700; }
+    .btn-wa:hover { background: #128C7E; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3); }
+
+    /* --- GAYA LAYOUT UTAMA --- */
+    .main-container { 
+      display: flex; 
+      flex: 1; 
+      max-width: 1000px; /* Diperkecil sedikit agar form tidak terlalu lebar */
+      margin: 0 auto; 
+      width: 100%; 
+      padding: 40px 20px; 
+      gap: 30px; 
+    }
+    
+    .content-area { 
+      flex: 1; 
+      background: #ffffff; 
+      border-radius: 16px; 
+      box-shadow: 0 10px 30px rgba(148, 163, 184, 0.1); 
+      border: 1px solid #f1f5f9;
+      padding: 30px; 
+      line-height: 1.6; 
+      min-width: 0;
+    }
+
+    /* --- GAYA FORM INPUT --- */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Responsif grid */
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .input-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-dark);
+      margin-bottom: 6px;
+    }
+
+    .input-group input, 
+    .input-group select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      outline: none;
+    }
+    
+    .input-group input:focus, 
+    .input-group select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(255, 102, 0, 0.1); /* Efek glow saat diklik */
+    }
+
+    /* Tombol Generate */
+    .btn-generate {
+      background-color: var(--accent);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 8px;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      font-size: 14px;
+      margin-bottom: 25px;
+    }
+    .btn-generate:hover { background-color: #ea580c; }
+
+    /* --- GAYA TERMINAL WINBOX --- */
+    .terminal-container {
+      background-color: var(--term-bg);
+      border-radius: 10px;
+      overflow: hidden; /* Agar sudut melengkung menutupi header */
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+
+    /* Header Terminal (meniru gaya MacOS/Winbox modern) */
+    .terminal-header {
+      background-color: var(--term-header);
+      padding: 10px 15px;
+      display: flex;
+      align-items: center;
+      position: relative; /* Untuk menempatkan judul di tengah mutlak */
+    }
+
+    /* 3 Titik warna di kiri */
+    .terminal-dots {
+      display: flex;
+      gap: 8px;
+    }
+    .dot { width: 12px; height: 12px; border-radius: 50%; }
+    .dot-red { background-color: #ff5f56; }
+    .dot-yellow { background-color: #ffbd2e; }
+    .dot-green { background-color: #27c93f; }
+
+    /* Judul di tengah terminal */
+    .terminal-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: #94a3b8;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%); /* Trik CSS untuk posisi tengah persis */
+    }
+
+    /* Tombol Copy di kanan (Sesuai gambar referensi) */
+    .btn-copy {
+      margin-left: auto; /* Mendorong tombol ke ujung kanan */
+      background-color: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-family: 'Inter', sans-serif;
+    }
+    .btn-copy:hover { background-color: #ea580c; }
+    .btn-copy svg { fill: currentColor; } /* Agar icon SVG mengikuti warna teks */
+
+    /* Area teks script di dalam terminal */
+    .terminal-body {
+      padding: 20px;
+      color: var(--term-text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      overflow-x: auto; /* Scroll horizontal jika baris terlalu panjang */
+    }
+
+    /* Highlight teks warna orange dalam script */
+    .text-highlight { color: var(--accent); font-weight: 600; }
+    .text-bold { font-weight: bold; color: #fff; }
+
+    /* Footer */
+    .footer { text-align: center; font-size: 13px; color: #94a3b8; padding: 30px; margin-top: auto;}
+
+    /* Responsif untuk HP */
+    @media screen and (max-width: 768px) { 
+      .app-header { flex-direction: column; height: auto; padding: 15px 20px; gap: 15px; align-items: center; justify-content: center; text-align: center;}
+      .brand { flex-direction: column; gap: 8px; }
+      .header-actions { width: 100%; display: flex; justify-content: center; gap: 10px;}
+      .main-container { padding: 15px; }
+      .content-area { padding: 20px; }
+      .terminal-title { display: none; } /* Sembunyikan judul terminal di HP agar tidak bertabrakan dengan tombol */
+    }
+  </style>
+</head>
+<body>
+
+  <!-- BAGIAN HEADER HALAMAN -->
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-logo">JLA</div>
+      <div class="brand-title">
+        <h1>JAKA LINTAS AKSES GENERATOR</h1>
+        <p>Portal Script Generator Premium JLA</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <a href="index.html" class="btn btn-secondary">🏠 Beranda</a>
+      <a href="https://wa.me/62818386078?text=Halo%20JLA%20Tools,%20saya%20ingin%20bertanya..." target="_blank" class="btn btn-wa">
+        <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Hubungi Kami
+      </a>
+    </div>
+  </header>
+
+  <!-- BAGIAN KONTEN UTAMA -->
+  <main class="main-container">
+    <div class="content-area">
+      <h2 style="margin-top: 0; color: #0f172a; margin-bottom: 5px;">Remote Public IP Static</h2>
+      <p style="color: #64748b; margin-bottom: 25px; font-size: 14px;">Generate script otomatis untuk konfigurasi IP Public Static di MikroTik Anda.</p>
+
+      <!-- Grid Form Input -->
+      <div class="form-grid">
+        <!-- Input Interface ISP -->
+        <div class="input-group">
+          <label for="input-interface">Interface ISP</label>
+          <input type="text" id="input-interface" value="ether1-ISP" placeholder="Contoh: ether1-ISP">
+        </div>
+        
+        <!-- Input IP Gateway -->
+        <div class="input-group">
+          <label for="input-gateway">IP Gateway ISP</label>
+          <input type="text" id="input-gateway" value="192.168.10.1" placeholder="Contoh: 192.168.10.1">
+        </div>
+        
+        <!-- Dropdown Versi ROS -->
+        <div class="input-group">
+          <label for="input-ros">ROS Version</label>
+          <!-- Atribut onchange memanggil fungsi js saat pilihan diubah -->
+          <select id="input-ros" onchange="generateScript()">
+            <option value="ros6">RouterOS v6.xx</option>
+            <option value="ros7">RouterOS v7.xx</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Tombol Eksekusi -->
+      <button class="btn-generate" onclick="generateScript()">Generate Script</button>
+
+      <!-- TAMPILAN TERMINAL WINBOX -->
+      <div class="terminal-container">
+        
+        <!-- Header Terminal -->
+        <div class="terminal-header">
+          <!-- Titik dekorasi -->
+          <div class="terminal-dots">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+          </div>
+          <!-- Judul Terminal -->
+          <div class="terminal-title">Terminal Winbox</div>
+          
+          <!-- Tombol Copy Script (Seperti di gambar contoh) -->
+          <button class="btn-copy" onclick="copyToClipboard()">
+            <!-- Icon SVG Copy -->
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14">
+              <path d="M7 6V3C7 2.44772 7.44772 2 8 2H21C21.5523 2 22 2.44772 22 3V16C22 16.5523 21.5523 17 21 17H18V20C18 20.5523 17.5523 21 17 21H4C3.44772 21 3 20.5523 3 20V7C3 6.44772 3.44772 6 4 6H7ZM7 17H16V7H8C7.44772 7 7 7.44772 7 8V17ZM9 4V6H17C17.5523 6 18 6.44772 18 7V15H20V4H9Z"></path>
+            </svg>
+            <span id="btn-copy-text">Copy Script</span>
+          </button>
+        </div>
+
+        <!-- Body Terminal (Tempat script dimunculkan) -->
+        <!-- Gunakan tag <pre> agar format enter/spasi bawaan tetap terjaga -->
+        <pre class="terminal-body" id="script-output">
+<span class="text-highlight">########################################################
+# Open Remote Access ISP "Public IP Static" for MikroTik
+# Date/Time: <span id="display-date">DD/MM/YYYY, 00:00:00</span>
+# Created By: JLA Tools Generator
+########################################################</span>
+
+<span id="display-ros7-routing" style="display:none;"><span class="text-bold">/routing table</span>
+add name=<span class="text-highlight">public-ip</span> fib comment="Remote Public IP by JLA Tools"
+
+</span><span class="text-bold">/ip route</span>
+add check-gateway=ping gateway="<span id="display-gateway" class="text-highlight">192.168.10.1</span>" <span id="display-route-param">routing-mark</span>=<span class="text-highlight">public-ip</span> comment="Remote Public IP by JLA Tools"
+
+<span class="text-bold">/ip firewall mangle</span>
+add action=<span class="text-highlight">mark-connection</span> chain=<span class="text-highlight">input</span> in-interface="<span id="display-interface" class="text-highlight">ether1-ISP</span>" new-connection-mark=<span class="text-highlight">public-ip</span> passthrough=<span class="text-highlight">yes</span> comment="Remote Public IP by JLA Tools"
+add action=<span class="text-highlight">mark-routing</span> chain=<span class="text-highlight">output</span> connection-mark=<span class="text-highlight">public-ip</span> new-routing-mark=<span class="text-highlight">public-ip</span> passthrough=<span class="text-highlight">no</span></pre>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    Jaka Lintas Akses © 2019. Premium RouterOS Script Tools Portal.
+  </footer>
+
+  <!-- BAGIAN JAVASCRIPT -->
+  <script>
+    // Fungsi ini dipanggil saat halaman pertama kali dimuat
+    // Untuk memastikan tanggal dan data default sudah benar
+    window.onload = function() {
+      generateScript();
+    };
+
+    // Fungsi utama untuk memanipulasi teks script
+    function generateScript() {
+      // 1. Mengambil nilai (value) yang diketik user di form
+      const inputInterface = document.getElementById('input-interface').value;
+      const inputGateway = document.getElementById('input-gateway').value;
+      const inputRos = document.getElementById('input-ros').value;
+
+      // 2. Memasukkan nilai tersebut ke dalam elemen span di dalam terminal
+      document.getElementById('display-interface').innerText = inputInterface;
+      document.getElementById('display-gateway').innerText = inputGateway;
+
+      // 3. Mengatur format Tanggal & Waktu saat ini
+      const now = new Date();
+      // Format Indonesia: DD/MM/YYYY, HH:MM:SS
+      const formattedDate = now.toLocaleString('id-ID'); 
+      document.getElementById('display-date').innerText = formattedDate;
+
+      // 4. Logika Perbedaan RouterOS v6 dan v7
+      const ros7RoutingBlock = document.getElementById('display-ros7-routing');
+      const routeParam = document.getElementById('display-route-param');
+
+      if (inputRos === 'ros7') {
+        // Jika ROS 7 dipilih:
+        // Tampilkan blok perintah '/routing table'
+        ros7RoutingBlock.style.display = 'inline'; 
+        // Ubah parameter route dari routing-mark menjadi routing-table
+        routeParam.innerText = 'routing-table';
+      } else {
+        // Jika ROS 6 dipilih (Default):
+        // Sembunyikan blok perintah '/routing table'
+        ros7RoutingBlock.style.display = 'none';
+        // Kembalikan parameter route menjadi routing-mark
+        routeParam.innerText = 'routing-mark';
+      }
+    }
+
+    // Fungsi untuk menyalin isi terminal ke clipboard
+    function copyToClipboard() {
+      // Ambil elemen yang berisi teks script
+      const scriptOutput = document.getElementById('script-output');
+      
+      // Ambil teks murninya (innerText akan mengambil teks tanpa tag html)
+      const textToCopy = scriptOutput.innerText;
+
+      // Gunakan API Navigator modern untuk menyalin teks (Lebih aman dari execCommand)
+      // Dibungkus try..catch untuk mengatasi jika browser tidak mendukung
+      try {
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            // Ubah teks tombol sementara untuk memberi notifikasi ke user
+            const btnText = document.getElementById('btn-copy-text');
+            btnText.innerText = "Copied!";
+            
+            // Kembalikan teks tombol setelah 2 detik
+            setTimeout(() => {
+                btnText.innerText = "Copy Script";
+            }, 2000);
+        });
+      } catch (err) {
+        // Fallback jika navigator.clipboard diblokir (misal di iFrame)
+        const textArea = document.createElement("textarea");
+        textArea.value = textToCopy;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+        
+        // Notifikasi manual
+        const btnText = document.getElementById('btn-copy-text');
+        btnText.innerText = "Copied!";
+        setTimeout(() => {
+            btnText.innerText = "Copy Script";
+        }, 2000);
+      }
+    }
+  </script>
+</body>
+</html>

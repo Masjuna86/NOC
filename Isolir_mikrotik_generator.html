@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MikroTik Expired Isolate Script Generator | JLA Tools</title>
+  <meta name="description" content="Generate automated MikroTik scripts to isolate expired PPPoE and Hotspot clients.">
+  
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap');
+    
+    * { 
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+      box-sizing: border-box; 
+    }
+    
+    :root {
+      --bg: #f4f7f6;
+      --text: #334155;
+      --text-dark: #0f172a;
+      --text-muted: #64748b;
+      --accent: #ff6600;
+      --accent-hover: #ea580c;
+      --border: #e2e8f0;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    body { 
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
+      background: var(--bg);
+      color: var(--text); 
+      margin: 0; 
+      padding: 0; 
+      display: flex; 
+      flex-direction: column; 
+      min-height: 100vh;
+    }
+
+    .app-header {
+      height: 64px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-logo {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, var(--accent), #ea580c);
+      border-radius: 10px; color: #fff;
+      font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 16px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 12px rgba(255, 102, 0, 0.3);
+    }
+    .brand-title h1 { font-size: 15px; font-weight: 800; color: var(--text-dark); letter-spacing: 0.3px; line-height: 1.2; margin: 0;}
+    .brand-title p { font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; font-weight: 500; margin: 0;}
+
+    .header-actions { display: flex; align-items: center; gap: 12px; }
+
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 9px 16px; border-radius: 8px; border: none; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; transition: all .15s; white-space: nowrap; text-decoration: none; }
+    .btn-secondary { background: #ffffff; color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: #f8fafc; }
+    .btn-wa { background: #25D366; color: white; border-radius: 20px; font-weight: 700; }
+    .btn-wa:hover { background: #128C7E; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3); }
+    .btn-primary { background: var(--accent); color: white; width: 100%; padding: 12px; font-size: 14px; border-radius: 8px; font-weight: 700;}
+    .btn-primary:hover { background: var(--accent-hover); box-shadow: 0 4px 12px rgba(255, 102, 0, 0.2); }
+    .btn-action { background: #1e293b; color: white; font-size: 13px;}
+    .btn-action:hover { background: #0f172a; }
+
+    .main-container { 
+      display: flex; 
+      flex: 1; 
+      max-width: 1400px; 
+      margin: 0 auto; 
+      width: 100%; 
+      padding: 40px 20px; 
+      gap: 30px; 
+    }
+    
+    .generator-layout {
+      display: grid;
+      grid-template-columns: 350px 1fr;
+      gap: 24px;
+      width: 100%;
+      align-items: start;
+    }
+
+    .panel {
+      background: #ffffff; 
+      border-radius: 16px; 
+      box-shadow: 0 10px 30px rgba(148, 163, 184, 0.1); 
+      border: 1px solid #f1f5f9;
+      padding: 24px; 
+    }
+
+    .panel-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-dark);
+      margin-top: 0;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .form-group { margin-bottom: 16px; }
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--text-dark);
+    }
+    .form-group label span {
+      display: block;
+      color: var(--accent);
+      font-weight: 400;
+      font-size: 11px;
+      margin-top: 2px;
+    }
+    .form-control {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: inherit;
+      color: var(--text);
+      background: #f8fafc;
+    }
+    .form-control:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(255, 102, 0, 0.1);
+    }
+    textarea.form-control {
+      min-height: 100px;
+      resize: vertical;
+    }
+    .form-row {
+      display: flex;
+      gap: 12px;
+    }
+
+    .script-container {
+      background: #0f172a;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+      position: relative;
+    }
+    .script-output {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      color: #e2e8f0;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .script-output b { color: #38bdf8; }
+    .script-output .comment { color: #64748b; }
+    .script-output .highlight { color: #f97316; font-weight: bold; }
+
+    .preview-wrapper {
+      margin-top: 24px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .preview-header {
+      background: #f1f5f9;
+      padding: 10px 16px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+    }
+    .preview-content {
+      padding: 40px 20px;
+      min-height: 250px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-family: 'Inter', sans-serif; /* Fallback for preview */
+    }
+
+    .footer { 
+      text-align: center; 
+      font-size: 13px; 
+      color: #94a3b8; 
+      padding: 30px; 
+      width: 100%; 
+      margin-top: auto;
+    }
+    .instructions {
+        font-size: 13px;
+        color: var(--text-muted);
+        line-height: 1.6;
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid var(--border);
+    }
+    .instructions span {
+        color: var(--accent);
+        font-weight: 700;
+    }
+
+    @media screen and (max-width: 900px) { 
+      .app-header { flex-direction: column; height: auto; padding: 15px 20px; gap: 15px; align-items: center; justify-content: center; text-align: center;}
+      .brand { flex-direction: column; gap: 8px; }
+      .header-actions { width: 100%; display: flex; justify-content: center; gap: 10px;}
+      .main-container { flex-direction: column; padding: 20px 15px; }
+      .generator-layout { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-logo">JLA</div>
+      <div class="brand-title">
+        <h1>JAKA LINTAS AKSES GENERATOR</h1>
+        <p>Portal Script Generator Premium JLA</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <a href="#" class="btn btn-secondary">🏠 Beranda</a>
+      <a href="https://wa.me/62818386078?text=Halo%20JLA%20Tools,%20saya%20ingin%20bertanya..." target="_blank" class="btn btn-wa">
+        <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Hubungi Kami
+      </a>
+    </div>
+  </header>
+
+  <main class="main-container">
+    <div class="generator-layout">
+        
+        <!-- Left Panel: Inputs -->
+        <div class="panel">
+            <h2 class="panel-title">Pengaturan Script Expired</h2>
+            
+            <div class="form-group">
+                <label>RouterOS Version</label>
+                <select class="form-control" id="ros-list" onchange="generateScript()">
+                    <option value="ros6">RouterOS v6.xx</option>
+                    <option value="ros7">RouterOS v7.xx</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>WAN IP Address (IP Gateway) <span>Ex: 192.168.1.1 (gunakan main gateway)</span></label>
+                <input type="text" class="form-control" id="ip-address" placeholder="192.168.1.1" value="192.168.1.1" oninput="generateScript()" onkeypress="return event.charCode != 32">
+            </div>
+
+            <div class="form-group">
+                <label>Proxy Port (Redirect) <span>Jangan gunakan 3128 atau 8080</span></label>
+                <input type="text" class="form-control" id="proxy-port" placeholder="8082" value="8082" oninput="generateScript()" onkeypress="return event.charCode != 32">
+            </div>
+
+            <div class="form-group">
+                <label>Expired Message Title <span>Mendukung Tag HTML</span></label>
+                <input type="text" class="form-control" id="input-msg-title" value="EXPIRE!" oninput="generateScript()">
+            </div>
+
+            <div class="form-group">
+                <label>Expired Message Body</label>
+                <textarea class="form-control" id="input-msg-body" oninput="generateScript()">DEAR CUSTOMERS, WE INFORM YOU THAT YOUR INTERNET SERVICE IS CURRENTLY TERMINATED. PLEASE MAKE BILL PAYMENTS THROUGH THE ACCOUNT WE PROVIDE. IN ORDER TO REMAIN INTERNET SERVICE ACTIVE, YOU ARE REQUESTED TO MAKE PAYMENT BEFORE THE DATE OF EVERY MONTH<br><br>Contact Admin: +62813-2222-3333</textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group" style="flex:1;">
+                    <label>Title Color</label>
+                    <input type="text" class="form-control" id="set-title-color" value="white" oninput="generateScript()">
+                </div>
+                <div class="form-group" style="flex:1;">
+                    <label>Text Color</label>
+                    <input type="text" class="form-control" id="set-text-color" value="black" oninput="generateScript()">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Background (Color / CSS)</label>
+                <input type="text" class="form-control" id="set-background-color" value="linear-gradient(to bottom right, #ef4444, #f97316)" oninput="generateScript()">
+            </div>
+            
+            <button class="btn btn-primary" onclick="generateScript()">⟳ Refresh Preview & Script</button>
+        </div>
+
+        <!-- Right Panel: Outputs -->
+        <div class="panel">
+            <h2 class="panel-title">Hasil Script Terminal</h2>
+            
+            <div class="script-container">
+                <div class="script-output" id="showScript">
+<span class="comment">###############################################################
+# NOTIFICATION EXPIRED FOR HOTSPOT, PPPOE AND STATIC IP WITH PROXY
+# Date/Time: <span id="tanggalwaktu"></span>
+# Generated By: JLA Tools Generator
+###############################################################</span>
+
+<b>/ip proxy set enabled=yes max-cache-size=none port=<span class="highlight" id="result-set-port-proxy">8082</span></b>
+<b>/ip proxy access</b>
+add action=allow dst-port=<span class="highlight" id="result-proxy-port">8082</span> comment="Expired by JLA"
+add action=<span class="highlight" id="result-action">deny</span> <span id="result-redirect">redirect-to=192.168.1.1:8082</span> comment="Expired by JLA" dst-port=80
+
+<b>/ip firewall address-list</b>
+add list=EXPIRED address=<span class="highlight">0.0.0.0</span> comment="Expired by JLA"
+
+<b>/ip firewall filter</b>
+/ip firewall filter add action=drop chain=forward comment="Expired by JLA" dst-port=!80,<span class="highlight" id="result-filter-port">8082</span> protocol=tcp src-address-list=EXPIRED
+/ip firewall filter add action=drop chain=forward comment="Expired by JLA" dst-port=!53,5353 protocol=udp src-address-list=EXPIRED
+
+<b>/ip firewall nat</b>
+add chain=dstnat src-address-list=EXPIRED protocol=tcp action=redirect to-ports=<span class="highlight" id="result-nat-port">8082</span> comment="Expired by JLA"
+
+<b>/ppp profile</b>
+add address-list=EXPIRED comment="Expired by JLA" name=EXPIRED on-down=":local username $\"user\";\r\
+\n/ip proxy access remove [find comment=\"ppp-$username\"];\r\
+\n/ip firewall address-list remove [find comment=\"ppp-$username\"];" on-up=":local username $\"user\";\r\
+\n:local address $\"remote-address\";\r\
+\n/ip proxy access add action=deny src-address=$address comment=\"ppp-$username\";\r\
+\n/ip firewall address-list add list=EXPIRED address=$address comment=\"ppp-$username\""
+
+<b>/ip hotspot user profile</b>
+add add-mac-cookie=no address-list=EXPIRED !mac-cookie-timeout name=EXPIRED on-login=":local username $\"user\";\r\
+\n:local ipaddress $\"address\";\r\
+\n/ip proxy access add action=deny src-address=$ipaddress comment=\"hs-$username\";\r\
+\n/ip firewall address-list add list=EXPIRED address=$address comment=\"hs-$username\"" on-logout=":local username $user;\r\
+\n/ip hotspot cookie remove [find user=$username]\r\
+\n/ip proxy access remove [find comment=\"hs-$username\"]\r\
+\n/ip firewall address-list remove [find comment=\"hs-$username\"];" shared-users=50
+</div>
+            </div>
+
+            <div class="form-row">
+                <button class="btn btn-action" id="btn-copy" style="flex:1" onclick="copyScript()">📋 Copy Script</button>
+                <button class="btn btn-action" style="flex:1" onclick="downloadErrorHtml()">💾 Download error.html</button>
+            </div>
+
+            <div class="preview-wrapper">
+                <div class="preview-header">Live Preview (error.html)</div>
+                <div class="preview-content" id="list-output-content2">
+                    <div>
+                        <div id="msg-title" style="color:white; font-weight:bold; font-size:60px; margin-bottom:15px;">EXPIRE!</div>
+                        <div id="msg-body" style="color:black; font-weight:bold; font-size:15px; line-height:1.8; max-width:800px; margin:0 auto;"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="instructions">
+                <span>Tutorial Instalasi:</span><br>
+                1. Download <b>error.html</b> melalui tombol di atas, lalu upload ke winbox pada menu "Files" ke dalam folder <b>"webproxy/error.html"</b>.<br>
+                2. Untuk mengaktifkan halaman expired, cukup set profil user Anda menjadi <b>"EXPIRED"</b> pada menu Hotspot atau PPPoE di Winbox.<br>
+                3. Jangan gunakan "EXPIRED" untuk Hotspot Voucher, gunakan hanya untuk sistem Hotspot bulanan.<br>
+                4. Untuk Static-IP, masukkan secara manual IP pelanggan ke <b>Firewall -> Address Lists -> EXPIRED</b>.
+            </div>
+        </div>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    Jaka Lintas Akses © <script>document.write(new Date().getFullYear())</script>. Premium RouterOS Script Tools Portal.
+  </footer>
+
+  <script>
+    // Inisialisasi awal
+    window.onload = function() {
+        generateScript();
+    };
+
+    function generateScript() {
+        // Mengambil nilai input
+        const rosVersion = document.getElementById('ros-list').value;
+        const ipAddress = document.getElementById('ip-address').value || '192.168.1.1';
+        const proxyPort = document.getElementById('proxy-port').value || '8082';
+        
+        const msgTitle = document.getElementById('input-msg-title').value;
+        const msgBody = document.getElementById('input-msg-body').value;
+        const titleColor = document.getElementById('set-title-color').value;
+        const textColor = document.getElementById('set-text-color').value;
+        const bgColor = document.getElementById('set-background-color').value;
+
+        // Update tanggal di komentar script
+        const now = new Date();
+        const dateString = now.toLocaleDateString('id-ID') + ', ' + now.toLocaleTimeString('id-ID');
+        document.getElementById('tanggalwaktu').innerText = dateString;
+
+        // Update nilai proxy port di seluruh blok script
+        document.getElementById('result-set-port-proxy').innerText = proxyPort;
+        document.getElementById('result-proxy-port').innerText = proxyPort;
+        document.getElementById('result-filter-port').innerText = proxyPort;
+        document.getElementById('result-nat-port').innerText = proxyPort;
+
+        // Evaluasi beda settingan redirect berdasarkan standard proxy
+        // Standard Mikrotik Proxy menggunakan action deny dan redirect-to
+        document.getElementById('result-action').innerText = 'deny';
+        document.getElementById('result-redirect').innerText = 'redirect-to=' + ipAddress + ':' + proxyPort;
+
+        // Update Live Preview Halaman Error
+        const previewContainer = document.getElementById('list-output-content2');
+        const previewTitle = document.getElementById('msg-title');
+        const previewBody = document.getElementById('msg-body');
+
+        previewContainer.style.background = bgColor;
+        
+        previewTitle.innerHTML = msgTitle;
+        previewTitle.style.color = titleColor;
+
+        previewBody.innerHTML = msgBody;
+        previewBody.style.color = textColor;
+    }
+
+    function copyScript() {
+        const scriptBox = document.getElementById('showScript');
+        const range = document.createRange();
+        range.selectNode(scriptBox);
+        window.getSelection().removeAllRanges();
+        window.getSelection().addRange(range);
+        
+        try {
+            document.execCommand('copy');
+            const btn = document.getElementById('btn-copy');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '✅ Tersalin!';
+            btn.style.background = '#22c55e'; // Green success color
+            
+            setTimeout(() => { 
+                btn.innerHTML = originalText; 
+                btn.style.background = '';
+            }, 2000);
+        } catch (err) {
+            console.error('Gagal menyalin script');
+        }
+        window.getSelection().removeAllRanges();
+    }
+
+    function downloadErrorHtml() {
+        const title = document.getElementById('input-msg-title').value;
+        const body = document.getElementById('input-msg-body').value;
+        const titleColor = document.getElementById('set-title-color').value;
+        const textColor = document.getElementById('set-text-color').value;
+        const bgColor = document.getElementById('set-background-color').value;
+
+        // Merakit source HTML file untuk didownload
+        const htmlSource = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Internet Service Expired</title>
+<style>
+  body {
+    background: ${bgColor};
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    text-align: center;
+    padding: 20px;
+    box-sizing: border-box;
+  }
+  .container {
+    max-width: 800px;
+    width: 100%;
+  }
+  h1 {
+    color: ${titleColor};
+    font-size: 60px;
+    margin-bottom: 20px;
+    word-break: break-word;
+  }
+  p {
+    color: ${textColor};
+    font-size: 16px;
+    line-height: 1.8;
+    font-weight: 600;
+  }
+  @media (max-width: 600px) {
+    h1 { font-size: 40px; }
+    p { font-size: 14px; }
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>${title}</h1>
+    <p>${body}</p>
+  </div>
+</body>
+</html>`;
+
+        // Proses pembuatan Blob dan trigger download otomatis
+        const blob = new Blob([htmlSource], { type: 'text/html' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'error.html';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(a.href);
+    }
+  </script>
+</body>
+</html>

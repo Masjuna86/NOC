@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <!-- Menentukan format karakter dan viewport untuk responsivitas di HP -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>JLA Tools - MikroTik Load Balancer Script Generator</title>
+  
+  <style>
+    /* Mengimpor font 'Inter' untuk teks biasa dan 'JetBrains Mono' untuk teks kode/terminal */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap');
+    
+    * { 
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+      box-sizing: border-box; 
+    }
+    
+    /* Variabel warna bawaan template JLA Tools (Nuansa Terang) */
+    :root {
+      --bg: #f4f7f6;           /* Warna latar belakang luar */
+      --text: #334155;         /* Warna teks utama */
+      --text-dark: #0f172a;    /* Warna teks gelap (judul) */
+      --text-muted: #64748b;   /* Warna teks redup (deskripsi) */
+      --accent: #ff6600;       /* Warna aksen utama (Oranye JLA) */
+      --border: #e2e8f0;       /* Warna garis tepi pembatas */
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      
+      /* Variabel tambahan khusus untuk form Load Balancer agar cocok dengan tema Terang */
+      --panel: #ffffff;
+      --panel-2: #f8fafc;      /* Background input form */
+      --text-faint: #94a3b8;   /* Teks petunjuk sangat redup */
+      --accent-dim: #ea580c;   /* Oranye agak gelap untuk efek hover */
+      --accent-glow: rgba(255, 102, 0, 0.15); /* Efek cahaya oranye */
+      --danger: #ef4444;       /* Merah untuk hapus */
+      --mono: 'JetBrains Mono', monospace; /* Font khusus skrip */
+      --sans: 'Inter', sans-serif;
+    }
+
+    body { 
+      font-family: var(--sans); 
+      background: var(--bg);
+      color: var(--text); 
+      margin: 0; 
+      padding: 0; 
+      display: flex; 
+      flex-direction: column; 
+      min-height: 100vh;
+    }
+
+    /* Bagian Header JLA Tools (Logo dan Tombol) */
+    .app-header {
+      height: 64px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-logo {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, var(--accent), #ea580c);
+      border-radius: 10px; color: #fff;
+      font-family: var(--mono); font-weight: 800; font-size: 16px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 12px rgba(255, 102, 0, 0.3);
+    }
+    .brand-title h1 { font-size: 15px; font-weight: 800; color: var(--text-dark); letter-spacing: 0.3px; line-height: 1.2; margin: 0;}
+    .brand-title p { font-size: 11px; color: var(--text-muted); font-family: var(--mono); font-weight: 500; margin: 0;}
+
+    /* Tombol Aksi di Header */
+    .header-actions { display: flex; align-items: center; gap: 12px; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 9px 16px; border-radius: 8px; border: none; font-family: var(--sans); font-size: 12px; font-weight: 600; cursor: pointer; transition: all .15s; white-space: nowrap; text-decoration: none; }
+    .btn-secondary { background: #ffffff; color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: #f8fafc; }
+    .btn-wa { background: #25D366; color: white; border-radius: 20px; font-weight: 700; }
+    .btn-wa:hover { background: #128C7E; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3); }
+
+    /* Container area putih tempat generator berada */
+    .main-container { 
+      display: flex; 
+      flex: 1; 
+      max-width: 1400px; 
+      margin: 0 auto; 
+      width: 100%; 
+      padding: 40px 20px; 
+      gap: 30px; 
+    }
+    
+    .content-area { 
+      flex: 1; 
+      background: #ffffff; 
+      border-radius: 16px; 
+      box-shadow: 0 10px 30px rgba(148, 163, 184, 0.1); 
+      border: 1px solid #f1f5f9;
+      padding: 30px; /* Diperkecil agar form tidak terlalu sempit */
+      line-height: 1.6; 
+      min-width: 0;
+      /* Dibuat flex agar Sidebar Kiri & Terminal Kanan bersampingan */
+      display: flex; 
+      gap: 30px;
+    }
+
+    /* Area khusus untuk formulir pengaturan Load Balance */
+    .sidebar {
+      width: 400px;
+      min-width: 400px;
+      border-right: 1px solid var(--border);
+      padding-right: 24px;
+      overflow-y: auto;
+      max-height: calc(100vh - 180px);
+    }
+    /* Memodifikasi scrollbar untuk sidebar agar rapi */
+    .sidebar::-webkit-scrollbar { width: 6px; }
+    .sidebar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+    .section { margin-bottom: 26px; }
+    .section-label {
+      font-family: var(--sans);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    /* Garis pemisah setelah judul setiap section */
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+    .field { margin-bottom: 14px; }
+    label {
+      display: block;
+      font-size: 12.5px;
+      font-weight: 500;
+      color: var(--text-dark);
+      margin-bottom: 6px;
+    }
+    
+    /* Tampilan kolom input dan dropdown */
+    input[type=text], input[type=number], select, textarea {
+      width: 100%;
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      color: var(--text-dark);
+      padding: 10px 12px;
+      border-radius: 6px;
+      font-family: var(--mono);
+      font-size: 13px;
+      outline: none;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    input[type=text]:focus, input[type=number]:focus, select:focus, textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+    
+    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    
+    /* Tombol pilihan toggle (Misal ROS 6 / ROS 7) */
+    .ros-toggle {
+      display: flex;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .ros-toggle button {
+      flex: 1;
+      padding: 10px 8px;
+      background: var(--panel-2);
+      border: none;
+      color: var(--text-muted);
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .ros-toggle button + button { border-left: 1px solid var(--border); }
+    .ros-toggle button.active { background: var(--accent-glow); color: var(--accent); }
+    
+    /* Kotak centang */
+    .checkline { display: flex; align-items: center; gap: 9px; padding: 9px 0; cursor: pointer; user-select: none; }
+    .checkline input { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }
+    .checkline span { font-size: 13px; font-weight: 500; color: var(--text-dark); }
+    .sub-field { padding-left: 25px; margin-top: -4px; margin-bottom: 12px; }
+    
+    /* Kartu untuk setiap WAN yang ditambahkan */
+    .wan-card {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+      margin-bottom: 12px;
+      background: #ffffff;
+      box-shadow: var(--shadow-sm);
+    }
+    .wan-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .wan-head .tag { font-family: var(--mono); font-size: 12px; font-weight: 700; color: var(--accent); }
+    .wan-head button {
+      background: none; border: none; color: var(--text-faint); cursor: pointer;
+      font-size: 16px; line-height: 1; padding: 2px 6px; border-radius: 4px;
+    }
+    .wan-head button:hover { color: var(--danger); background: #fee2e2; }
+    
+    .add-wan-btn {
+      width: 100%; padding: 12px; background: transparent; border: 1px dashed var(--border);
+      color: var(--text-muted); border-radius: 6px; font-family: var(--mono); font-size: 13px;
+      font-weight: 600; cursor: pointer;
+    }
+    .add-wan-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--panel-2); }
+    .hint { font-size: 11.5px; color: var(--text-muted); margin-top: 6px; line-height: 1.5; }
+    
+    /* Tombol utama Generate */
+    .generate-btn {
+      width: 100%; padding: 14px; background: var(--accent); border: none;
+      color: #ffffff; font-family: var(--sans); font-weight: 700; font-size: 14px;
+      letter-spacing: 0.04em; border-radius: 8px; cursor: pointer; margin-top: 10px;
+      box-shadow: 0 4px 12px rgba(255, 102, 0, 0.3); transition: transform 0.1s, box-shadow 0.2s;
+    }
+    .generate-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(255, 102, 0, 0.4); }
+    .generate-btn:active { transform: scale(0.98); }
+
+    .output-pane {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+    
+    .terminal {
+      flex: 1;
+      background: #2b2f3a; /* Warna latar belakang terminal mac/winbox */
+      border: 1px solid #3c4250;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    }
+    
+    /* Bar Navigasi Atas Terminal */
+    .term-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: #343a46; /* Abu-abu agak lebih terang dari layar untuk header */
+      border-bottom: 1px solid #242831;
+    }
+    
+    .term-bar-left { display: flex; align-items: center; gap: 16px; }
+    
+    /* Titik gaya tombol Window MacOS (Merah, Kuning, Hijau) */
+    .term-bar .dots { display: flex; gap: 8px; }
+    .term-bar .dots span { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+    .term-bar .dots span:nth-child(1) { background: #ff5f56; } /* Close - Merah */
+    .term-bar .dots span:nth-child(2) { background: #ffbd2e; } /* Minimize - Kuning */
+    .term-bar .dots span:nth-child(3) { background: #27c93f; } /* Maximize - Hijau */
+    
+    .term-title { font-family: var(--mono); font-size: 13px; color: #9ca3af; letter-spacing: 0.02em; font-weight: 500;}
+    
+    .term-actions { display: flex; gap: 8px; }
+    
+    /* Tombol Copy berwarna Oranye khas gambar referensi */
+    .term-actions button {
+      background: #ff6b00; 
+      border: none;
+      color: #ffffff;
+      font-family: var(--sans);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .term-actions button:hover { background: #e56000; }
+    
+    .copy-icon { width: 16px; height: 16px; fill: currentColor; }
+
+    /* Area Teks Skrip Output */
+    .term-body {
+      flex: 1;
+      overflow: auto;
+      padding: 20px 22px;
+      display: flex;
+    }
+    /* Nomor Baris */
+    .line-numbers {
+      font-family: var(--mono);
+      font-size: 13px;
+      line-height: 1.65;
+      color: #5a6375;
+      text-align: right;
+      padding-right: 16px;
+      user-select: none;
+      border-right: 1px solid #3c4250;
+      margin-right: 16px;
+      white-space: pre;
+    }
+    /* Teks Skrip */
+    pre#output {
+      font-family: var(--mono);
+      font-size: 13px;
+      line-height: 1.65;
+      color: #e5e7eb; /* Teks terang untuk background gelap */
+      margin: 0;
+      white-space: pre;
+      flex: 1;
+    }
+
+    /* Modifikasi scrollbar dalam terminal */
+    .term-body::-webkit-scrollbar { width: 10px; height: 10px; }
+    .term-body::-webkit-scrollbar-track { background: #2b2f3a; }
+    .term-body::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 5px; }
+    
+    /* Footer Template */
+    .footer { 
+      text-align: center; 
+      font-size: 13px; 
+      color: #94a3b8; 
+      padding: 30px; 
+      width: 100%; 
+      margin-top: auto;
+    }
+
+    /* Responsif untuk Layar Handphone (Lebar layar dibawah 900px) */
+    @media screen and (max-width: 900px) { 
+      .app-header { flex-direction: column; height: auto; padding: 15px 20px; gap: 15px; align-items: center; justify-content: center; text-align: center;}
+      .brand { flex-direction: column; gap: 8px; }
+      .header-actions { width: 100%; display: flex; justify-content: center; gap: 10px;}
+      .main-container { flex-direction: column; padding: 20px 15px; }
+      .content-area { flex-direction: column; padding: 20px; gap: 20px; }
+      /* Form di HP tidak berdampingan, tapi menurun */
+      .sidebar { width: 100%; min-width: 0; max-height: none; border-right: none; padding-right: 0; border-bottom: 1px solid var(--border); padding-bottom: 24px;}
+      .output-pane { min-height: 400px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="brand">
+      <!-- Logo Singkatan Aplikasi -->
+      <div class="brand-logo">JLA</div>
+      <div class="brand-title">
+        <!-- Judul Aplikasi Utama -->
+        <h1>JAKA LINTAS AKSES GENERATOR</h1>
+        <p>Portal Script Generator Premium JLA</p>
+      </div>
+    </div>
+    <!-- Area Tombol Aksi di Kanan Atas -->
+    <div class="header-actions">
+      <!-- Tombol Kembali ke Beranda -->
+      <a href="index.html" class="btn btn-secondary">🏠 Beranda</a>
+      <!-- Tombol Hubungi WhatsApp JLA Tools -->
+      <a href="https://wa.me/62818386078?text=Halo%20JLA%20Tools,%20saya%20ingin%20bertanya..." target="_blank" class="btn btn-wa">
+        <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Hubungi Kami
+      </a>
+    </div>
+  </header>
+
+  <!-- Area Konten Utama -->
+  <main class="main-container">
+    <div class="content-area">
+      
+      <!-- Bagian Kiri: Area input formulir parameter script -->
+      <div class="sidebar">
+
+        <!-- Form Pemilihan Versi RouterOS -->
+        <div class="section">
+          <div class="section-label">RouterOS Version</div>
+          <div class="ros-toggle">
+            <button id="btnRos6" onclick="setRos(6)">ROS 6</button>
+            <button id="btnRos7" class="active" onclick="setRos(7)">ROS 7</button>
+          </div>
+          <!-- Teks panduan yang berubah otomatis bergantung pada versi terpilih -->
+          <div class="hint" id="rosHint">ROS 7 memisahkan routing-mark ke <b>/routing table</b> dan memakai <b>routing-table=</b> pada /ip route.</div>
+        </div>
+
+        <!-- Form Interface LAN Arah Lokal -->
+        <div class="section">
+          <div class="section-label">Interface LAN (arah client)</div>
+          <div class="field">
+            <label>Nama interface input / LAN</label>
+            <input type="text" id="lanIf" value="ether5-OUTPUT">
+          </div>
+        </div>
+
+        <!-- Tombol Pintas Jumlah WAN yang Akan Digabungkan -->
+        <div class="section">
+          <div class="section-label">Jumlah WAN</div>
+          <div class="ros-toggle" id="wanCountToggle">
+            <button id="btnWan2" onclick="setWanCount(2)">2 WAN</button>
+            <button id="btnWan3" class="active" onclick="setWanCount(3)">3 WAN</button>
+          </div>
+          <div class="hint">Pilih cepat 2 atau 3 link WAN. Detail interface, gateway, dan distance tiap WAN diatur di bawah.</div>
+        </div>
+
+        <!-- Area ini akan diisi secara dinamis oleh JavaScript dengan form input WAN -->
+        <div class="section">
+          <div class="section-label">WAN Links</div>
+          <div id="wanList"></div>
+          <!-- Tombol untuk menambah WAN di atas 3 -->
+          <button class="add-wan-btn" onclick="addWanManual()">+ Tambah WAN lain (&gt;3)</button>
+        </div>
+
+        <!-- Form Pengaturan Metode Load Balancing (PCC / NTH) -->
+        <div class="section">
+          <div class="section-label">Metode Balancing</div>
+
+          <!-- Opsi Untuk Mengaktifkan Metode NTH -->
+          <label class="checkline">
+            <input type="checkbox" id="enableNth" checked onchange="toggleNth()">
+            <span>NTH Balancer (khusus port tertentu, mis. web)</span>
+          </label>
+          <div class="sub-field" id="nthFields">
+            <div class="field">
+              <label>dst-port yang dilewatkan NTH (protocol tcp)</label>
+              <input type="text" id="nthPorts" value="80,443">
+            </div>
+          </div>
+
+          <!-- Opsi Untuk Mengaktifkan Metode PCC -->
+          <label class="checkline">
+            <input type="checkbox" id="enablePcc" checked onchange="togglePcc()">
+            <span>PCC Balancer (semua trafik lainnya)</span>
+          </label>
+          <div class="sub-field" id="pccFields">
+            <div class="field">
+              <label>per-connection-classifier</label>
+              <select id="pccClassifier">
+                <option value="both-addresses-and-ports">both-addresses-and-ports</option>
+                <option value="src-address-and-port" selected>src-address-and-port</option>
+                <option value="dst-address-and-port">dst-address-and-port</option>
+                <option value="both-addresses">both-addresses</option>
+                <option value="src-address">src-address</option>
+                <option value="dst-address">dst-address</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Form IP Lokal yang Dikecualikan Dari Proses Balancing (RFC1918) -->
+        <div class="section">
+          <div class="section-label">RFC1918 Address List</div>
+          <div class="field">
+            <label>Subnet lokal yang dikecualikan dari LB (satu per baris)</label>
+            <!-- Area teks (textarea) untuk IP yang diizinkan Bypass (tidak kena mangle LB) -->
+            <textarea id="rfc1918" rows="3">192.168.0.0/16
+172.16.0.0/12
+10.0.0.0/8</textarea>
+          </div>
+        </div>
+
+        <!-- Tombol Eksekusi Akhir -->
+        <button class="generate-btn" onclick="generate()">⚡ GENERATE SCRIPT</button>
+      </div>
+
+      <!-- Bagian Kanan: Menampilkan Skrip Yang Sudah Jadi -->
+      <div class="output-pane">
+        <div class="terminal">
+          <!-- Batang atas Terminal Winbox/MacOS -->
+          <div class="term-bar">
+            <div class="term-bar-left">
+                <!-- Tiga Titik Navigasi (Merah, Kuning, Hijau) -->
+                <div class="dots"><span></span><span></span><span></span></div>
+                <!-- Judul Terminal Sesuai Gambar -->
+                <div class="term-title">Terminal Winbox</div>
+            </div>
+            <div class="term-actions">
+              <!-- Tombol Salin Script dengan Ikon SVG di Dalamnya -->
+              <button onclick="copyOut()">
+                <svg class="copy-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+                </svg>
+                Copy Script
+              </button>
+            </div>
+          </div>
+          <!-- Badan Terminal (Isi Teks) -->
+          <div class="term-body">
+            <!-- Kolom untuk Nomor Baris -->
+            <div class="line-numbers" id="lineNumbers">1</div>
+            <!-- Area kode mentah skrip MikroTik -->
+            <pre id="output">// isi form di kiri lalu klik GENERATE SCRIPT
+// script MikroTik akan muncul di sini</pre>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+  </main>
+
+  <footer class="footer">
+    Jaka Lintas Akses © 2019. Premium RouterOS Script Tools Portal.
+  </footer>
+
+  <script>
+    // --- JAVASCRIPT: LOGIKA PEMBUATAN SCRIPT MIKROTIK ---
+    
+    let rosVersion = 7;
+    let wanCount = 0;
+
+    // Fungsi mengganti ROS Version
+    function setRos(v){
+      rosVersion = v;
+      // Menandai tombol yang sedang aktif
+      document.getElementById('btnRos6').classList.toggle('active', v===6);
+      document.getElementById('btnRos7').classList.toggle('active', v===7);
+      
+      // Mengubah teks petunjuk ROS
+      document.getElementById('rosHint').innerHTML = v===7
+        ? 'ROS 7 memisahkan routing-mark ke <b>/routing table</b> dan memakai <b>routing-table=</b> pada /ip route.'
+        : 'ROS 6 memakai <b>routing-mark=</b> langsung pada /ip route, tanpa /routing table.';
+    }
+
+    // Fungsi sembunyikan/tampilkan input khusus NTH
+    function toggleNth(){
+      document.getElementById('nthFields').style.display = document.getElementById('enableNth').checked ? 'block' : 'none';
+    }
+    // Fungsi sembunyikan/tampilkan input khusus PCC
+    function togglePcc(){
+      document.getElementById('pccFields').style.display = document.getElementById('enablePcc').checked ? 'block' : 'none';
+    }
+
+    // Fungsi memasukkan kotak parameter WAN ke layar
+    function addWan(defaults){
+      wanCount++;
+      const id = wanCount;
+      const d = defaults || {}; // Memakai nilai bawaan (defaults) jika diberikan
+      
+      // Membuat wadah form 1 jaringan internet (WAN)
+      const wrap = document.createElement('div');
+      wrap.className = 'wan-card';
+      wrap.id = 'wan-' + id;
+      wrap.innerHTML = `
+        <div class="wan-head">
+          <span class="tag">WAN ${id}</span>
+          <button onclick="removeWan(${id})" title="Hapus WAN ini">✕</button>
+        </div>
+        <div class="field">
+          <label>Nama interface</label>
+          <input type="text" class="wan-if" value="${d.name || 'ether' + id + '-WAN' + id}">
+        </div>
+        <div class="row2">
+          <div class="field" style="margin-bottom:0;">
+            <label>Gateway</label>
+            <input type="text" class="wan-gw" value="${d.gw || '192.168.' + id + '.1'}">
+          </div>
+          <div class="field" style="margin-bottom:0;">
+            <label>Failover distance</label>
+            <input type="number" class="wan-dist" value="${d.dist || id}" min="1">
+          </div>
+        </div>
+      `;
+      // Masukkan ke dalam DOM layar HTML
+      document.getElementById('wanList').appendChild(wrap);
+    }
+
+    // Fungsi menghapus elemen WAN
+    function removeWan(id){
+      const el = document.getElementById('wan-' + id);
+      if(el) el.remove();
+      syncWanCountToggle(); // Segarkan warna tombol cepat di atasnya
+    }
+
+    // Fungsi memanggil pembuatan WAN baru
+    function addWanManual(){
+      addWan();
+      syncWanCountToggle();
+    }
+
+    // Fungsi mengubah status tombol cepat "2 WAN" atau "3 WAN"
+    function syncWanCountToggle(){
+      const count = document.querySelectorAll('.wan-card').length;
+      document.getElementById('btnWan2').classList.toggle('active', count===2);
+      document.getElementById('btnWan3').classList.toggle('active', count===3);
+    }
+
+    // Fungsi meng-generate kolom WAN secara instan berdasar jumlah
+    function setWanCount(n){
+      const current = getWans(); // Menyimpan data input sebelum dihapus
+      document.getElementById('wanList').innerHTML = ''; // Mengosongkan layar WAN
+      wanCount = 0;
+      
+      for(let i=0; i<n; i++){
+        const prev = current[i];
+        addWan(prev ? {name: prev.name, gw: prev.gw, dist: prev.dist} : {
+          name: `ether${i+1}-WAN${i+1}`,
+          gw: `192.168.${i+1}.1`,
+          dist: i+1
+        });
+      }
+      
+      // Update aktif/tidaknya tombol toggle di layar
+      document.getElementById('btnWan2').classList.toggle('active', n===2);
+      document.getElementById('btnWan3').classList.toggle('active', n===3);
+    }
+
+    // Mengumpulkan seluruh data interface & gateway yang sudah diisi pengguna
+    function getWans(){
+      return [...document.querySelectorAll('.wan-card')].map(card => ({
+        name: card.querySelector('.wan-if').value.trim(),
+        gw: card.querySelector('.wan-gw').value.trim(),
+        dist: card.querySelector('.wan-dist').value.trim()
+      }));
+    }
+
+    // Fungsi Utama Merakit Skrip MikroTik
+    function generate(){
+      const ros = rosVersion;
+      const lan = document.getElementById('lanIf').value.trim();
+      const wans = getWans();
+      // Pisahkan setiap IP by-pass ke dalam format array (enter)
+      const rfcLines = document.getElementById('rfc1918').value.split('\n').map(s=>s.trim()).filter(Boolean);
+      
+      const nthOn = document.getElementById('enableNth').checked;
+      const pccOn = document.getElementById('enablePcc').checked;
+      const nthPorts = document.getElementById('nthPorts').value.trim();
+      const classifier = document.getElementById('pccClassifier').value;
+
+      if(wans.length < 2){
+        alert('Tambahkan minimal 2 WAN untuk kebutuhan Load Balancing.');
+        return;
+      }
+
+      const n = wans.length;
+      let L = []; // Array ini akan menampung perakitan skrip baris per baris
+
+      // Bagian 1: Menyusun Address List Local (Bypass LB)
+      L.push('/ip firewall address-list');
+      rfcLines.forEach(a => L.push(`add address=${a} list=rfc1918`));
+      L.push('');
+
+      // Bagian 2: Menyusun Firewall Mangle Connection Mark
+      L.push('/ip firewall mangle');
+      wans.forEach((w,i)=>{
+        const idx = i+1;
+        const comment = idx===1 ? ' comment="IN/OUT FOR EACH WAN"' : '';
+        L.push(`add action=mark-connection chain=prerouting${comment} \\`);
+        L.push(`    connection-mark=no-mark in-interface=${w.name} new-connection-mark=\\`);
+        L.push(`    cm_in_WAN${idx} passthrough=yes`);
+      });
+      wans.forEach((w,i)=>{
+        const idx = i+1;
+        const tail = idx===n ? ' passthrough=yes' : '';
+        L.push(`add action=mark-routing chain=output connection-mark=cm_in_WAN${idx} \\`);
+        L.push(`    new-routing-mark=byWAN${idx}${tail}`);
+      });
+
+      // Bagian 3: Menyusun Mangle NTH Balancer
+      if(nthOn){
+        L.push(`add action=jump chain=prerouting comment=\\`);
+        L.push(`    "LB NTH JUMPER [!!! only for tcp ${nthPorts} traffic]" connection-state=new \\`);
+        L.push(`    dst-address-list=!rfc1918 dst-port=${nthPorts} in-interface=all-ethernet \\`);
+        L.push(`    jump-target=nth-balancer protocol=tcp`);
+        
+        wans.forEach((w,i)=>{
+          const idx = i+1;
+          L.push(`add action=mark-connection chain=nth-balancer in-interface=${lan} \\`);
+          L.push(`    new-connection-mark=cm_nth_balancer_${idx} nth=${n},${idx} passthrough=yes`);
+        });
+        L.push('add action=return chain=nth-balancer');
+        
+        wans.forEach((w,i)=>{
+          const idx = i+1;
+          const comment = idx===1 ? ' comment="LB NTH ROUTE"' : '';
+          L.push(`add action=mark-routing chain=prerouting${comment} \\`);
+          L.push(`    connection-mark=cm_nth_balancer_${idx} in-interface=${lan} \\`);
+          L.push(`    new-routing-mark=byWAN${idx} passthrough=no`);
+        });
+      }
+
+      // Bagian 4: Menyusun Mangle PCC Balancer
+      if(pccOn){
+        L.push(`add action=jump chain=prerouting comment="LB PCC JUMPER [for any traffic]" \\`);
+        L.push(`    dst-address-list=!rfc1918 in-interface=${lan} jump-target=\\`);
+        L.push(`    pcc-balancer protocol=!ospf`);
+        L.push(`add action=jump chain=prerouting dst-address-list=!rfc1918 in-interface=\\`);
+        L.push(`    ${lan} jump-target=pcc-balancer protocol=tcp`);
+        L.push(`add action=jump chain=prerouting dst-address-list=!rfc1918 in-interface=\\`);
+        L.push(`    ${lan} jump-target=pcc-balancer protocol=udp`);
+        
+        wans.forEach((w,i)=>{
+          const idx = i+1;
+          const comment = idx===1 ? ' comment=\\\n    "LB PCC BALANCER CLASSIFIER"' : '';
+          L.push(`add action=mark-connection chain=pcc-balancer${comment} in-interface=${lan} \\`);
+          L.push(`    new-connection-mark=cm_pcc_balancer_${idx} passthrough=yes \\`);
+          L.push(`    per-connection-classifier=${classifier}:${n}/${i}`);
+        });
+        L.push(`add action=return chain=pcc-balancer in-interface=${lan}`);
+        
+        wans.forEach((w,i)=>{
+          const idx = i+1;
+          const comment = idx===1 ? ' comment="LB PCC ROUTE"' : '';
+          L.push(`add action=mark-routing chain=prerouting${comment} \\`);
+          L.push(`    connection-mark=cm_pcc_balancer_${idx} in-interface=${lan} \\`);
+          L.push(`    new-routing-mark=byWAN${idx} passthrough=no`);
+        });
+      }
+
+      L.push('');
+
+      // Bagian 5: Tabel Routing & Gateway IP Route
+      if(ros === 7){
+        L.push('/routing table');
+        wans.forEach((w,i)=> L.push(`add fib name=byWAN${i+1}`));
+        L.push('');
+      }
+
+      L.push('/ip route');
+      // Jalur Mark Routing Balancer (prioritas)
+      wans.forEach((w,i)=>{
+        const idx = i+1;
+        const markKey = ros===7 ? `routing-table=byWAN${idx}` : `routing-mark=byWAN${idx}`;
+        L.push(`add check-gateway=ping comment="WAN ${idx}" distance=1 gateway=${w.gw} \\`);
+        L.push(`    ${markKey}`);
+      });
+      // Jalur Failover Backup / Normal (tanpa mark)
+      wans.forEach((w,i)=>{
+        const idx = i+1;
+        L.push(`add check-gateway=ping comment="WAN ${idx}" distance=${w.dist} gateway=${w.gw}`);
+      });
+
+      // Jadikan teks memanjang utuh dan tampilkan di layar HTML Terminal
+      const text = L.join('\n');
+      renderOutput(text);
+    }
+
+    // Memasukkan Teks ke Layar Output Terminal Kanan
+    function renderOutput(text){
+      const outEl = document.getElementById('output');
+      const lines = text.split('\n');
+      outEl.textContent = text;
+      
+      // Menghitung & mencetak angka urutan baris ke kiri terminal
+      const nums = document.getElementById('lineNumbers');
+      nums.textContent = lines.map((_,i)=> (i+1)).join('\n');
+      
+      // Simpan data mentahnya untuk keperluan fungsi Salin (Copy)
+      outEl.dataset.raw = text;
+    }
+
+    // Aksi menyalin (Copy) ketika ditekan tombol oranye
+    function copyOut(){
+      const raw = document.getElementById('output').dataset.raw || '';
+      if(!raw) return;
+      
+      // Eksekusi Clipboard API browser
+      navigator.clipboard.writeText(raw).then(()=>{
+        const btn = event.currentTarget;
+        const origHTML = btn.innerHTML;
+        // Ubah teks sementara jadi Copied dengan centang
+        btn.innerHTML = 'Copied ✓';
+        // Kembalikan tombol seperti semula sesudah 1.2 detik
+        setTimeout(()=> btn.innerHTML = origHTML, 1200);
+      });
+    }
+
+    // --- INISIALISASI SAAT HALAMAN DIBUKA ---
+    // Atur tampilan jadi 3 WAN by default, dan langsung hasilkan dummy script
+    setWanCount(3);
+    generate();
+  </script>
+
+</body>
+</html>

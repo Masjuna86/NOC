@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MikroTik Simple Queue & Queue Tree Generator | JLA Tools</title>
+  
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap');
+    
+    * { 
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+      box-sizing: border-box; 
+    }
+    
+    :root {
+      --bg: #f4f7f6;
+      --text: #334155;
+      --text-dark: #0f172a;
+      --text-muted: #64748b;
+      --accent: #ff6600;
+      --border: #e2e8f0;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    }
+
+    body { 
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
+      background: var(--bg);
+      color: var(--text); 
+      margin: 0; 
+      padding: 0; 
+      display: flex; 
+      flex-direction: column; 
+      min-height: 100vh;
+    }
+
+    .app-header {
+      height: 64px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-logo {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, var(--accent), #ea580c);
+      border-radius: 10px; color: #fff;
+      font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 16px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 12px rgba(255, 102, 0, 0.3);
+    }
+    .brand-title h1 { font-size: 15px; font-weight: 800; color: var(--text-dark); letter-spacing: 0.3px; line-height: 1.2; margin: 0;}
+    .brand-title p { font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; font-weight: 500; margin: 0;}
+
+    .header-actions { display: flex; align-items: center; gap: 12px; }
+
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 9px 16px; border-radius: 8px; border: none; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; transition: all .15s; white-space: nowrap; text-decoration: none; }
+    .btn-secondary { background: #ffffff; color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: #f8fafc; }
+    .btn-wa { background: #25D366; color: white; border-radius: 20px; font-weight: 700; }
+    .btn-wa:hover { background: #128C7E; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3); }
+
+    .main-container { 
+      display: flex; 
+      flex: 1; 
+      max-width: 1400px; 
+      margin: 0 auto; 
+      width: 100%; 
+      padding: 40px 20px; 
+      gap: 30px; 
+    }
+    
+    .content-area { 
+      flex: 1; 
+      background: #ffffff; 
+      border-radius: 16px; 
+      box-shadow: 0 10px 30px rgba(148, 163, 184, 0.1); 
+      border: 1px solid #f1f5f9;
+      padding: 40px; 
+      line-height: 1.6; 
+      min-width: 0;
+    }
+
+    .footer { 
+      text-align: center; 
+      font-size: 13px; 
+      color: #94a3b8; 
+      padding: 30px; 
+      width: 100%; 
+      margin-top: auto;
+    }
+
+    @media screen and (max-width: 900px) { 
+      .app-header { flex-direction: column; height: auto; padding: 15px 20px; gap: 15px; align-items: center; justify-content: center; text-align: center;}
+      .brand { flex-direction: column; gap: 8px; }
+      .header-actions { width: 100%; display: flex; justify-content: center; gap: 10px;}
+      .main-container { flex-direction: column; padding: 20px 15px; }
+      .content-area { padding: 20px; }
+    }
+
+    .tool-h2 {color: var(--accent); font-weight: 600; margin-top: 0; font-size: 1.25rem;}
+    .tool-h3 {color: var(--accent); margin-top: 0; margin-bottom: 10px; font-size: 1.1rem; font-weight: 600;}
+    
+    .layout-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+    .panel-box { padding: 20px; border: 1px solid var(--border); border-radius: 8px; background: #fff; box-shadow: var(--shadow-sm); }
+    
+    .input-group { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; width: 100%;}
+    .input-group label { min-width: 140px; font-weight: 500; font-size: 14px; color: var(--text-dark); white-space: nowrap;}
+    .input-group .input-wrapper { flex: 1; }
+
+    .tool-input, .tool-select {padding:8px 12px;border:1px solid var(--border);border-radius:6px;width:100%;font-size:14px;background-color:#fff;color:var(--text-dark); box-shadow: var(--shadow-sm); outline: none; transition: border-color 0.2s, box-shadow 0.2s;}
+    .tool-input:focus, .tool-select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(255, 102, 0, 0.1); }
+    
+    .tool-btn {padding:8px 16px;border:none;border-radius:6px;background-color:var(--accent);color:#fff;cursor:pointer;transition:all .2s ease;font-size:14px; font-weight: 600; display: inline-block;}
+    .tool-btn:hover {background-color:#ea580c; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(234, 88, 12, 0.2);}
+    .tool-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    .category-item {display:flex;align-items:center;padding:5px 0}
+    .category-item input[type=checkbox] {margin-right:8px;width:16px;height:16px;accent-color:var(--accent)}
+    .category-item label {flex-grow:1;cursor:pointer;color:var(--text); font-size: 14px;}
+
+    .main-table-container {width:100%;border-collapse:collapse;border:1px solid var(--border);border-radius:8px;overflow:hidden;background-color:#fff;margin-bottom:20px;display:table; box-shadow: var(--shadow-sm);}
+    .main-table-container.hidden {display:none}
+    .table-header-group {display:table-header-group;background-color:#f8fafc;font-weight:600;color:var(--text-dark);border-bottom:2px solid var(--border)}
+    .table-header-row {display:table-row}
+    .table-header-cell {display:table-cell;padding:12px 10px;vertical-align:middle;border-right:1px solid var(--border);text-align:left;font-size:13px}
+    .table-header-cell:first-child {width:250px;min-width:150px;max-width:300px}
+    .table-header-cell.align-right {text-align:right;width:100px}
+    .table-header-cell.packet-mark {width:120px}
+    .table-header-cell.queue-type {width:120px}
+    .table-header-cell.priority {width:60px}
+    .table-header-cell.actions {width:120px;border-right:none;text-align:center}
+    .table-header-cell.target-parent-column {width:auto;text-align:left}
+    
+    .table-body-group {display:table-row-group;width:100%}
+    .table-row {display:table-row;border-bottom:1px solid var(--border); transition: background-color 0.2s;}
+    .table-row:hover {background-color: #f8fafc;}
+    .table-row:last-child {border-bottom:none}
+    .table-cell {display:table-cell;padding:8px 10px;vertical-align:middle;border-right:1px solid var(--border);box-sizing:border-box;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13px; color: var(--text);}
+    .table-cell.packet-mark-data-cell {width:120px}
+    .packet-mark-content {width:100%;overflow:auto;white-space:nowrap;text-overflow:clip;box-sizing:border-box;padding-right:2px}
+    .table-cell:last-child {border-right:none}
+    .table-cell.name-column {font-weight:500;color:var(--text-dark);text-align:left;position:relative}
+    .table-cell.data-column {text-align:right}
+    .table-cell.actions-column {text-align:center; display: flex; gap: 4px; justify-content: center; align-items: center; height: 100%;}
+    .table-cell.target-parent-column-data {text-align:left}
+
+    .caret-icon {cursor:pointer;-webkit-user-select:none;user-select:none;display:inline-block;margin-right:6px;transform:rotate(0);transition:transform .2s ease;vertical-align:middle; width: 16px; height: 16px;}
+    .caret-icon::before { content: '▶'; display: inline-block; font-size: 10px; color: var(--text-muted); }
+    .caret-icon.caret-down::before { transform: rotate(90deg); }
+    .caret-icon img { display: none; }
+    
+    .indent-level-0 {padding-left:10px}
+    .indent-level-1 {padding-left:30px}
+    .indent-level-2 {padding-left:50px}
+    .indent-level-3 {padding-left:70px}
+    .indent-level-4 {padding-left:90px}
+    
+    .hidden-row {display:none}
+    
+    .action-button {margin:0 2px;padding:4px 8px;border:1px solid var(--border);border-radius:4px;cursor:pointer;font-size:12px;white-space:nowrap;transition:all .2s ease;background-color:#fff;color:var(--text);display:inline-block;}
+    .action-button:hover {background-color:#f1f5f9; border-color: #cbd5e1;}
+    .save-button {background-color:#10b981;border-color:#10b981; color: white;}
+    .save-button:hover {background-color:#059669; border-color:#059669;}
+    .cancel-button {background-color:#ef4444;border-color:#ef4444; color: white;}
+    .cancel-button:hover {background-color:#dc2626; border-color:#dc2626;}
+    .action-button:disabled {opacity:0.5; cursor:not-allowed;}
+    
+    .selected-node-row {background-color:#fff7ed;box-shadow:inset 2px 0 0 var(--accent);}
+    .edit-input-cell {padding:0 !important;}
+    .edit-input-cell input, .edit-input-cell select {width:100%;height:100%;padding:8px 6px;border:none;border-radius:0;box-sizing:border-box;font-size:13px;background-color:#fff;color:var(--text-dark); border-bottom: 2px solid var(--accent); outline: none;}
+
+    .script-output-container {margin-top:20px;padding:20px;border:1px solid var(--border);border-radius:8px;background-color:#f8fafc;}
+    .script-output-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+    
+    #mikrotikScriptOutput {width:100%;min-height:300px;max-height:600px;padding:15px;border:1px solid var(--border);border-radius:6px;background-color:#0f172a;color:#e2e8f0;font-family:'JetBrains Mono', Consolas, Monaco, monospace;font-size:13px;box-sizing:border-box;resize:vertical;overflow:auto; margin-bottom: 15px;}
+    
+    @media screen and (max-width: 768px) {
+      .layout-grid { grid-template-columns: 1fr; }
+      .input-group { flex-direction: column; align-items: flex-start; gap: 5px; }
+      .table-header-cell, .table-cell { padding: 6px; font-size: 12px; }
+      .table-header-cell:first-child { width: 150px; }
+      .table-header-cell.actions { width: 60px; }
+      .table-cell.actions-column { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-logo">JLA</div>
+      <div class="brand-title">
+        <h1>JAKA LINTAS AKSES GENERATOR</h1>
+        <p>Portal Script Generator Premium JLA</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <a href="#" class="btn btn-secondary">🏠 Beranda</a>
+      <a href="https://wa.me/62818386078" target="_blank" class="btn btn-wa">
+        Hubungi Kami
+      </a>
+    </div>
+  </header>
+
+  <main class="main-container">
+    <div class="content-area">
+      
+      <div style="margin-bottom: 25px; border-bottom: 1px solid var(--border); padding-bottom: 15px;">
+        <h2 class="tool-h2">MikroTik Simple Queue & Queue Tree Bandwidth Management</h2>
+        <p style="color: var(--text-muted); font-size: 14px;">Configure bandwidth, priority, and service categories to manage your network traffic.</p>
+      </div>
+
+      <div class="layout-grid">
+        
+        <!-- Controls Panel Left -->
+        <div class="panel-box">
+            <h3 class="tool-h3">Settings & Categories</h3>
+            
+            <div class="input-group">
+                <label for="globalQueueType">Queue Mode:</label>
+                <div class="input-wrapper">
+                    <select id="globalQueueType" class="tool-select">
+                        <option value="Simple Queue">Simple Queue</option>
+                        <option value="Queue Tree">Queue Tree</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <label style="display:block; font-weight: 500; font-size: 14px; margin-bottom: 10px; color: var(--text-dark);">Service Categories (Auto-create rules):</label>
+                <div id="categoryCheckboxesContainer" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                    <div class="category-item"><input type="checkbox" id="category-streaming-video" value="Streaming Video"><label for="category-streaming-video">Streaming Video</label></div>
+                    <div class="category-item"><input type="checkbox" id="category-social-media" value="Social Media"><label for="category-social-media">Social Media</label></div>
+                    <div class="category-item"><input type="checkbox" id="category-e-commerce" value="E-Commerce"><label for="category-e-commerce">E-Commerce</label></div>
+                    <div class="category-item"><input type="checkbox" id="category-video-conference" value="Video Conference"><label for="category-video-conference">Video Conference</label></div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 20px; font-size: 13px;">
+                <p style="font-weight: 600; margin-bottom: 5px;">Update Filter RAW:</p>
+                <ul style="padding-left: 20px; margin-top: 0; color: #3b82f6;">
+                    <li><a href="#" style="color: inherit; text-decoration: none;">Filter RAW TLS-Host Version</a></li>
+                    <li><a href="#" style="color: inherit; text-decoration: none;">Filter RAW Content Version</a></li>
+                    <li><a href="#" style="color: inherit; text-decoration: none;">Filter RAW IP Games</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Controls Panel Right -->
+        <div class="panel-box">
+            <h3 class="tool-h3">ISP Bandwidth Settings</h3>
+            
+            <div class="input-group">
+              <label for="downloadBandwidthISP">Download (Mbps):</label>
+              <div class="input-wrapper">
+                  <input type="text" id="downloadBandwidthISP" class="tool-input" value="100M" placeholder="e.g., 100M, 500M">
+              </div>
+            </div>
+            
+            <div class="input-group">
+              <label for="uploadBandwidthISP">Upload (Mbps):</label>
+              <div class="input-wrapper">
+                  <input type="text" id="uploadBandwidthISP" class="tool-input" value="50M" placeholder="e.g., 50M, 200M">
+              </div>
+            </div>
+            
+            <div class="input-group">
+              <label for="globalQueueTypeInput">Global Queue Type:</label>
+              <div class="input-wrapper">
+                  <select id="globalQueueTypeInput" class="tool-select">
+                    <option value="default">default - (v6.xx / v7.xx)</option>
+                    <option value="default-small" selected="">default-small - (v6.xx / v7.xx)</option>
+                    <option value="pcq">pcq - (v6.xx / v7.xx)</option>
+                    <option value="sfq">sfq - (v6.xx / v7.xx)</option>
+                    <option value="codel">codel - (v7.xx Only)</option>
+                    <option value="fq-codel">fq-codel - (v7 Only)</option>
+                    <option value="cake">cake - (v7.xx Only)</option>
+                  </select>
+              </div>
+            </div>
+            
+            <div style="text-align: right; margin-top: 15px;">
+                <button id="applyGlobalSettingsButton" class="tool-btn">Apply Settings</button>
+            </div>
+        </div>
+
+      </div>
+
+      <!-- Simple Queue Table -->
+      <div id="simpleQueueTableContainer" class="main-table-container">
+        <div class="table-header-group">
+          <div class="table-header-row">
+            <div class="table-header-cell">Name</div>
+            <div class="table-header-cell target-parent-column" id="simpleQueueTargetHeader">Target</div>
+            <div class="table-header-cell align-right">Max Limit (U/D)</div>
+            <div class="table-header-cell align-right">Limit At (U/D)</div>
+            <div class="table-header-cell align-right packet-mark">Packet Mark</div>
+            <div class="table-header-cell align-right queue-type">Queue Type</div>
+            <div class="table-header-cell align-right priority">Priority</div>
+            <div class="table-header-cell actions">Actions</div>
+          </div>
+        </div>
+        <div class="table-body-group" id="simpleQueueTableBody">
+            <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Queue Tree Table -->
+      <div id="queueTreeTableContainer" class="main-table-container hidden">
+        <div class="table-header-group">
+          <div class="table-header-row">
+            <div class="table-header-cell">Name</div>
+            <div class="table-header-cell target-parent-column" id="queueTreeParentHeader">Parent</div>
+            <div class="table-header-cell align-right">Max Limit</div>
+            <div class="table-header-cell align-right">Limit At</div>
+            <div class="table-header-cell align-right packet-mark">Packet Mark</div>
+            <div class="table-header-cell align-right queue-type">Queue Type</div>
+            <div class="table-header-cell align-right priority">Priority</div>
+            <div class="table-header-cell actions">Actions</div>
+          </div>
+        </div>
+        <div class="table-body-group" id="queueTreeTableBody">
+             <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <div class="script-output-container">
+        <div class="script-output-header">
+            <h3 class="tool-h3" style="margin:0;">MikroTik Mangle & Queue Script</h3>
+            <div style="display: flex; gap: 10px;">
+                <button id="copyScriptButton" class="tool-btn" style="background-color: #10b981;">📋 Copy Script</button>
+                <button id="saveRscScriptButton" class="tool-btn" style="background-color: #3b82f6;">💾 Save to RSC</button>
+            </div>
+        </div>
+        <textarea id="mikrotikScriptOutput" readonly=""></textarea>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    Jaka Lintas Akses © <span id="year"></span>. Premium RouterOS Script Tools Portal.
+  </footer>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    
+    // Core data definitions based on provided script
+    const defaultLocalTarget = "192.168.0.0/16,10.0.0.0/8,172.16.0.0/12";
+    
+    let initialSimpleQueueData = [
+        { id: 'bypass-local-sq', text: '1. Bypass Local Traffic', target: defaultLocalTarget, limitAt: '0/0', maxLimit: '1000M/1000M', packetMark: 'local_bypass_mark', queueType: 'default-small/default-small', priority: '8/8', level: 0, expanded: false },
+        { id: 'ping-latency-sq', text: '2. Ping (icmp) + Latency', target: defaultLocalTarget, limitAt: '1M/1M', maxLimit: '5M/5M', packetMark: 'ping_mark', queueType: 'default-small/default-small', priority: '1/1', level: 0, expanded: false },
+        { id: 'dns-tracert-sq', text: '3. Dns (53) + Tracert', target: defaultLocalTarget, limitAt: '1M/1M', maxLimit: '5M/5M', packetMark: 'dns_mark', queueType: 'default-small/default-small', priority: '1/1', level: 0, expanded: false },
+        { id: 'winbox-tools-sq', text: '4. Winbox & Network Tools', target: defaultLocalTarget, limitAt: '1M/1M', maxLimit: '10M/10M', packetMark: 'winbox_mark', queueType: 'default-small/default-small', priority: '1/1', level: 0, expanded: false },
+        { id: 'fastest-speedtest-sq', text: '5. Fastest Speedtest', target: defaultLocalTarget, limitAt: '100M/100M', maxLimit: '100M/100M', packetMark: 'speedtest_mark', queueType: 'default-small/default-small', priority: '2/2', level: 0, expanded: false },
+        { id: 'global-games-sq', text: '6. Global Games Online', target: defaultLocalTarget, limitAt: '5M/5M', maxLimit: '10M/10M', packetMark: 'game_mark', queueType: 'default-small/default-small', priority: '1/1', level: 0, expanded: false },
+        { id: 'global-connection-sq', text: '7. GLOBAL CONNECTION', target: defaultLocalTarget, limitAt: '0/0', maxLimit: '50M/100M', packetMark: '', queueType: 'default-small/default-small', priority: '8/8', level: 0, expanded: true, children: [
+            { id: 'fastest-priority-sq', text: '1. Fastest Priority', target: defaultLocalTarget, limitAt: '12.5M/25M', maxLimit: '50M/100M', packetMark: 'fastest_mark', queueType: 'default-small/default-small', priority: '4/4', parent: 'global-connection-sq', level: 1, expanded: false },
+            { id: 'heavy-traffic-sq', text: '2. Heavy Traffic', target: defaultLocalTarget, limitAt: '12.5M/25M', maxLimit: '50M/100M', packetMark: 'heavy_traffic_mark', queueType: 'default-small/default-small', priority: '8/8', parent: 'global-connection-sq', level: 1, expanded: false }
+        ]}
+    ];
+
+    let initialQueueTreeData = [
+        { id: 'global-download-qt', text: 'GLOBAL DOWNLOAD', parent: 'global', limitAt: '0', maxLimit: '100M', packetMark: '', queueType: 'default-small', priority: '8', level: 0, expanded: true, children: [
+            { id: 'ping-latency-dl-qt', text: '1. Ping + Latency DL', parent: 'global-download-qt', limitAt: '1M', maxLimit: '5M', packetMark: 'ping_mark', queueType: 'default-small', priority: '1', level: 1, expanded: false },
+            { id: 'dns-dl-qt', text: '2. Dns + Tracert DL', parent: 'global-download-qt', limitAt: '1M', maxLimit: '5M', packetMark: 'dns_mark', queueType: 'default-small', priority: '1', level: 1, expanded: false },
+            { id: 'winbox-dl-qt', text: '3. Winbox DL', parent: 'global-download-qt', limitAt: '1M', maxLimit: '10M', packetMark: 'winbox_mark', queueType: 'default-small', priority: '1', level: 1, expanded: false },
+            { id: 'speedtest-dl-qt', text: '4. Speedtest DL', parent: 'global-download-qt', limitAt: '100M', maxLimit: '100M', packetMark: 'speedtest_mark', queueType: 'default-small', priority: '2', level: 1, expanded: false },
+            { id: 'games-dl-qt', text: '5. Games DL', parent: 'global-download-qt', limitAt: '5M', maxLimit: '10M', packetMark: 'game_mark', queueType: 'default-small', priority: '1', level: 1, expanded: false },
+            { id: 'fastest-dl-qt', text: '6. Fastest Priority DL', parent: 'global-download-qt', limitAt: '25M', maxLimit: '100M', packetMark: 'fastest_mark', queueType: 'default-small', priority: '4', level: 1, expanded: false },
+            { id: 'heavy-dl-qt', text: '7. Heavy Traffic DL', parent: 'global-download-qt', limitAt: '25M', maxLimit: '100M', packetMark: 'heavy_traffic_mark', queueType: 'default-small', priority: '8', level: 1, expanded: false }
+        ]},
+        { id: 'global-upload-qt', text: 'GLOBAL UPLOAD', parent: 'global', limitAt: '0', maxLimit: '50M', packetMark: '', queueType: 'default-small', priority: '8', level: 0, expanded: true, children: [
+            { id: 'ping-latency-ul-qt', text: '1. Ping + Latency UL', parent: 'global-upload-qt', limitAt: '1M', maxLimit: '5M', packetMark: 'ping_mark', queueType: 'default-small', priority: '1', level: 1, expanded: false },
+            { id: 'dns-ul-qt', text: '2. Dns + Tracert UL', parent: 'global-upload-qt', limitAt: '1M', maxLimit: '5M', packetMark: 'dns_mark', queueType: 'default-small', priority: '1', level: 1, expanded: false },
+            { id: 'winbox-ul-qt', text: '3. Winbox UL', parent: 'global-upload-qt', limitAt: '1M', maxLimit: '10M', packetMark: 'winbox_mark', queueType: 'default-small', priority: '1', level: 1, expanded: false },
+            { id: 'speedtest-ul-qt', text: '4. Speedtest UL', parent: 'global-upload-qt', limitAt: '50M', maxLimit: '50M', packetMark: 'speedtest_mark', queueType: 'default-small', priority: '2', level: 1, expanded: false },
+            { id: 'games-ul-qt', text: '5. Games UL', parent: 'global-upload-qt', limitAt: '5M', maxLimit: '10M', packetMark: 'game_mark', queueType: 'default-small', priority: '1', level: 1, expanded: false },
+            { id: 'fastest-ul-qt', text: '6. Fastest Priority UL', parent: 'global-upload-qt', limitAt: '12.5M', maxLimit: '50M', packetMark: 'fastest_mark', queueType: 'default-small', priority: '4', level: 1, expanded: false },
+            { id: 'heavy-ul-qt', text: '7. Heavy Traffic UL', parent: 'global-upload-qt', limitAt: '12.5M', maxLimit: '50M', packetMark: 'heavy_traffic_mark', queueType: 'default-small', priority: '8', level: 1, expanded: false }
+        ]}
+    ];
+
+    const serviceDetails = {
+        'Streaming Video': { sqMark: 'streaming_video_mark', qtDlMark: 'streaming_video_mark', qtUlMark: 'streaming_video_mark_up', priority: '5' },
+        'Social Media': { sqMark: 'social_media_mark', qtDlMark: 'social_media_mark', qtUlMark: 'social_media_mark_up', priority: '6' },
+        'E-Commerce': { sqMark: 'e_commerce_mark', qtDlMark: 'e_commerce_mark', qtUlMark: 'e_commerce_mark_up', priority: '5' },
+        'Video Conference': { sqMark: 'video_conference_mark', qtDlMark: 'video_conference_mark', qtUlMark: 'video_conference_mark_up', priority: '3' }
+    };
+
+    let simpleQueueData = JSON.parse(JSON.stringify(initialSimpleQueueData));
+    let queueTreeData = JSON.parse(JSON.stringify(initialQueueTreeData));
+    let currentActiveData = simpleQueueData; 
+    let selectedNodeId = null;
+    let isEditing = false;
+    let activeCategoryIds = new Set();
+
+    // DOM Elements
+    const elements = {
+        globalQueueType: document.getElementById('globalQueueType'),
+        downloadBandwidthISP: document.getElementById('downloadBandwidthISP'),
+        uploadBandwidthISP: document.getElementById('uploadBandwidthISP'),
+        globalQueueTypeInput: document.getElementById('globalQueueTypeInput'),
+        applyGlobalSettingsButton: document.getElementById('applyGlobalSettingsButton'),
+        simpleQueueTableContainer: document.getElementById('simpleQueueTableContainer'),
+        simpleQueueTableBody: document.getElementById('simpleQueueTableBody'),
+        queueTreeTableContainer: document.getElementById('queueTreeTableContainer'),
+        queueTreeTableBody: document.getElementById('queueTreeTableBody'),
+        mikrotikScriptOutput: document.getElementById('mikrotikScriptOutput'),
+        copyScriptButton: document.getElementById('copyScriptButton'),
+        saveRscScriptButton: document.getElementById('saveRscScriptButton'),
+        categoryCheckboxesContainer: document.getElementById('categoryCheckboxesContainer')
+    };
+
+    function deepClone(obj) { return JSON.parse(JSON.stringify(obj)); }
+
+    function findNodeById(data, id) {
+        for (let i = 0; i < data.length; i++) {
+            if (data[i].id === id) return data[i];
+            if (data[i].children) {
+                let found = findNodeById(data[i].children, id);
+                if (found) return found;
+            }
+        }
+        return null;
+    }
+
+    function findParentNodeById(data, parentId, currentParent = null) {
+        for (const node of data) {
+            if (node.id === parentId) return node;
+            if (node.children) {
+                const found = findParentNodeById(node.children, parentId, node);
+                if (found) return found;
+            }
+        }
+        return null;
+    }
+
+    function getActiveMode() { return elements.globalQueueType.value; }
+
+    function parseBandwidthToMbps(val) {
+        if (!val) return 0;
+        let strVal = String(val).trim().toUpperCase();
+        if (strVal.endsWith('M')) return parseFloat(strVal.slice(0, -1));
+        if (strVal.endsWith('G')) return parseFloat(strVal.slice(0, -1)) * 1000;
+        if (strVal.endsWith('K')) return parseFloat(strVal.slice(0, -1)) / 1000;
+        return parseFloat(strVal);
+    }
+
+    function formatMbpsToMikrotik(val) {
+        if (isNaN(val) || val === 0) return '0';
+        let strVal = parseFloat(val).toFixed(2);
+        strVal = strVal.replace(/\.00$/, '').replace(/(\.[1-9])0$/, '$1');
+        return strVal + 'M';
+    }
+
+    function handleGlobalSettingsApply() {
+        const mode = getActiveMode();
+        const dlMbps = parseBandwidthToMbps(elements.downloadBandwidthISP.value);
+        const ulMbps = parseBandwidthToMbps(elements.uploadBandwidthISP.value);
+        const qType = elements.globalQueueTypeInput.value;
+
+        if (mode === 'Simple Queue') {
+            const globalNode = findNodeById(simpleQueueData, 'global-connection-sq');
+            if (globalNode) {
+                globalNode.maxLimit = `${formatMbpsToMikrotik(ulMbps)}/${formatMbpsToMikrotik(dlMbps)}`;
+                globalNode.queueType = `${qType}/${qType}`;
+                
+                if (globalNode.children) {
+                    globalNode.children.forEach(child => {
+                        child.maxLimit = globalNode.maxLimit;
+                        child.queueType = globalNode.queueType;
+                        
+                        // Roughly mimicking the 25% logic from the original for fastest/heavy
+                        if(child.id === 'fastest-priority-sq' || child.id === 'heavy-traffic-sq'){
+                             child.limitAt = `${formatMbpsToMikrotik(ulMbps * 0.25)}/${formatMbpsToMikrotik(dlMbps * 0.25)}`;
+                        } else if (child.isCategoryRule) {
+                             child.limitAt = `${formatMbpsToMikrotik(ulMbps * 0.10)}/${formatMbpsToMikrotik(dlMbps * 0.10)}`;
+                        }
+                    });
+                }
+            }
+
+            simpleQueueData.forEach(node => {
+                if (node.id !== 'global-connection-sq' && !node.parent) {
+                    node.queueType = `${qType}/${qType}`;
+                    if (node.id === 'fastest-speedtest-sq') {
+                        node.maxLimit = `${formatMbpsToMikrotik(ulMbps)}/${formatMbpsToMikrotik(dlMbps)}`;
+                        node.limitAt = node.maxLimit;
+                    }
+                }
+            });
+        } else {
+            const globalDl = findNodeById(queueTreeData, 'global-download-qt');
+            const globalUl = findNodeById(queueTreeData, 'global-upload-qt');
+
+            if (globalDl) {
+                globalDl.maxLimit = formatMbpsToMikrotik(dlMbps);
+                globalDl.queueType = qType;
+                if (globalDl.children) {
+                    globalDl.children.forEach(c => {
+                        c.queueType = qType;
+                        c.maxLimit = globalDl.maxLimit;
+                        if (c.id === 'fastest-dl-qt' || c.id === 'heavy-dl-qt') c.limitAt = formatMbpsToMikrotik(dlMbps * 0.25);
+                        else if (c.isCategoryRule) c.limitAt = formatMbpsToMikrotik(dlMbps * 0.10);
+                        else if (c.id === 'speedtest-dl-qt') { c.maxLimit = formatMbpsToMikrotik(dlMbps); c.limitAt = formatMbpsToMikrotik(dlMbps); }
+                    });
+                }
+            }
+            if (globalUl) {
+                globalUl.maxLimit = formatMbpsToMikrotik(ulMbps);
+                globalUl.queueType = qType;
+                if (globalUl.children) {
+                    globalUl.children.forEach(c => {
+                        c.queueType = qType;
+                        c.maxLimit = globalUl.maxLimit;
+                        if (c.id === 'fastest-ul-qt' || c.id === 'heavy-ul-qt') c.limitAt = formatMbpsToMikrotik(ulMbps * 0.25);
+                        else if (c.isCategoryRule) c.limitAt = formatMbpsToMikrotik(ulMbps * 0.10);
+                        else if (c.id === 'speedtest-ul-qt') { c.maxLimit = formatMbpsToMikrotik(ulMbps); c.limitAt = formatMbpsToMikrotik(ulMbps); }
+                    });
+                }
+            }
+        }
+        renderCurrentTable();
+    }
+
+    function handleCategoryChange(e) {
+        const catName = e.target.value;
+        const isChecked = e.target.checked;
+        const details = serviceDetails[catName];
+        if (!details) return;
+
+        const mode = getActiveMode();
+        const dlMbps = parseBandwidthToMbps(elements.downloadBandwidthISP.value);
+        const ulMbps = parseBandwidthToMbps(elements.uploadBandwidthISP.value);
+        const qType = elements.globalQueueTypeInput.value;
+
+        if (mode === 'Simple Queue') {
+            const globalNode = findNodeById(simpleQueueData, 'global-connection-sq');
+            if (globalNode) {
+                if (isChecked) {
+                    let nextOrder = globalNode.children ? globalNode.children.length + 1 : 1;
+                    
+                    const newNode = {
+                        id: 'cat-' + catName.toLowerCase().replace(/\s+/g, '-') + '-sq',
+                        text: `${nextOrder}. ${catName}`,
+                        target: defaultLocalTarget,
+                        limitAt: `${formatMbpsToMikrotik(ulMbps * 0.1)}/${formatMbpsToMikrotik(dlMbps * 0.1)}`,
+                        maxLimit: globalNode.maxLimit,
+                        packetMark: details.sqMark,
+                        queueType: `${qType}/${qType}`,
+                        priority: `${details.priority}/${details.priority}`,
+                        parent: 'global-connection-sq',
+                        level: 1,
+                        isCategoryRule: true,
+                        categoryName: catName,
+                        expanded: false
+                    };
+                    if (!globalNode.children) globalNode.children = [];
+                    globalNode.children.push(newNode);
+                } else {
+                    if (globalNode.children) {
+                        globalNode.children = globalNode.children.filter(c => c.categoryName !== catName);
+                        // Re-index
+                        globalNode.children.forEach((c, i) => c.text = c.text.replace(/^\d+\./, `${i + 1}.`));
+                    }
+                }
+            }
+        } else {
+            const globalDl = findNodeById(queueTreeData, 'global-download-qt');
+            const globalUl = findNodeById(queueTreeData, 'global-upload-qt');
+
+            if (isChecked) {
+                if (globalDl) {
+                    let nextOrder = globalDl.children ? globalDl.children.length + 1 : 1;
+                    if(!globalDl.children) globalDl.children = [];
+                    globalDl.children.push({
+                        id: 'cat-dl-' + catName.toLowerCase().replace(/\s+/g, '-') + '-qt',
+                        text: `${nextOrder}. ${catName} DL`,
+                        parent: 'global-download-qt',
+                        limitAt: formatMbpsToMikrotik(dlMbps * 0.1),
+                        maxLimit: globalDl.maxLimit,
+                        packetMark: details.qtDlMark,
+                        queueType: qType,
+                        priority: details.priority,
+                        level: 1,
+                        isCategoryRule: true,
+                        categoryName: catName,
+                        expanded: false
+                    });
+                }
+                if (globalUl) {
+                    let nextOrder = globalUl.children ? globalUl.children.length + 1 : 1;
+                    if(!globalUl.children) globalUl.children = [];
+                    globalUl.children.push({
+                        id: 'cat-ul-' + catName.toLowerCase().replace(/\s+/g, '-') + '-qt',
+                        text: `${nextOrder}. ${catName} UL`,
+                        parent: 'global-upload-qt',
+                        limitAt: formatMbpsToMikrotik(ulMbps * 0.1),
+                        maxLimit: globalUl.maxLimit,
+                        packetMark: details.qtUlMark,
+                        queueType: qType,
+                        priority: details.priority,
+                        level: 1,
+                        isCategoryRule: true,
+                        categoryName: catName,
+                        expanded: false
+                    });
+                }
+            } else {
+                if (globalDl && globalDl.children) {
+                    globalDl.children = globalDl.children.filter(c => c.categoryName !== catName);
+                    globalDl.children.forEach((c, i) => c.text = c.text.replace(/^\d+\./, `${i + 1}.`));
+                }
+                if (globalUl && globalUl.children) {
+                    globalUl.children = globalUl.children.filter(c => c.categoryName !== catName);
+                    globalUl.children.forEach((c, i) => c.text = c.text.replace(/^\d+\./, `${i + 1}.`));
+                }
+            }
+        }
+        renderCurrentTable();
+    }
+
+    // Attach listeners
+    document.querySelectorAll('#categoryCheckboxesContainer input[type="checkbox"]').forEach(cb => {
+        cb.addEventListener('change', handleCategoryChange);
+    });
+
+    
+    // Toggle expand state
+    window.toggleExpand = function(nodeId, event) {
+        if(event) event.stopPropagation();
+        if(isEditing) return; // Block expand while editing
+        const node = findNodeById(currentActiveData, nodeId);
+        if (node) {
+            node.expanded = !node.expanded;
+            renderCurrentTable();
+        }
+    };
+
+    window.selectNode = function(nodeId, event) {
+        if(event) event.stopPropagation();
+        if(isEditing) return;
+        selectedNodeId = nodeId;
+        renderCurrentTable();
+    };
+
+    // Edit logic placeholder (fully functional editing is complex for a single file demo, 
+    // we will allow opening the edit mode but simplify saving)
+    window.enterEditMode = function(nodeId, event) {
+        if(event) event.stopPropagation();
+        if(isEditing) return;
+        isEditing = true;
+        selectedNodeId = nodeId;
+        renderCurrentTable(); // Re-render to show edit fields
+    };
+
+    window.cancelEdit = function(event) {
+        if(event) event.stopPropagation();
+        isEditing = false;
+        renderCurrentTable();
+    };
+
+    window.saveEdit = function(nodeId, event) {
+        if(event) event.stopPropagation();
+        const node = findNodeById(currentActiveData, nodeId);
+        if(node) {
+            // Read values from inputs
+            const tr = document.querySelector(`.table-row[data-node-id="${nodeId}"]`);
+            if(tr) {
+                node.text = tr.querySelector('.edit-name').value;
+                if(getActiveMode() === 'Simple Queue') {
+                    node.target = tr.querySelector('.edit-target').value;
+                    node.maxLimit = tr.querySelector('.edit-maxLimit').value;
+                    node.limitAt = tr.querySelector('.edit-limitAt').value;
+                } else {
+                    node.maxLimit = tr.querySelector('.edit-maxLimit').value;
+                    node.limitAt = tr.querySelector('.edit-limitAt').value;
+                }
+                node.packetMark = tr.querySelector('.edit-packetMark').value;
+                node.queueType = tr.querySelector('.edit-queueType').value;
+                node.priority = tr.querySelector('.edit-priority').value;
+            }
+        }
+        isEditing = false;
+        renderCurrentTable();
+    };
+
+    function createRowElement(node, mode, isVisible) {
+        const tr = document.createElement('div');
+        tr.className = `table-row ${node.id === selectedNodeId ? 'selected-node-row' : ''} ${!isVisible ? 'hidden-row' : ''}`;
+        tr.dataset.nodeId = node.id;
+        
+        let hasChildren = node.children && node.children.length > 0;
+        let indentClass = `indent-level-${node.level || 0}`;
+
+        const isCurrentlyEditing = isEditing && selectedNodeId === node.id;
+
+        // Name column
+        let nameHTML = `<div class="table-cell name-column ${indentClass}">`;
+        if (hasChildren) {
+            nameHTML += `<span class="caret-icon ${node.expanded ? 'caret-down' : ''}" onclick="toggleExpand('${node.id}', event)"></span>`;
+        } else {
+            nameHTML += `<span style="display:inline-block; width:22px; margin-right:6px;"></span>`;
+        }
+        
+        if (isCurrentlyEditing) {
+            nameHTML += `<span class="edit-input-cell"><input type="text" class="edit-name" value="${node.text}"></span></div>`;
+        } else {
+            nameHTML += `<span>${node.text}</span></div>`;
+        }
+
+        // Data columns
+        let cellsHTML = '';
+        if (mode === 'Simple Queue') {
+            const targetVal = node.target || '';
+            cellsHTML += isCurrentlyEditing 
+                ? `<div class="table-cell target-parent-column-data edit-input-cell"><input type="text" class="edit-target" value="${targetVal}"></div>`
+                : `<div class="table-cell target-parent-column-data">${targetVal}</div>`;
+            
+            cellsHTML += isCurrentlyEditing ? `<div class="table-cell data-column edit-input-cell"><input type="text" class="edit-maxLimit" value="${node.maxLimit}"></div>` : `<div class="table-cell data-column">${node.maxLimit}</div>`;
+            cellsHTML += isCurrentlyEditing ? `<div class="table-cell data-column edit-input-cell"><input type="text" class="edit-limitAt" value="${node.limitAt}"></div>` : `<div class="table-cell data-column">${node.limitAt}</div>`;
+        } else {
+            // Queue tree parent is fixed for display mostly
+            cellsHTML += `<div class="table-cell target-parent-column-data">${node.parent || ''}</div>`;
+            cellsHTML += isCurrentlyEditing ? `<div class="table-cell data-column edit-input-cell"><input type="text" class="edit-maxLimit" value="${node.maxLimit}"></div>` : `<div class="table-cell data-column">${node.maxLimit}</div>`;
+            cellsHTML += isCurrentlyEditing ? `<div class="table-cell data-column edit-input-cell"><input type="text" class="edit-limitAt" value="${node.limitAt}"></div>` : `<div class="table-cell data-column">${node.limitAt}</div>`;
+        }
+
+        // Common editable fields
+        cellsHTML += isCurrentlyEditing ? `<div class="table-cell data-column packet-mark-data-cell edit-input-cell"><input type="text" class="edit-packetMark" value="${node.packetMark}"></div>` : `<div class="table-cell data-column packet-mark-data-cell"><div class="packet-mark-content">${node.packetMark}</div></div>`;
+        cellsHTML += isCurrentlyEditing ? `<div class="table-cell data-column edit-input-cell"><input type="text" class="edit-queueType" value="${node.queueType}"></div>` : `<div class="table-cell data-column">${node.queueType}</div>`;
+        cellsHTML += isCurrentlyEditing ? `<div class="table-cell data-column edit-input-cell"><input type="text" class="edit-priority" value="${node.priority}"></div>` : `<div class="table-cell data-column">${node.priority}</div>`;
+
+        // Actions
+        let actionsHTML = `<div class="table-cell actions-column">`;
+        if (isCurrentlyEditing) {
+            actionsHTML += `
+                <button class="action-button save-button" onclick="saveEdit('${node.id}', event)">Save</button>
+                <button class="action-button cancel-button" onclick="cancelEdit(event)">Cancel</button>
+            `;
+        } else {
+            // Disable edit if another row is editing
+            const disabledState = isEditing ? 'disabled' : '';
+            actionsHTML += `<button class="action-button" ${disabledState} onclick="enterEditMode('${node.id}', event)">Edit</button>`;
+        }
+        actionsHTML += `</div>`;
+
+        tr.innerHTML = nameHTML + cellsHTML + actionsHTML;
+        
+        // Row selection
+        tr.addEventListener('click', (e) => {
+            if(!e.target.closest('.action-button') && !e.target.closest('.caret-icon') && !e.target.closest('input')) {
+                selectNode(node.id, e);
+            }
+        });
+
+        return tr;
+    }
+
+    function renderTree(treeData, container, mode, isVisible = true) {
+        treeData.forEach(node => {
+            const tr = createRowElement(node, mode, isVisible);
+            container.appendChild(tr);
+
+            if (node.children && node.children.length > 0) {
+                // Children visibility depends on parent's visibility AND expanded state
+                renderTree(node.children, container, mode, isVisible && node.expanded);
+            }
+        });
+    }
+
+    function renderCurrentTable() {
+        const mode = getActiveMode();
+        elements.simpleQueueTableContainer.classList.add('hidden');
+        elements.queueTreeTableContainer.classList.add('hidden');
+        
+        elements.simpleQueueTableBody.innerHTML = '';
+        elements.queueTreeTableBody.innerHTML = '';
+
+        if (mode === 'Simple Queue') {
+            elements.simpleQueueTableContainer.classList.remove('hidden');
+            currentActiveData = simpleQueueData;
+            renderTree(simpleQueueData, elements.simpleQueueTableBody, mode);
+        } else {
+            elements.queueTreeTableContainer.classList.remove('hidden');
+            currentActiveData = queueTreeData;
+            renderTree(queueTreeData, elements.queueTreeTableBody, mode);
+        }
+        
+        generateScript();
+    }
+
+    function flattenData(treeData) {
+        let flat = [];
+        treeData.forEach(node => {
+            flat.push(node);
+            if (node.children && node.children.length > 0) {
+                flat = flat.concat(flattenData(node.children));
+            }
+        });
+        return flat;
+    }
+
+    function generateScript() {
+        const mode = getActiveMode();
+        let script = "";
+        
+        script += "# ====================================================================\n";
+        script += `# ${mode.toUpperCase()} SCRIPT GENERATOR\n`;
+        script += "# Base template adapted for JLA Tools\n";
+        script += "# ====================================================================\n\n";
+
+        if (mode === 'Simple Queue') {
+            script += "/queue simple\n";
+            const flatData = flattenData(simpleQueueData);
+            flatData.forEach(q => {
+                let name = q.text.replace(/^[0-9.]+\s*/, '');
+                let s = `add name="${name}" target="${q.target}"`;
+                if(q.maxLimit) s += ` max-limit="${q.maxLimit}"`;
+                if(q.limitAt && q.limitAt !== '0/0') s += ` limit-at="${q.limitAt}"`;
+                if(q.packetMark) s += ` packet-marks="${q.packetMark}"`;
+                if(q.queueType && q.queueType !== 'default-small/default-small' && q.queueType !== 'default/default') s += ` queue="${q.queueType}"`;
+                if(q.priority && q.priority !== '8/8') s += ` priority="${q.priority}"`;
+                
+                if(q.parent) {
+                    let parentNode = findNodeById(simpleQueueData, q.parent);
+                    if(parentNode) s += ` parent="${parentNode.text.replace(/^[0-9.]+\s*/, '')}"`;
+                }
+                script += s + "\n";
+            });
+        } else {
+            script += "/queue tree\n";
+            const flatData = flattenData(queueTreeData);
+            flatData.forEach(q => {
+                let name = q.text.replace(/^[0-9.]+\s*/, '');
+                let parentName = 'global';
+                if(q.parent !== 'global') {
+                    let parentNode = findNodeById(queueTreeData, q.parent);
+                    if(parentNode) parentName = parentNode.text.replace(/^[0-9.]+\s*/, '');
+                }
+
+                let s = `add name="${name}" parent="${parentName}"`;
+                if(q.maxLimit) s += ` max-limit="${q.maxLimit}"`;
+                if(q.limitAt && q.limitAt !== '0') s += ` limit-at="${q.limitAt}"`;
+                if(q.packetMark) s += ` packet-mark="${q.packetMark}"`;
+                if(q.queueType && q.queueType !== 'default-small' && q.queueType !== 'default') s += ` queue="${q.queueType}"`;
+                if(q.priority && q.priority !== '8') s += ` priority="${q.priority}"`;
+                script += s + "\n";
+            });
+        }
+
+        elements.mikrotikScriptOutput.value = script;
+    }
+
+    elements.globalQueueType.addEventListener('change', () => {
+        isEditing = false;
+        selectedNodeId = null;
+        // Uncheck all categories when switching modes to keep it clean
+        document.querySelectorAll('#categoryCheckboxesContainer input[type="checkbox"]').forEach(cb => cb.checked = false);
+        // Reset data to initial state when switching modes
+        simpleQueueData = JSON.parse(JSON.stringify(initialSimpleQueueData));
+        queueTreeData = JSON.parse(JSON.stringify(initialQueueTreeData));
+        renderCurrentTable();
+    });
+    
+    elements.applyGlobalSettingsButton.addEventListener('click', handleGlobalSettingsApply);
+    
+    elements.copyScriptButton.addEventListener('click', () => {
+        const ta = elements.mikrotikScriptOutput;
+        ta.select();
+        document.execCommand('copy');
+        const origText = elements.copyScriptButton.innerHTML;
+        elements.copyScriptButton.textContent = "✅ Copied!";
+        setTimeout(() => elements.copyScriptButton.innerHTML = origText, 2000);
+    });
+
+    elements.saveRscScriptButton.addEventListener('click', () => {
+        const text = elements.mikrotikScriptOutput.value;
+        const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+        const a = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        a.href = url;
+        a.download = "jla_queue_script.rsc";
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);  
+        }, 0); 
+    });
+
+    // Initial render
+    renderCurrentTable();
+
+  </script>
+</body>
+</html>

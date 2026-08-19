@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MikroTik NTH Generator | JLA Tools</title>
+  
+  <!-- Memuat font dari Google Fonts: 'Inter' untuk teks biasa, 'JetBrains Mono' untuk teks terminal/kode -->
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap');
+    
+    /* =========================================
+       1. PENGATURAN DASAR & VARIABEL WARNA
+       ========================================= */
+    * { 
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+      box-sizing: border-box; 
+    }
+    
+    :root {
+      /* Warna Dasar Tema JLA */
+      --bg: #f4f7f6;
+      --text: #334155;
+      --text-dark: #0f172a;
+      --text-muted: #64748b;
+      --accent: #ff6600; /* Warna Oranye Utama */
+      --border: #e2e8f0;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+
+      /* Warna Khusus Panel Form */
+      --panel-bg: #ffffff;
+      --input-bg: #f8fafc;
+      --input-border: #cbd5e1;
+
+      /* Warna Khusus Terminal Winbox */
+      --term-bg: #282c34;       /* Background utama terminal (gelap) */
+      --term-header: #353b45;   /* Background header terminal */
+      --term-text: #abb2bf;     /* Warna font kode script */
+      
+      /* Warna Titik MacOS di Terminal */
+      --dot-red: #ff5f56;
+      --dot-yellow: #ffbd2e;
+      --dot-green: #27c93f;
+    }
+
+    body { 
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
+      background: var(--bg);
+      color: var(--text); 
+      margin: 0; 
+      padding: 0; 
+      display: flex; 
+      flex-direction: column; 
+      min-height: 100vh;
+    }
+
+    /* =========================================
+       2. GAYA HEADER (Sesuai Template JLA)
+       ========================================= */
+    .app-header {
+      height: 64px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-logo {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, var(--accent), #ea580c);
+      border-radius: 10px; color: #fff;
+      font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 16px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 12px rgba(255, 102, 0, 0.3);
+    }
+    .brand-title h1 { font-size: 15px; font-weight: 800; color: var(--text-dark); letter-spacing: 0.3px; line-height: 1.2; margin: 0;}
+    .brand-title p { font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; font-weight: 500; margin: 0;}
+
+    .header-actions { display: flex; align-items: center; gap: 12px; }
+
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 9px 16px; border-radius: 8px; border: none; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; transition: all .15s; white-space: nowrap; text-decoration: none; }
+    .btn-secondary { background: #ffffff; color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: #f8fafc; }
+    .btn-wa { background: #25D366; color: white; border-radius: 20px; font-weight: 700; }
+    .btn-wa:hover { background: #128C7E; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3); }
+
+    /* =========================================
+       3. LAYOUT UTAMA (KIRI = FORM, KANAN = TERMINAL)
+       ========================================= */
+    .main-container { 
+      display: flex; 
+      flex: 1; 
+      max-width: 1400px; 
+      margin: 0 auto; 
+      width: 100%; 
+      padding: 30px 20px; 
+      gap: 20px; 
+    }
+    
+    /* Panel Kiri (Form Input) */
+    .left-panel {
+      flex: 0 0 40%; /* Mengambil 40% lebar layar */
+      background: var(--panel-bg);
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(148, 163, 184, 0.1);
+      border: 1px solid var(--border);
+      padding: 25px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    /* Panel Kanan (Terminal) */
+    .right-panel {
+      flex: 1; /* Mengambil sisa lebar layar */
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    /* =========================================
+       4. GAYA UNTUK FORM INPUT (PANEL KIRI)
+       ========================================= */
+    .form-row {
+      display: flex;
+      gap: 15px;
+      width: 100%;
+    }
+    
+    .form-group {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-dark);
+    }
+
+    input[type="text"], input[type="number"], select {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1px solid var(--input-border);
+      border-radius: 6px;
+      background: var(--input-bg);
+      color: var(--text-dark);
+      font-size: 13px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--accent);
+      background: #ffffff;
+      box-shadow: 0 0 0 3px rgba(255, 102, 0, 0.1);
+    }
+
+    /* Gaya ketika input di-disable (dimatikan) */
+    input:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      background: #e2e8f0;
+    }
+
+    /* Grup Checkbox khusus */
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 12px;
+      border: 1px solid var(--input-border);
+      border-radius: 6px;
+      background: var(--input-bg);
+      cursor: pointer;
+    }
+    .checkbox-group input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent); cursor: pointer; }
+    .checkbox-group label { margin-bottom: 0; cursor: pointer; }
+
+    /* Kotak Informasi Kuning */
+    .info-box {
+      padding: 12px 15px;
+      border-radius: 6px;
+      background: #fff7ed;
+      border: 1px solid #fed7aa;
+      font-size: 11px;
+      color: #9a3412;
+      line-height: 1.5;
+    }
+    .info-box ul { margin: 0; padding-left: 20px; }
+
+    /* Kotak Tempat Generate Input WAN (ISP 1, ISP 2, dst) */
+    #wan-container {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      max-height: 40vh; /* Agar bisa di-scroll jika WAN sangat banyak */
+      overflow-y: auto;
+      padding-right: 5px;
+    }
+
+    /* Modifikasi Scrollbar pada area WAN */
+    #wan-container::-webkit-scrollbar { width: 6px; }
+    #wan-container::-webkit-scrollbar-track { background: transparent; }
+    #wan-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+
+    .wan-box {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      background: #f8fafc;
+    }
+    .wan-title { font-size: 12px; font-weight: 700; color: var(--accent); border-bottom: 1px dashed #cbd5e1; padding-bottom: 5px; }
+
+    /* Tombol Bawah (Generate & Clear) */
+    .action-buttons { display: flex; gap: 10px; margin-top: 10px; }
+    .btn-generate { flex: 1; background: var(--accent); color: white; padding: 12px; font-size: 14px; }
+    .btn-generate:hover { background: #ea580c; }
+    .btn-clear { background: #64748b; color: white; padding: 12px; }
+    .btn-clear:hover { background: #475569; }
+
+    /* =========================================
+       5. GAYA TERMINAL (Meniru Terminal.JPG)
+       ========================================= */
+    .terminal-container {
+      background: var(--term-bg);
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+      border: 1px solid #1e2227;
+    }
+
+    .terminal-header {
+      background: var(--term-header);
+      padding: 10px 15px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .terminal-mac-dots { display: flex; gap: 8px; align-items: center; }
+    .dot { width: 12px; height: 12px; border-radius: 50%; }
+    .dot.red { background: var(--dot-red); }
+    .dot.yellow { background: var(--dot-yellow); }
+    .dot.green { background: var(--dot-green); }
+
+    .terminal-title {
+      color: #798294;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 600;
+      margin-left: 15px;
+    }
+
+    /* Tombol Copy Oranye sesuai gambar */
+    .btn-copy {
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 7px 14px;
+      font-size: 12px;
+      font-weight: 700;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-copy:hover { background: #ea580c; }
+    .btn-copy svg { width: 14px; height: 14px; fill: currentColor; }
+
+    .terminal-body {
+      flex: 1;
+      display: flex;
+    }
+
+    #script-output {
+      width: 100%;
+      height: 100%;
+      background: transparent;
+      border: none;
+      padding: 20px;
+      color: var(--term-text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      resize: none;
+      outline: none;
+    }
+
+    /* Modifikasi Scrollbar pada area Teks Terminal */
+    #script-output::-webkit-scrollbar { width: 8px; }
+    #script-output::-webkit-scrollbar-track { background: var(--term-bg); }
+    #script-output::-webkit-scrollbar-thumb { background: #4b5263; border-radius: 4px; }
+    #script-output::-webkit-scrollbar-thumb:hover { background: #5c6370; }
+
+    /* PENGATURAN FOOTER & RESPONSIVE HP */
+    .footer { 
+      text-align: center; 
+      font-size: 13px; 
+      color: #94a3b8; 
+      padding: 20px; 
+      width: 100%; 
+      margin-top: auto;
+    }
+
+    @media screen and (max-width: 900px) { 
+      .app-header { flex-direction: column; height: auto; padding: 15px 20px; gap: 15px; align-items: center; justify-content: center; text-align: center;}
+      .brand { flex-direction: column; gap: 8px; }
+      .header-actions { width: 100%; display: flex; justify-content: center; gap: 10px;}
+      .main-container { flex-direction: column; padding: 20px 15px; }
+      .left-panel { flex: none; max-height: none; }
+      .terminal-container { min-height: 400px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- =========================================
+       STRUKTUR HTML HEADER
+       ========================================= -->
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-logo">JLA</div>
+      <div class="brand-title">
+        <h1>JAKA LINTAS AKSES GENERATOR</h1>
+        <p>MikroTik NTH Load Balancing Script</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <a href="#" class="btn btn-secondary">🏠 Beranda</a>
+      <a href="#" target="_blank" class="btn btn-wa">
+        <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Hubungi Kami
+      </a>
+    </div>
+  </header>
+
+  <!-- =========================================
+       STRUKTUR HTML KONTEN UTAMA
+       ========================================= -->
+  <main class="main-container">
+    
+    <!-- PANEL KIRI (PENGATURAN & INPUT) -->
+    <div class="left-panel">
+      
+      <!-- Baris 1: Jumlah Jalur WAN dan Versi RouterOS -->
+      <div class="form-row">
+        <div class="form-group">
+          <label for="num-wan">Jumlah Jalur WAN</label>
+          <!-- 'onchange' akan memicu javascript untuk menggambar ulang kotak input ISP -->
+          <input type="number" id="num-wan" min="2" max="10" value="2" onchange="generateWanInputs()">
+        </div>
+        <div class="form-group">
+          <label for="ros-version">Versi RouterOS</label>
+          <select id="ros-version">
+            <option value="v6">RouterOS v6.xx</option>
+            <option value="v7">RouterOS v7.xx</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Baris 2: Tipe Target & Target IP Lokal -->
+      <div class="form-row">
+        <div class="form-group">
+          <label for="target-type">Tipe Local Target</label>
+          <select id="target-type">
+            <option value="address-list">IP Address List</option>
+            <option value="interface">In. Interface</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="ip-target">Local IP Target / Interface</label>
+          <input type="text" id="ip-target" value="192.168.0.0/16, 10.0.0.0/8" placeholder="Contoh: 192.168.1.0/24">
+        </div>
+      </div>
+
+      <!-- Baris 3: Fitur Tambahan (Checkbox) -->
+      <div class="form-row">
+        <div class="form-group">
+          <label class="checkbox-group">
+            <!-- 'onchange' memicu fungsi javascript toggle untuk menyalakan/mematikan input tertentu -->
+            <input type="checkbox" id="check-ratio" onchange="toggleBandwidthInputs()"> 
+            <span>Bandwidth Ratio</span>
+          </label>
+        </div>
+        <div class="form-group">
+          <label class="checkbox-group">
+            <input type="checkbox" id="check-recursive" onchange="toggleRecursiveInputs()"> 
+            <span>Recursive Gateway</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Kotak Info / Catatan -->
+      <div class="info-box">
+        <ul>
+          <li>Untuk IP Gateway sama, gunakan format: <strong>192.168.1.1%ether1</strong></li>
+          <li>Untuk PPPoE Out ISP, cukup isi nama interfacenya di kolom Gateway: <strong>pppoe-out1</strong></li>
+        </ul>
+      </div>
+
+      <!-- WADAH INPUT WAN DINAMIS -->
+      <!-- Div ini akan diisi secara otomatis oleh Javascript menggunakan loop sesuai jumlah WAN -->
+      <div id="wan-container"></div>
+
+      <!-- Tombol Eksekusi -->
+      <div class="action-buttons">
+        <button class="btn btn-generate" onclick="generateNthScript()">🚀 Generate Script</button>
+        <button class="btn btn-clear" onclick="clearAllFields()">Bersihkan</button>
+      </div>
+
+    </div> <!-- Akhir Panel Kiri -->
+
+    <!-- PANEL KANAN (TERMINAL WINBOX) -->
+    <div class="right-panel">
+      <div class="terminal-container">
+        
+        <!-- Header Terminal -->
+        <div class="terminal-header">
+          <div class="terminal-mac-dots">
+            <div class="dot red"></div>
+            <div class="dot yellow"></div>
+            <div class="dot green"></div>
+            <span class="terminal-title">Terminal Winbox</span>
+          </div>
+          
+          <!-- Tombol Copy -->
+          <button class="btn-copy" id="btn-copy" onclick="copyToClipboard()">
+            <!-- SVG Ikon Kotak (Copy) -->
+            <svg viewBox="0 0 24 24"><path d="M16 1H4C2.9 1 2 1.9 2 3v14h2V3h12V1zm3 4H8C6.9 5 6 5.9 6 7v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+            <span id="copy-text">Copy Script</span>
+          </button>
+        </div>
+
+        <!-- Body Terminal (Output Script) -->
+        <div class="terminal-body">
+          <textarea id="script-output" readonly placeholder="Hasil script MikroTik NTH Anda akan muncul di sini setelah Anda mengklik 'Generate Script'..."></textarea>
+        </div>
+
+      </div>
+    </div> <!-- Akhir Panel Kanan -->
+
+  </main>
+
+  <footer class="footer">
+    Jaka Lintas Akses © 2019. Premium RouterOS Script Tools Portal.
+  </footer>
+
+  <!-- =========================================
+       LOGIKA JAVASCRIPT APLIKASI
+       ========================================= -->
+  <script>
+    // 1. Inisialisasi: Panggil fungsi membuat form WAN saat halaman pertama kali selesai dimuat
+    window.onload = function() {
+      generateWanInputs();
+    };
+
+    // 2. Fungsi untuk membuat kotak input ISP secara otomatis berdasarkan jumlah yang diminta
+    function generateWanInputs() {
+      // Ambil nilai dari input "num-wan", pastikan formatnya angka (integer)
+      let count = parseInt(document.getElementById('num-wan').value) || 2;
+      let container = document.getElementById('wan-container');
+      
+      // Ambil status dari checkbox untuk menentukan apakah input Speed/DNS awalnya hidup atau mati
+      let isRatioChecked = document.getElementById('check-ratio').checked;
+      let isRecursiveChecked = document.getElementById('check-recursive').checked;
+
+      container.innerHTML = ''; // Kosongkan wadah sebelumnya
+
+      // Loop / Ulangi dari 1 sampai jumlah WAN
+      for(let i = 1; i <= count; i++) {
+        // Tentukan attribute disabled berdasarkan checkbox
+        let disableSpeed = isRatioChecked ? '' : 'disabled';
+        let disableCheck = isRecursiveChecked ? '' : 'disabled';
+
+        // Susun struktur HTML per kotak ISP
+        let html = `
+          <div class="wan-box">
+            <div class="wan-title">🌐 ISP-${i} SETTINGS</div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label>WAN Interface ISP-${i}</label>
+                <input type="text" id="interface-${i}" value="ether${i}" placeholder="Misal: ether1">
+              </div>
+              <div class="form-group">
+                <label>Speed (Mbps)</label>
+                <input type="number" id="speed-${i}" value="50" placeholder="50" ${disableSpeed}>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Gateway ISP-${i}</label>
+                <input type="text" id="gateway-${i}" value="192.168.${i}.1" placeholder="Misal: 192.168.${i}.1">
+              </div>
+              <div class="form-group">
+                <label>IP/DNS Check ISP-${i}</label>
+                <input type="text" id="dns-${i}" value="1.1.1.${i}" placeholder="Misal: 1.1.1.1" ${disableCheck}>
+              </div>
+            </div>
+          </div>
+        `;
+        
+        // Masukkan HTML tadi ke dalam container di layar
+        container.innerHTML += html;
+      }
+    }
+
+    // 3. Fungsi untuk menyalakan/mematikan input kecepatan (Speed) jika checkbox Bandwidth Ratio diubah
+    function toggleBandwidthInputs() {
+      let count = parseInt(document.getElementById('num-wan').value) || 2;
+      let isChecked = document.getElementById('check-ratio').checked;
+      
+      for(let i = 1; i <= count; i++) {
+        let speedInput = document.getElementById(`speed-${i}`);
+        if(speedInput) speedInput.disabled = !isChecked; // Jika checkbox centang, maka disabled = false (menyala)
+      }
+    }
+
+    // 4. Fungsi untuk menyalakan/mematikan input DNS Check jika checkbox Recursive diubah
+    function toggleRecursiveInputs() {
+      let count = parseInt(document.getElementById('num-wan').value) || 2;
+      let isChecked = document.getElementById('check-recursive').checked;
+      
+      for(let i = 1; i <= count; i++) {
+        let dnsInput = document.getElementById(`dns-${i}`);
+        if(dnsInput) dnsInput.disabled = !isChecked;
+      }
+    }
+
+    // 5. Fungsi Utama untuk meracik/menyusun Teks Script NTH MikroTik
+    function generateNthScript() {
+      // Ambil semua nilai dari pengaturan di panel kiri
+      const count = parseInt(document.getElementById('num-wan').value) || 2;
+      const rosVer = document.getElementById('ros-version').value;
+      const targetType = document.getElementById('target-type').value;
+      const ipTarget = document.getElementById('ip-target').value;
+      const useRecursive = document.getElementById('check-recursive').checked;
+
+      // Variabel wadah script
+      let script = "";
+
+      // --- HEADER SCRIPT ---
+      script += "/*****************************************************\n";
+      script += " * JLA TOOLS - MIKROTIK NTH LOAD BALANCING SCRIPT    *\n";
+      script += " * RouterOS Version : " + (rosVer === "v7" ? "v7.xx" : "v6.xx") + "\n";
+      script += " * Total WAN / ISP  : " + count + " Jalur\n";
+      script += " *****************************************************/\n\n";
+
+      // --- 1. IP ADDRESS LIST (Hanya jika tipe target adalah Address List) ---
+      let targetParam = "";
+      if(targetType === "address-list") {
+        script += "/ip firewall address-list\n";
+        // Pisahkan IP target dengan koma
+        let ipArray = ipTarget.split(',');
+        ipArray.forEach(ip => {
+          let cleanIp = ip.trim(); // hilangkan spasi kosong
+          if(cleanIp !== "") {
+            script += `add address=${cleanIp} list=LOCAL-IP comment="JLA Local Network"\n`;
+          }
+        });
+        script += "\n";
+        // Parameter untuk Mangle nantinya
+        targetParam = "src-address-list=LOCAL-IP dst-address-list=!LOCAL-IP";
+      } else {
+        // Jika menggunakan in-interface
+        targetParam = `in-interface="${ipTarget}" dst-address-type=!local`;
+      }
+
+      // --- 2. FIREWALL MANGLE (Logika Utama NTH) ---
+      script += "/ip firewall mangle\n";
+      // Baris pertama (opsional) untuk mem-bypass lokal ke lokal agar tidak di-load balance
+      if(targetType === "address-list") {
+         script += `add action=accept chain=prerouting dst-address-list=LOCAL-IP src-address-list=LOCAL-IP comment="Bypass Local to Local"\n\n`;
+      }
+
+      // Loop pembuatan NTH berdasarkan jumlah ISP
+      for(let i = 1; i <= count; i++) {
+        script += `# --- NTH Mark Routing ISP-${i} ---\n`;
+        // Rumus NTH: nth=Total,Urutan (Catatan: RouterOS v6 dan v7 menggunakan format nth=every,packet)
+        script += `add action=mark-connection chain=prerouting connection-state=new new-connection-mark="CONN_ISP${i}" nth=${count},${i} passthrough=yes ${targetParam} comment="LB NTH ISP-${i}"\n`;
+        script += `add action=mark-routing chain=prerouting connection-mark="CONN_ISP${i}" new-routing-mark="ROUTE_ISP${i}" passthrough=no ${targetParam}\n\n`;
+      }
+
+      // --- 3. FIREWALL NAT (Masquerade) ---
+      script += "/ip firewall nat\n";
+      for(let i = 1; i <= count; i++) {
+        let wanIface = document.getElementById(`interface-${i}`).value;
+        script += `add action=masquerade chain=srcnat out-interface="${wanIface}" comment="NAT ISP-${i}"\n`;
+      }
+      script += "\n";
+
+      // --- 4. ROUTING / DEFAULT GATEWAY ---
+      script += "/ip route\n";
+      // Tentukan format penulisan routing mark (v7 menggunakan routing-table, v6 routing-mark)
+      let rMarkText = (rosVer === "v7") ? "routing-table" : "routing-mark";
+
+      for(let i = 1; i <= count; i++) {
+        let gateway = document.getElementById(`gateway-${i}`).value;
+        
+        // Logika tambahan jika menggunakan Recursive Gateway (DNS ping)
+        if(useRecursive) {
+          let dnsCheck = document.getElementById(`dns-${i}`).value;
+          script += `# Recursive Route ISP-${i}\n`;
+          script += `add distance=1 dst-address=${dnsCheck} gateway=${gateway} scope=30 target-scope=10\n`;
+          script += `add check-gateway=ping distance=1 dst-address=0.0.0.0/0 gateway=${dnsCheck} ${rMarkText}="ROUTE_ISP${i}" scope=30 target-scope=11 comment="LB Route ISP-${i}"\n`;
+        } else {
+          // Logika standar
+          script += `add check-gateway=ping distance=1 dst-address=0.0.0.0/0 gateway=${gateway} ${rMarkText}="ROUTE_ISP${i}" comment="LB Route ISP-${i}"\n`;
+        }
+      }
+
+      // Memasukkan hasil gabungan teks (script) ke dalam layar terminal (Textarea)
+      document.getElementById('script-output').value = script;
+    }
+
+    // 6. Fungsi untuk Menyalin Teks (Copy) ke Clipboard
+    function copyToClipboard() {
+      let textarea = document.getElementById('script-output');
+      let copyTextSpan = document.getElementById('copy-text');
+      let copyBtn = document.getElementById('btn-copy');
+
+      // Peringatan jika text area masih kosong
+      if (textarea.value.trim() === "") {
+        alert("Script masih kosong! Klik 'Generate Script' terlebih dahulu.");
+        return;
+      }
+
+      // Melakukan blok pada teks di dalam textarea
+      textarea.select();
+      textarea.setSelectionRange(0, 99999); // Kompatibilitas untuk Mobile/HP
+
+      // Perintah menyalin ke sistem perangkat (aman di-iframe)
+      document.execCommand('copy');
+      
+      // Merubah tombol sebentar sebagai notifikasi sukses
+      let oldText = copyTextSpan.innerText;
+      copyTextSpan.innerText = "Tersalin!";
+      copyBtn.style.background = "var(--dot-green)"; // Rubah jadi hijau
+      
+      // Kembalikan ke keadaan semula setelah 2 detik (2000 milidetik)
+      setTimeout(() => {
+        copyTextSpan.innerText = oldText;
+        copyBtn.style.background = "var(--accent)";
+      }, 2000);
+    }
+
+    // 7. Fungsi untuk mereset seluruh form input
+    function clearAllFields() {
+      document.getElementById('num-wan').value = 2;
+      document.getElementById('ros-version').value = "v6";
+      document.getElementById('target-type').value = "address-list";
+      document.getElementById('ip-target').value = "192.168.0.0/16, 10.0.0.0/8";
+      
+      // Matikan centang checkbox
+      document.getElementById('check-ratio').checked = false;
+      document.getElementById('check-recursive').checked = false;
+      
+      // Kosongkan Terminal
+      document.getElementById('script-output').value = "";
+      
+      // Kembalikan kotak ISP ke mode bawaan (2 buah)
+      generateWanInputs();
+    }
+  </script>
+
+</body>
+</html>

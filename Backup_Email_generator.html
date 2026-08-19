@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<!-- Tag html utama, lang="id" berarti bahasa utamanya adalah Bahasa Indonesia -->
+<html lang="id">
+<head>
+  <!-- Menentukan karakter encoding agar bisa membaca karakter khusus dengan benar -->
+  <meta charset="utf-8">
+  <!-- Meta viewport penting agar tampilan responsif di layar HP (Mobile Friendly) -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <!-- Judul yang akan muncul di tab browser -->
+  <title>Mikrotik Auto Backup to E-Mail - JLA Tools</title>
+  <!-- Deskripsi untuk keperluan SEO (Search Engine Optimization) -->
+  <meta name="description" content="Mikrotik RouterOS Auto Backup to E-Mail Generator Premium - JLA Tools">
+  
+  <!-- Memulai blok CSS untuk styling halaman -->
+  <style>
+    /* Mengimpor font dari Google Fonts: 'Inter' untuk teks biasa, 'JetBrains Mono' untuk kode */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap');
+    
+    /* Reset CSS dasar: membuat transisi halus dan box-sizing border-box agar padding tidak menambah lebar elemen */
+    * { 
+      transition: all 0.2s ease-in-out; 
+      box-sizing: border-box; 
+    }
+    
+    /* Membuat variabel CSS (Custom Properties) agar warna dan efek mudah diubah di satu tempat */
+    :root {
+      --bg: #f4f7f6; /* Warna latar belakang halaman (abu-abu sangat terang) */
+      --text: #334155; /* Warna teks utama (abu-abu gelap) */
+      --text-dark: #0f172a; /* Warna teks tebal/judul (hampir hitam) */
+      --text-muted: #64748b; /* Warna teks redup/keterangan */
+      --accent: #ff6600; /* Warna utama / aksen (oranye JLA) */
+      --accent-hover: #ea580c; /* Warna aksen saat mouse hover (oranye sedikit gelap) */
+      --border: #e2e8f0; /* Warna garis batas / border */
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* Efek bayangan kecil */
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* Efek bayangan sedang */
+    }
+
+    /* Mengatur style dasar body atau seluruh halaman */
+    body { 
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; /* Menggunakan font Inter */
+      background: var(--bg); /* Mengambil warna background dari variabel */
+      color: var(--text); /* Mengambil warna teks dari variabel */
+      margin: 0; 
+      padding: 0; 
+      display: flex; /* Menggunakan Flexbox untuk layout tata letak (Header, Main, Footer) */
+      flex-direction: column; /* Menyusun ke bawah secara vertikal */
+      min-height: 100vh; /* Minimal tinggi sama dengan tinggi layar */
+    }
+
+    /* Styling untuk Header (Bagian atas yang menempel) */
+    .app-header {
+      height: 64px;
+      background: rgba(255, 255, 255, 0.95); /* Latar putih agak transparan */
+      backdrop-filter: blur(8px); /* Efek blur di belakang header (seperti kaca buram) */
+      -webkit-backdrop-filter: blur(8px); /* Sama seperti atas, untuk browser Safari */
+      border-bottom: 1px solid var(--border); /* Garis bawah header */
+      display: flex;
+      align-items: center; /* Meratakan isi di tengah secara vertikal */
+      justify-content: space-between; /* Membuat logo di kiri, tombol di kanan */
+      padding: 0 24px;
+      position: sticky; /* Membuat header selalu terlihat menempel di atas saat di-scroll */
+      top: 0;
+      z-index: 100; /* Memastikan header selalu berada di atas elemen lain */
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Styling grup logo dan judul di header */
+    .brand { display: flex; align-items: center; gap: 12px; }
+    /* Styling kotak logo JLA (Warna gradasi oranye) */
+    .brand-logo {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+      border-radius: 10px; color: #fff;
+      font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 16px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 12px rgba(255, 102, 0, 0.3);
+    }
+    .brand-title h1 { font-size: 15px; font-weight: 800; color: var(--text-dark); letter-spacing: 0.3px; line-height: 1.2; margin: 0;}
+    .brand-title p { font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; font-weight: 500; margin: 0;}
+
+    /* Styling grup tombol di sebelah kanan header */
+    .header-actions { display: flex; align-items: center; gap: 12px; }
+    
+    /* Gaya dasar untuk semua tombol */
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 9px 16px; border-radius: 8px; border: none; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; text-decoration: none; }
+    
+    /* Tombol sekunder (seperti tombol Beranda) */
+    .btn-secondary { background: #ffffff; color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: #f8fafc; }
+    
+    /* Tombol WhatsApp (Hijau) */
+    .btn-wa { background: #25D366; color: white; border-radius: 20px; font-weight: 700; }
+    .btn-wa:hover { background: #128C7E; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3); }
+
+    /* Tombol utama (Warna Oranye) */
+    .btn-primary { 
+      width: 100%; /* Penuhi lebar kontainer */
+      background: var(--accent); 
+      color: white; 
+      font-size: 14px; 
+      padding: 12px;
+      margin-top: 10px;
+    }
+    .btn-primary:hover { background: var(--accent-hover); box-shadow: 0 4px 12px rgba(255, 102, 0, 0.2); }
+
+    /* Container utama yang membungkus Sidebar dan Area Hasil */
+    .main-container { 
+      display: flex; /* Memakai flex agar kolom bersebelahan */
+      flex: 1; /* Mengisi ruang yang tersisa antara header & footer */
+      max-width: 1200px; /* Lebar maksimal konten */
+      margin: 0 auto; /* Supaya konten berada di tengah monitor */
+      width: 100%; 
+      padding: 30px 20px; 
+      gap: 24px; /* Jarak antara sidebar (kiri) dan hasil script (kanan) */
+      align-items: flex-start;
+    }
+    
+    /* Styling kotak bagian kiri (Form Input) */
+    .sidebar {
+      flex: 0 0 350px; /* Lebar tetap 350px tidak membesar/mengecil */
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: var(--shadow-md);
+      border: 1px solid var(--border);
+      padding: 24px;
+    }
+
+    /* Styling kotak bagian kanan (Tempat munculnya Script) */
+    .content-area { 
+      flex: 1; /* Akan melebar menyesuaikan sisa ruang */
+      background: #ffffff; 
+      border-radius: 16px; 
+      box-shadow: var(--shadow-md); 
+      border: 1px solid var(--border);
+      padding: 24px; 
+      min-width: 0;
+    }
+
+    /* Judul di setiap kotak (Konfigurasi & Hasil Script) */
+    .section-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-dark);
+      margin-top: 0;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-title span { color: var(--accent); /* Mewarnai sebagian teks dengan oranye */ }
+
+    /* Jarak antar input form */
+    .form-group { margin-bottom: 16px; }
+    /* Agar dua input bisa sejajar (contoh Port dan Versi OS) */
+    .form-row { display: flex; gap: 12px; }
+    .form-row .form-group { flex: 1; margin-bottom: 0; }
+    
+    /* Styling untuk label / judul inputan (seperti "E-Mail Server") */
+    .form-label { 
+      display: block; 
+      font-size: 12px; 
+      font-weight: 600; 
+      margin-bottom: 6px; 
+      color: var(--text); 
+    }
+    .form-label small { color: var(--accent); font-weight: 500; }
+    
+    /* Styling untuk kotak tempat ngetik text (input/select) */
+    .form-control { 
+      width: 100%; 
+      padding: 10px 12px; 
+      border: 1px solid var(--border); 
+      border-radius: 8px; 
+      font-size: 13px;
+      font-family: 'Inter', sans-serif;
+      color: var(--text-dark);
+      background: #f8fafc;
+    }
+    /* Saat kotak input diklik (aktif) */
+    .form-control:focus { 
+      outline: none; 
+      border-color: var(--accent); /* Garis batas jadi oranye */
+      background: #ffffff;
+      box-shadow: 0 0 0 3px rgba(255,102,0,0.1); /* Efek glow/bayangan oranye */
+    }
+    /* Khusus untuk dropdown select (Menambahkan ikon panah ke bawah) */
+    select.form-control { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 12px center; background-size: 14px; padding-right: 32px; }
+
+    /* Box peringatan / catatan */
+    .disclaimer {
+      font-size: 12px;
+      background: #fff7ed; /* Latar oranye sangat pucat */
+      border-left: 4px solid var(--accent); /* Garis oranye tebal di kiri */
+      padding: 12px 16px;
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+
+    /* Container untuk block script (Background gelap mirip terminal) */
+    .output-container {
+      background: #1e293b; /* Warna latar belakang terminal */
+      border-radius: 8px; /* Border sedikit membulat */
+      border: 1px solid #334155; /* Garis batas luar */
+      overflow: hidden; /* Mencegah isinya luber/keluar garis */
+      position: relative;
+    }
+    
+    /* Header (Top bar) dari terminal / block script */
+    .output-header {
+      display: flex;
+      justify-content: space-between; /* Pisahkan elemen ke kiri dan kanan */
+      align-items: center; /* Ratakan vertikal di tengah */
+      background: #283345; /* Warna latar baris atas sedikit lebih terang dari isinya */
+      padding: 8px 16px;
+      border-bottom: 1px solid #1e293b;
+    }
+
+    /* Pembungkus bagian kiri (titik warna dan judul terminal) */
+    .terminal-left {
+      display: flex;
+      align-items: center;
+      gap: 16px; /* Jarak antara titik-titik dan teks judul */
+    }
+
+    /* Grup 3 titik ala MacOS */
+    .terminal-dots {
+      display: flex;
+      gap: 6px;
+    }
+    
+    /* Styling bentuk dasar satu titik */
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%; /* Membuatnya menjadi bulat sempurna */
+      display: inline-block;
+    }
+    
+    /* Warna spesifik masing-masing titik */
+    .dot.red { background-color: #ff5f56; } /* Merah */
+    .dot.yellow { background-color: #ffbd2e; } /* Kuning */
+    .dot.green { background-color: #27c93f; } /* Hijau */
+
+    /* Judul di dalam bar terminal (sebelah titik) */
+    .output-title { 
+      color: #94a3b8; 
+      font-size: 13px; 
+      font-weight: 500; 
+      font-family: 'JetBrains Mono', monospace; /* Font ala coding */
+    }
+    
+    /* Styling tombol "Copy Script" di kanan atas terminal */
+    .btn-copy {
+      background: #ff6600; /* Warna Oranye JLA */
+      color: #ffffff; /* Teks putih */
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px; /* Ujungnya agak bulat */
+      font-size: 12px;
+      font-weight: 600; /* Teks tebal */
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px; /* Jarak antara ikon svg dan teks */
+      font-family: 'Inter', sans-serif;
+      transition: background 0.2s; /* Transisi warna halus saat disorot mouse */
+    }
+    .btn-copy:hover { 
+      background: #ea580c; /* Warna berubah jadi oranye lebih gelap saat di-hover */
+    }
+
+    /* Area tempat teks script Mikrotik-nya berada */
+    .code-content {
+      padding: 16px;
+      margin: 0;
+      overflow-x: auto; /* Bisa scroll kiri-kanan kalau scriptnya terlalu panjang */
+      max-height: 500px;
+      overflow-y: auto; /* Bisa scroll atas-bawah kalau isinya banyak */
+      font-family: 'JetBrains Mono', monospace; /* Menggunakan font jenis Monospace (semua huruf lebar sama) seperti di terminal beneran */
+      font-size: 12px;
+      line-height: 1.6;
+      color: #e2e8f0; /* Warna teks putih/abu-abu terang */
+      white-space: pre-wrap; /* Mempertahankan spasi dan baris baru, tapi tetap wrap ke bawah jika mentok kanan */
+      word-break: break-all;
+    }
+
+    /* Warna khusus untuk variabel yang bisa berubah di dalam script */
+    .code-content span.var { color: #f97316; font-weight: 600; } /* Warna Oranye */
+    /* Warna khusus untuk komentar di dalam script (yang diawali tanda #) */
+    .code-content span.comment { color: #64748b; } /* Warna abu-abu redup */
+
+    /* Styling bagian bawah website (Footer) */
+    .footer { text-align: center; font-size: 12px; color: #94a3b8; padding: 20px; width: 100%; margin-top: auto; }
+    .footer a { color: var(--accent); text-decoration: none; font-weight: 500; }
+
+    /* CSS Khusus jika dibuka di layar kecil (HP/Tablet) ukurannya di bawah 900px */
+    @media screen and (max-width: 900px) { 
+      /* Header berubah jadi bersusun ke bawah */
+      .app-header { flex-direction: column; height: auto; padding: 15px 20px; gap: 15px; align-items: center; justify-content: center; text-align: center;}
+      .brand { flex-direction: column; gap: 8px; }
+      .header-actions { width: 100%; display: flex; justify-content: center; gap: 10px;}
+      
+      /* Layout utama (sidebar dan area hasil) berubah menjadi bersusun atas-bawah (tidak kiri-kanan lagi) */
+      .main-container { flex-direction: column; padding: 20px 15px; }
+      .sidebar { flex: auto; width: 100%; } /* Sidebar penuhi lebar hp */
+      .form-row { flex-direction: column; gap: 0; } /* Inputan yang asalnya sejajar jadi atas-bawah */
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Ini bagian kepala website yang lengket di atas -->
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-logo">JLA</div> <!-- Logo Kotak -->
+      <div class="brand-title">
+        <h1>JAKA LINTAS AKSES GENERATOR</h1> <!-- Judul Besar -->
+        <p>Portal Script Generator Premium JLA</p> <!-- Subjudul -->
+      </div>
+    </div>
+    <div class="header-actions">
+      <!-- Tombol Link -->
+      <a href="index.html" class="btn btn-secondary">🏠 Beranda</a>
+      <!-- Tombol menuju WhatsApp -->
+      <a href="https://wa.me/62818386078?text=Halo%20JLA%20Tools,%20saya%20ingin%20bertanya..." target="_blank" class="btn btn-wa">
+        <!-- SVG ini adalah kode untuk menggambar ikon WhatsApp -->
+        <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Hubungi Kami
+      </a>
+    </div>
+  </header>
+
+  <!-- Bungkus utama pembagi layout kiri (sidebar) dan kanan (content area) -->
+  <main class="main-container">
+    
+    <!-- Ini bagian Panel Kiri (Kolom Input Form) -->
+    <div class="sidebar">
+      <h2 class="section-title">Konfigurasi <span>Backup</span></h2>
+      
+      <!-- Setiap bagian input di bungkus dalam div "form-group" -->
+      <div class="form-group">
+        <label class="form-label">E-Mail Server</label>
+        <!-- input "id" sangat penting. Ini dipakai JavaScript untuk mengambil nilai teks yang diketik -->
+        <input type="text" id="input-mail-server" class="form-control" value="smtp.gmail.com" placeholder="smtp.gmail.com">
+      </div>
+      
+      <!-- form-row agar 2 inputan jadi 1 baris memanjang ke samping -->
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">E-Mail Port</label>
+          <input type="text" id="input-mail-port" class="form-control" value="587" placeholder="587">
+        </div>
+        <div class="form-group">
+          <label class="form-label">RouterOS Version</label>
+          <!-- tag <select> untuk membuat dropdown pilihan -->
+          <select id="ros-version" class="form-control">
+            <option value="ROS6">RouterOS v6.xx</option>
+            <option value="ROS7">RouterOS v7.xx</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-top: 16px;">
+        <label class="form-label">E-Mail User (Sender)</label>
+        <input type="text" id="input-mail-user" class="form-control" value="jakalintasakses@gmail.com" placeholder="jakalintasakses@gmail.com">
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">E-Mail Password (App Password)</label>
+        <input type="text" id="input-mail-password" class="form-control" value="rfbp xdpv yycl ollu" placeholder="rfbp xdpv yycl ollu">
+      </div>
+
+      <!-- Pembuatan Garis Pemisah (Divider) -->
+      <div style="width:100%; height:1px; background:var(--border); margin: 24px 0;"></div>
+
+      <div class="form-group">
+        <label class="form-label">Backup File Option</label>
+        <select id="input-file-option" class="form-control">
+          <option value="backup_and_rsc" style="font-weight: bold; color: var(--accent);">Full Backup (.backup) + Full RSC (.rsc)</option>
+          <option value="allbackup">Full Backup Files (.backup)</option>
+          <option value="allrsc">Full RSC Files (.rsc)</option>
+          <option value="queuesimplersc">Queue Simple (.rsc)</option>
+          <option value="queuetreersc">Queue Tree (.rsc)</option>
+          <option value="manglersc">Mangle (.rsc)</option>
+          <option value="hotspotrsc">Hotspot (.rsc)</option>
+          <option value="ppprsc">PPP / PPPoE (.rsc)</option>
+          <option value="addresslist">Address List (.rsc)</option>
+          <option value="ipaddress">IP Routes (.rsc)</option>
+          <option value="routing">Routing BGP, RIF, dll (.rsc)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Kirim ke E-Mail (Penerima)</label>
+        <input type="text" id="input-to-mail" class="form-control" value="" placeholder="email-anda@domain.com">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Router Description / Judul E-Mail</label>
+        <input type="text" id="input-mail-from" class="form-control" value="" placeholder="Backup From My Router">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Jadwal Kirim <small>(ex: 1d, 7d, 30d)</small></label>
+        <input type="text" id="input-scheduler" class="form-control" value="7d" placeholder="7d">
+      </div>
+
+      <!-- Tombol Eksekusi, ketika di-klik akan menjalankan fungsi javascript 'generateScript()' -->
+      <button id="btn-generate" class="btn btn-primary" onclick="generateScript()">
+        Generate Script
+      </button>
+    </div>
+
+    <!-- Ini bagian Panel Kanan (Menampilkan Hasil Script) -->
+    <div class="content-area">
+      <h2 class="section-title">Hasil <span>Script</span></h2>
+      
+      <!-- Pesan Catatan Peringatan -->
+      <div class="disclaimer">
+        <b>CATATAN:</b> Pastikan Anda telah mengaktifkan <i>2-Step Verification</i> pada akun Google Anda dan menggunakan <b>App Password</b> untuk kolom "E-Mail Password", bukan password login utama.
+      </div>
+
+      <!-- Kotak Gelap tempat Script berada -->
+      <div class="output-container">
+        
+        <!-- Header Terminal (Baris atas yang di desain seperti gambar yang Anda minta) -->
+        <div class="output-header">
+          <!-- Pembungkus kiri (titik dan judul) -->
+          <div class="terminal-left">
+            <!-- 3 Titik ala Mac OS -->
+            <div class="terminal-dots">
+              <span class="dot red"></span>
+              <span class="dot yellow"></span>
+              <span class="dot green"></span>
+            </div>
+            <!-- Judul Terminal sesuai gambar referensi -->
+            <div class="output-title">Terminal Winbox</div>
+          </div>
+          
+          <!-- Tombol Copy Script sesuai warna gambar (Oranye, ikon kotak bertumpuk) -->
+          <button class="btn-copy" onclick="copyScript()">
+            <!-- SVG Ikon "Copy" kotak 2 lapis -->
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            <span id="copy-text">Copy Script</span>
+          </button>
+        </div>
+        
+        <!-- Area tempat Text / Script Mikrotik di-render -->
+        <!-- tag <pre> digunakan untuk format code, dia akan mempertahankan spasi kosong dan indentasi -->
+        <!-- Banyak terdapat <span id="..."> di dalamnya. Id ini digunakan JS untuk menimpa nilainya secara dinamis dari kolom kiri. -->
+        <pre class="code-content" id="showScript"><span class="comment">###################################################
+# Mikrotik RouterOS Auto Backup to E-Mail Generator
+# Date/Time: <span id="tanggalwaktu"></span>
+# Created By: JLA Tools
+###################################################</span>
+
+/tool e-mail set address="<span class="var" id="mail-server">smtp.gmail.com</span>" from="<span class="var" id="mail-from1">Backup From My Router</span>" password="<span class="var" id="mail-pass">wvewfprmnymfepdx</span>" port="<span class="var" id="mail-port">587</span>" <span class="var" id="tls-option">start-tls="yes"</span> user="<span class="var" id="mail-user">backup.mikrotik.ros@gmail.com</span>"
+
+/system scheduler rem [find name=BACKUP-TO-EMAIL]
+
+/system scheduler add interval=<span class="var" id="mail-interval">7d</span> name=BACKUP-TO-EMAIL on-event="#=======================================================\r\
+\n# Mikrotik RouterOS Auto Backup to E-Mail by JLA Tools\r\
+\n#=======================================================\r\
+\n:global date [/system clock get date]\r\
+\n:global d [:pick \$date 4 6]\r\
+\n:global m [:pick \$date 0 3]\r\
+\n:global y [:pick \$date 7 11]\r\
+<span id="show-hide-backup">\n:log warning \"-> Backup to E-Mail Now\"\r\
+\n:global backupfile ([/system identity get name] . \"-\" . \"\$m-\$d-\$y\")\r\
+\n/system backup save name=\$backupfile\r\
+\n:delay 20s\r\
+\n:log warning \"-> Backup Being E-Mailed\"\r\
+\n/tool e-mail send to=\"<span class="var" id="mail-to1">email-anda@domain.com</span>\" subject=([/system identity get name] . \" - \". [/system clock get time] . \" - \" . [/system clock get date] . \"\") from=\"<span class="var" id="mail-from2">Backup From My Router</span>\" file=(\"\$backupfile\" . \".backup\") <span class="var" id="tls-option1">start-tls="yes"</span>\r\
+\n:delay 20s\r\
+\n:log warning \"-> Backup File Remove\"\r\
+\n/file remove (\"\$backupfile\" . \".backup\")\r\
+\n:delay 5s\r\
+\n:log warning \"-> Backup To E-Mail Finished\"\r\n</span><span id="show-hide-rsc" style="display:none;">\n:log warning \"-> Backup To E-Mail Now\"\r\
+\n:global backupfilersc ([/system identity get name] . \"-\" . \"\$m-\$d-\$y\")\r\
+\n<span class="var" id="export-rsc">/export show-sensitive</span> file=\$backupfilersc\r\
+\n:delay 20s\r\
+\n:log warning \"-> Backup Being E-Mailed\"\r\
+\n/tool e-mail send to=\"<span class="var" id="mail-to2">email-anda@domain.com</span>\" subject=([/system identity get name] . \" - \". [/system clock get time] . \" - \" . [/system clock get date] . \"\") from=\"<span class="var" id="mail-from3">Backup From My Router</span>\" file=(\"\$backupfilersc\" . \".rsc\") <span class="var" id="tls-option2">start-tls="yes"</span>\r\
+\n:delay 20s\r\
+\n:log warning \"-> Backup File Remove\"\r\
+\n/file remove (\"\$backupfilersc\" . \".rsc\")\r\
+\n:delay 5s\r\
+\n:log warning \"-> Backup To E-Mail Finished\"\r\n</span>" policy=ftp,reboot,read,write,policy,test,password,sniff,sensitive,romon start-time=startup comment="Backup To E-Mail Generator by JLA Tools"
+</pre>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    Jaka Lintas Akses © 2026. Premium RouterOS Script Tools Portal. Diadaptasi dari BuanaNET.
+  </footer>
+
+  <!-- Blok Script JS: Otak dari website. Disinilah logika bekerja -->
+  <script>
+    // 1. Menampilkan Tanggal dan Waktu terkini di bagian atas script
+    document.getElementById('tanggalwaktu').innerText = new Date().toLocaleString('id-ID');
+    
+    // 2. Logika untuk melarang user menekan tombol spasi di beberapa input (seperti input email & port)
+    // Supaya tidak terjadi error atau salah ketik saat digenerate
+    const noSpaceInputs = ['input-mail-server', 'input-mail-port', 'input-mail-user', 'input-to-mail', 'input-scheduler'];
+    noSpaceInputs.forEach(id => {
+        document.getElementById(id).addEventListener('keypress', function(e) {
+            // Jika tombol yang ditekan adalah spasi ( ' ' ), maka batalkan/cegah aksi tersebut
+            if (e.key === ' ') e.preventDefault();
+        });
+    });
+
+    // 3. Menjalankan fungsi 'generateScript()' otomatis sekali pada saat web / halaman pertama kali dibuka
+    window.onload = function() {
+        generateScript();
+    };
+
+    // 4. Ini adalah FUNGSI UTAMA. Mengambil text dari input (kiri), lalu menaruh text tersebut ke area script (kanan)
+    function generateScript() {
+      // a. Baca semua yang user ketik, tampung ke dalam Variabel. 
+      // (.value mengambil isinya, "||" artinya jika kosong maka gunakan nilai default di belakangnya)
+      const mailServer = document.getElementById('input-mail-server').value || 'smtp.gmail.com';
+      const mailPort = document.getElementById('input-mail-port').value || '587';
+      const rosVersion = document.getElementById('ros-version').value;
+      const mailUser = document.getElementById('input-mail-user').value || 'jakalintasakses@gmail.com';
+      const mailPass = document.getElementById('input-mail-password').value || 'rfbp xdpv yycl ollu';
+      const fileOption = document.getElementById('input-file-option').value;
+      const toMail = document.getElementById('input-to-mail').value || 'email-anda@domain.com';
+      const mailFrom = document.getElementById('input-mail-from').value || 'Backup From My Router';
+      const scheduler = document.getElementById('input-scheduler').value || '7d';
+
+      // b. Logika khusus (If-Else): Untuk menentukan format string TLS berdasarkan OS Mikrotik versi brp
+      // Di OS v7 penulisan kodenya jadi "tls=yes" bukannya "start-tls=yes"
+      const tlsStr = (rosVersion === 'ROS7') ? 'tls=yes' : 'start-tls="yes"';
+
+      // c. Tulis (lempar) semua variabel hasil ketikan tadi ke dalam kode script di kotak sebelah kanan.
+      // Dengan cara mencari elemen berdasar "id"-nya lalu ganti teks/innerText-nya.
+      document.getElementById('tanggalwaktu').innerText = new Date().toLocaleString('id-ID'); // Update Waktu
+      
+      document.getElementById('mail-server').innerText = mailServer;
+      document.getElementById('mail-port').innerText = mailPort;
+      document.getElementById('mail-user').innerText = mailUser;
+      document.getElementById('mail-pass').innerText = mailPass;
+      
+      document.getElementById('tls-option').innerText = tlsStr;
+      document.getElementById('tls-option1').innerText = tlsStr;
+      document.getElementById('tls-option2').innerText = tlsStr;
+
+      document.getElementById('mail-interval').innerText = scheduler;
+      
+      document.getElementById('mail-to1').innerText = toMail;
+      document.getElementById('mail-to2').innerText = toMail;
+      
+      document.getElementById('mail-from1').innerText = mailFrom;
+      document.getElementById('mail-from2').innerText = mailFrom;
+      document.getElementById('mail-from3').innerText = mailFrom;
+
+      // d. Logika Menampilkan / Sembunyikan Jenis Script (.backup vs .rsc)
+      // Kita ambil pembungkus (span) script backup dan rsc
+      const blockBackup = document.getElementById('show-hide-backup');
+      const blockRsc = document.getElementById('show-hide-rsc');
+      const exportRsc = document.getElementById('export-rsc');
+
+      if (fileOption === 'allbackup') {
+          // Jika milih cuma .backup -> Tampilkan blok backup, sembunyikan blok rsc
+          blockBackup.style.display = 'inline';
+          blockRsc.style.display = 'none';
+      } else if (fileOption === 'backup_and_rsc') {
+          // Jika milih dua-duanya -> Tampilkan dua duanya ('inline')
+          blockBackup.style.display = 'inline';
+          blockRsc.style.display = 'inline';
+          exportRsc.innerText = '/export show-sensitive';
+      } else {
+          // Jika milih jenis spesifik rsc aja (misal mangle/queuetree dll)
+          // -> Sembunyikan blok backup, Tampilkan blok rsc
+          blockBackup.style.display = 'none';
+          blockRsc.style.display = 'inline';
+          
+          // Switch-case ini untuk mengubah sintaks baris perintah rsc apa yang dipakai
+          switch(fileOption) {
+              case 'allrsc': exportRsc.innerText = '/export show-sensitive'; break;
+              case 'queuesimplersc': exportRsc.innerText = '/queue simple export show-sensitive'; break;
+              case 'queuetreersc': exportRsc.innerText = '/queue tree export show-sensitive'; break;
+              case 'manglersc': exportRsc.innerText = '/ip firewall mangle export show-sensitive'; break;
+              case 'hotspotrsc': exportRsc.innerText = '/ip hotspot export show-sensitive'; break;
+              case 'ppprsc': exportRsc.innerText = '/ppp export show-sensitive'; break;
+              case 'addresslist': exportRsc.innerText = '/ip firewall address-list export show-sensitive'; break;
+              case 'ipaddress': exportRsc.innerText = '/ip address export show-sensitive'; break;
+              case 'routing': exportRsc.innerText = '/routing export show-sensitive'; break;
+              default: exportRsc.innerText = '/export show-sensitive';
+          }
+      }
+
+      // e. Animasi Feedback Button: Memberi tahu user bahwa script sudah terupdate/berhasil dibuat
+      const btn = document.getElementById('btn-generate');
+      btn.innerText = "Script Updated!"; // Ganti teks
+      btn.style.background = "#25D366"; // Ganti warna jadi hijau
+      // setTimeout: Mengembalikan teks & warna seperti semula setelah 1 detik (1000 milidetik) berlalu
+      setTimeout(() => {
+          btn.innerText = "Generate Script";
+          btn.style.background = "var(--accent)";
+      }, 1000);
+    }
+
+    // 5. Fungsi untuk Menyalin Text (Copy to Clipboard)
+    function copyScript() {
+      // Jalankan fitur perbarui dulu (biar teks yang mau dicopy bener2 terbaru)
+      generateScript(); 
+      
+      // Ambil seluruh isi text dari kotak script kanan (Tag id="showScript")
+      const codeElement = document.getElementById('showScript');
+      const textToCopy = codeElement.innerText || codeElement.textContent;
+      
+      // Cara kerjanya: Kita bikin textarea bohongan (tidak terlihat), tempel teksnya di sana,
+      // blok/seleksi teksnya, lalu kirim perintah "copy" ke memori PC/HP (clipboard), lalu buang textareanya.
+      const tempTextArea = document.createElement("textarea");
+      tempTextArea.value = textToCopy;
+      document.body.appendChild(tempTextArea);
+      tempTextArea.select();
+      
+      try {
+          // Eksekusi perintah 'copy' bawaan browser
+          document.execCommand('copy');
+          
+          // Beri animasi tulisan "Copied!" pada tombolnya selama 2 detik
+          const copyBtnText = document.getElementById('copy-text');
+          copyBtnText.innerText = 'Copied!';
+          setTimeout(() => {
+              copyBtnText.innerText = 'Copy Script';
+          }, 2000);
+      } catch (err) {
+          console.error('Failed to copy text', err);
+      }
+      
+      // Buang textarea bohongannya tadi (cleanup)
+      document.body.removeChild(tempTextArea);
+    }
+    
+    // 6. EVENT LISTENER (Pemantau Aksi User): Auto-update secara real time
+    // Cari semua elemen dengan class "form-control" (yaitu semua kotak input di kiri)
+    // Saat ada perubahan (change) atau saat diketik (input), maka langsung jalankan fungsi generateScript
+    document.querySelectorAll('.form-control').forEach(el => {
+        el.addEventListener('change', generateScript);
+        el.addEventListener('input', generateScript);
+    });
+  </script>
+</body>
+</html>

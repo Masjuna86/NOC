@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Judul halaman yang akan tampil di tab browser -->
+  <title>JLA Tools - Mikrotik Failover Script Generator</title>
+  
+  <!-- Memuat font dari Google Fonts: 'Inter' untuk teks biasa dan 'JetBrains Mono' untuk teks kode/terminal -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    * { 
+      /* Memberikan efek transisi halus pada semua elemen saat berubah (misal hover) */
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+      /* Memastikan padding dan border tidak menambah ukuran elemen */
+      box-sizing: border-box; 
+    }
+    
+    :root {
+      /* Variabel warna bawaan template JLA */
+      --bg: #f4f7f6;
+      --text: #334155;
+      --text-dark: #0f172a;
+      --text-muted: #64748b;
+      --accent: #ff6600; /* Warna orange khas */
+      --border: #e2e8f0;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      
+      /* Variabel tambahan khusus untuk form generator */
+      --panel-bg: #f8fafc;
+      --input-bg: #ffffff;
+      --input-border: #cbd5e1;
+      
+      /* Variabel warna khusus untuk Terminal (berdasarkan gambar Terminal.JPG) */
+      --term-bg: #283142;        /* Warna background gelap terminal */
+      --term-header: #283142;    /* Warna header terminal */
+      --term-text: #a8b2c1;      /* Warna teks abu-abu terang */
+      --btn-mac-red: #ff5f56;    /* Tombol merah mac */
+      --btn-mac-yel: #ffbd2e;    /* Tombol kuning mac */
+      --btn-mac-grn: #27c93f;    /* Tombol hijau mac */
+    }
+
+    /* Gaya dasar body halaman */
+    body { 
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
+      background: var(--bg);
+      color: var(--text); 
+      margin: 0; 
+      padding: 0; 
+      display: flex; 
+      flex-direction: column; 
+      min-height: 100vh;
+    }
+
+    .app-header {
+      height: 64px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-logo {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, var(--accent), #ea580c);
+      border-radius: 10px; color: #fff;
+      font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 16px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 12px rgba(255, 102, 0, 0.3);
+    }
+    .brand-title h1 { font-size: 15px; font-weight: 800; color: var(--text-dark); letter-spacing: 0.3px; line-height: 1.2; margin: 0;}
+    .brand-title p { font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; font-weight: 500; margin: 0;}
+    .header-actions { display: flex; align-items: center; gap: 12px; }
+
+    /* Gaya Tombol Umum */
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 9px 16px; border-radius: 8px; border: none; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: all .15s; white-space: nowrap; text-decoration: none; }
+    .btn-secondary { background: #ffffff; color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: #f8fafc; }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-primary:hover { background: #ea580c; }
+    .btn-danger { background: #ef4444; color: white; }
+    .btn-danger:hover { background: #dc2828; }
+    .btn-wa { background: #25D366; color: white; border-radius: 20px; font-weight: 700; }
+    .btn-wa:hover { background: #128C7E; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3); }
+
+    .main-container { 
+      display: flex; 
+      flex: 1; 
+      max-width: 1400px; 
+      margin: 0 auto; 
+      width: 100%; 
+      padding: 40px 20px; 
+      gap: 30px; 
+    }
+    
+    .content-area { 
+      flex: 1; 
+      background: #ffffff; 
+      border-radius: 16px; 
+      box-shadow: 0 10px 30px rgba(148, 163, 184, 0.1); 
+      border: 1px solid var(--border);
+      padding: 30px; 
+      line-height: 1.6; 
+      min-width: 0;
+    }
+
+    /* Container untuk membagi dua kolom (Input di Kiri, Output di Kanan) */
+    .generator-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr; /* Dua kolom dengan lebar sama */
+      gap: 24px;
+      margin-top: 20px;
+    }
+
+    /* --- GAYA PANEL KIRI (INPUT) --- */
+    .input-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Mengatur baris input sejajar */
+    .input-row {
+      display: flex;
+      gap: 16px;
+    }
+    .input-group {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    /* Gaya label form */
+    label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-dark);
+    }
+
+    /* Gaya input text, number, dan dropdown select */
+    input[type="text"], 
+    input[type="number"], 
+    select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--input-border);
+      border-radius: 6px;
+      background: var(--input-bg);
+      font-family: inherit;
+      font-size: 13px;
+      color: var(--text-dark);
+      outline: none;
+    }
+    input:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(255, 102, 0, 0.1);
+    }
+    input:disabled {
+      background: #f1f5f9;
+      color: #94a3b8;
+      cursor: not-allowed;
+    }
+
+    /* Pilihan Radio Button (Tipe Failover) */
+    .radio-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .radio-card {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      background: #fff;
+    }
+    .radio-card:hover { border-color: #cbd5e1; }
+    .radio-card input[type="radio"] {
+      accent-color: var(--accent);
+      width: 16px; height: 16px;
+    }
+    .radio-card span { font-size: 13px; font-weight: 500; }
+
+    /* Kotak Informasi Biru */
+    .info-box {
+      background: #eff6ff;
+      border-left: 4px solid #3b82f6;
+      padding: 12px 16px;
+      border-radius: 4px 8px 8px 4px;
+      font-size: 12px;
+      color: #1e3a8a;
+    }
+    .info-box ul { margin: 5px 0 0 0; padding-left: 20px; }
+
+    /* Area khusus penampung input WAN dinamis */
+    #dynamic-wan-container {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    /* Desain setiap blok WAN (ISP-1, ISP-2, dst) */
+    .wan-card {
+      background: var(--panel-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .wan-card-header {
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--accent);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 8px;
+      margin-bottom: 4px;
+    }
+
+    /* Baris tombol aksi (Generate, Clear) */
+    .action-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .action-row button { flex: 1; }
+
+
+    .output-panel {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    /* Membungkus Terminal UI agar mirip persis dengan Terminal.JPG */
+    .terminal-container {
+      background: var(--term-bg);
+      border-radius: 8px;
+      overflow: hidden; /* Agar sudut melengkung menutupi isinya */
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      min-height: 400px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+
+    /* Bagian Atas Terminal (Header dari gambar) */
+    .terminal-header {
+      background: var(--term-header);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255,255,255,0.05); /* Garis batas tipis */
+    }
+
+    /* 3 Titik Mac di kiri */
+    .mac-dots {
+      display: flex;
+      gap: 8px;
+      width: 60px; /* Alokasi ruang agar judul tetap tengah (opsional) */
+    }
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+    .dot-red { background: var(--btn-mac-red); }
+    .dot-yel { background: var(--btn-mac-yel); }
+    .dot-grn { background: var(--btn-mac-grn); }
+
+    /* Judul Terminal */
+    .terminal-title {
+      color: var(--term-text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    /* Tombol Copy Script Oranye (Berdasarkan gambar) */
+    .btn-copy-script {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-family: 'Inter', sans-serif;
+      font-weight: 700;
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.2s;
+    }
+    .btn-copy-script:hover { background: #ea580c; }
+    /* Ikon copy (2 kotak bertumpuk) menggunakan SVG */
+    .icon-copy {
+      width: 14px; height: 14px;
+      fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+    }
+
+    /* Area Teks Script (Isi Terminal) */
+    .terminal-body {
+      flex: 1;
+      width: 100%;
+      background: var(--term-bg);
+      color: #fff;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      padding: 16px;
+      border: none;
+      resize: none; /* Cegah user mengubah ukuran manual via drag */
+      outline: none;
+      line-height: 1.5;
+    }
+    /* Mengatur scrollbar pada terminal */
+    .terminal-body::-webkit-scrollbar { width: 8px; }
+    .terminal-body::-webkit-scrollbar-track { background: var(--term-bg); }
+    .terminal-body::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+    .terminal-body::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+    /* Bagian bawah area output (Dropdown bahasa komentar) */
+    .output-footer {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      margin-top: 15px;
+      gap: 10px;
+    }
+    .output-footer label { color: var(--text-muted); }
+    .output-footer select { width: auto; padding: 6px 10px; }
+
+    /* Pesan Notifikasi Sukses Copy */
+    .msg-success {
+      font-size: 12px;
+      color: #10b981; /* Hijau sukses */
+      font-weight: 600;
+      opacity: 0; /* Awalnya sembunyi */
+      transition: opacity 0.3s;
+    }
+    .msg-success.show { opacity: 1; }
+
+    /* Gaya Footer Template JLA */
+    .footer { 
+      text-align: center; 
+      font-size: 13px; 
+      color: #94a3b8; 
+      padding: 30px; 
+      width: 100%; 
+      margin-top: auto;
+    }
+
+    @media screen and (max-width: 900px) { 
+      .app-header { flex-direction: column; height: auto; padding: 15px 20px; gap: 15px; align-items: center; justify-content: center; text-align: center;}
+      .brand { flex-direction: column; gap: 8px; }
+      .header-actions { width: 100%; display: flex; justify-content: center; gap: 10px;}
+      .main-container { flex-direction: column; padding: 20px 15px; }
+      .generator-grid { grid-template-columns: 1fr; /* Berubah jadi 1 kolom bertumpuk ke bawah */ }
+      .radio-grid { grid-template-columns: 1fr; /* Radio button memanjang ke bawah */ }
+      .input-row { flex-direction: column; gap: 10px; } /* Input berbaris ke bawah di HP */
+      .mac-dots { display: none; } /* Sembunyikan titik mac di HP agar rapi */
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Bagian Header Website (Bawaan Template) -->
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-logo">JLA</div>
+      <div class="brand-title">
+        <h1>JAKA LINTAS AKSES GENERATOR</h1>
+        <p>Portal Script Generator Premium JLA</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <!-- Tombol Home -->
+      <a href="index.html" class="btn btn-secondary">🏠 Beranda</a>
+      <!-- Tombol WhatsApp -->
+      <a href="https://wa.me/62818386078" class="btn btn-wa">
+        <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Hubungi Kami
+      </a>
+    </div>
+  </header>
+
+  <main class="main-container">
+    <div class="content-area">
+      
+      <!-- Judul Generator -->
+      <h2 style="margin-top: 0; margin-bottom: 5px; color: var(--text-dark);">Mikrotik <span style="color: var(--accent)">Failover</span> Script Generator</h2>
+      <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 25px;">Otomatisasi pembuatan script perpindahan jalur internet (Backup ISP) untuk RouterOS Anda.</p>
+
+      <!-- Grid Utama: Membagi Kiri (Input) dan Kanan (Output) -->
+      <div class="generator-grid">
+        
+        <!-- PANEL KIRI: FORM INPUT -->
+        <div class="input-panel">
+          
+          <!-- Baris 1: Jumlah WAN dan Versi RouterOS -->
+          <div class="input-row">
+            <!-- Pilihan Jumlah Jalur ISP -->
+            <div class="input-group">
+              <label for="num-wan">Jumlah Jalur WAN (ISP)</label>
+              <!-- Minimal 2 jalur untuk failover, value default 2 -->
+              <input type="number" id="num-wan" min="2" max="5" value="2">
+            </div>
+            <!-- Pilihan Versi RouterOS -->
+            <div class="input-group">
+              <label for="ros-version">Versi RouterOS</label>
+              <select id="ros-version">
+                <option value="v6">RouterOS v6.xx</option>
+                <option value="v7">RouterOS v7.xx</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Pilihan Metode Failover menggunakan Radio Button -->
+          <div class="radio-grid">
+            <!-- Label membungkus input radio agar teksnya bisa di-klik -->
+            <label class="radio-card">
+              <input type="radio" name="failover-type" value="basic" checked>
+              <span>Failover Gateway (Default)</span>
+            </label>
+            <label class="radio-card">
+              <input type="radio" name="failover-type" value="recursive">
+              <span>Failover Recursive Gateway</span>
+            </label>
+            <label class="radio-card">
+              <input type="radio" name="failover-type" value="netwatch">
+              <span>Failover Netwatch Ping</span>
+            </label>
+            <label class="radio-card">
+              <input type="radio" name="failover-type" value="script">
+              <span>Failover Scheduled Script</span>
+            </label>
+          </div>
+
+          <!-- Kotak Informasi Bantuan (Sama seperti web asli) -->
+          <div class="info-box">
+            <ul>
+              <li>Untuk IP Gateway yang sama beda port, ketik misal: <b>192.168.1.1%ether1</b></li>
+              <li>Untuk PPPoE Client, masukkan nama interface langsung, misal: <b>pppoe-out1</b></li>
+              <li>Angka <b>Distance lebih kecil</b> = Prioritas <b>Lebih Tinggi (Utama)</b>.</li>
+            </ul>
+          </div>
+
+          <!-- Wadah (Container) kosong untuk diisi form ISP dinamis oleh JavaScript -->
+          <div id="dynamic-wan-container">
+            <!-- Form ISP akan dimunculkan di sini secara dinamis -->
+          </div>
+
+          <!-- Tombol Aksi Bawah -->
+          <div class="action-row">
+            <!-- Tombol untuk memproses script -->
+            <button id="btn-generate" class="btn btn-primary">Generate Script</button>
+            <!-- Tombol untuk reset form -->
+            <button id="btn-clear" class="btn btn-danger">Clear All</button>
+          </div>
+
+        </div> <!-- Akhir Panel Kiri -->
+
+        <!-- PANEL KANAN: OUTPUT SCRIPT -->
+        <div class="output-panel">
+          
+          <!-- UI Terminal yang meniru gambar "Terminal.JPG" -->
+          <div class="terminal-container">
+            <!-- Header Terminal -->
+            <div class="terminal-header">
+              <!-- Titik hiasan ala Mac OS -->
+              <div class="mac-dots">
+                <div class="dot dot-red"></div>
+                <div class="dot dot-yel"></div>
+                <div class="dot dot-grn"></div>
+              </div>
+              
+              <!-- Teks Tengah Header -->
+              <div class="terminal-title">Terminal Winbox</div>
+              
+              <!-- Tombol Copy berwarna Oranye -->
+              <button id="btn-copy" class="btn-copy-script">
+                <!-- SVG Icon Copy -->
+                <svg class="icon-copy" viewBox="0 0 24 24">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+                Copy Script
+              </button>
+            </div>
+            
+            <!-- Area Teks (Textarea) untuk menampilkan hasil script mikrotik -->
+            <textarea id="script-output" class="terminal-body" readonly placeholder="Klik 'Generate Script' untuk melihat hasilnya di sini..."></textarea>
+          </div>
+
+          <!-- Pengaturan Output Tambahan di Bawah Terminal -->
+          <div class="output-footer">
+             <!-- Teks sukses setelah tombol copy ditekan -->
+            <span id="msg-copied" class="msg-success">✓ Script berhasil disalin!</span>
+            <label for="comment-lang">Bahasa Komentar:</label>
+            <select id="comment-lang">
+              <option value="id">Indonesia</option>
+              <option value="en">English</option>
+              <option value="none">Tanpa Komentar</option>
+            </select>
+          </div>
+
+        </div> <!-- Akhir Panel Kanan -->
+
+      </div> <!-- Akhir Generator Grid -->
+    </div>
+  </main>
+
+  <!-- Bagian Footer Website (Bawaan Template) -->
+  <footer class="footer">
+    Jaka Lintas Akses © 2019-2026. Premium RouterOS Script Tools Portal.
+  </footer>
+
+  <script>
+    // Menunggu seluruh elemen HTML (DOM) selesai dimuat sebelum menjalankan script
+    document.addEventListener('DOMContentLoaded', () => {
+      
+      // Mengambil elemen-elemen HTML (DOM) berdasarkan ID
+      const numWanInput = document.getElementById('num-wan');
+      const failoverTypeRadios = document.querySelectorAll('input[name="failover-type"]');
+      const dynamicWanContainer = document.getElementById('dynamic-wan-container');
+      const btnGenerate = document.getElementById('btn-generate');
+      const btnClear = document.getElementById('btn-clear');
+      const btnCopy = document.getElementById('btn-copy');
+      const scriptOutput = document.getElementById('script-output');
+      const msgCopied = document.getElementById('msg-copied');
+      const rosVersion = document.getElementById('ros-version');
+      const commentLang = document.getElementById('comment-lang');
+
+      // IP/DNS Publik bawaan untuk pengecekan (digunakan untuk recursive/netwatch)
+      const defaultCheckIps = ['1.1.1.1', '8.8.8.8', '9.9.9.9', '8.8.4.4', '1.0.0.1'];
+
+      // --- FUNGSI 1: MEMBUAT FORM INPUT ISP SECARA DINAMIS ---
+      // Fungsi ini dipanggil saat halaman dimuat atau jumlah WAN diubah
+      function renderWanInputs() {
+        // Ambil angka dari input Jumlah WAN
+        let count = parseInt(numWanInput.value);
+        // Validasi, pastikan minimal 2 dan maksimal 5
+        if (isNaN(count) || count < 2) count = 2;
+        if (count > 5) count = 5;
+        numWanInput.value = count;
+
+        // Cek metode failover apa yang sedang aktif sekarang
+        const selectedType = document.querySelector('input[name="failover-type"]:checked').value;
+        // Pengecekan IP (IP/DNS Check) hanya diaktifkan jika tipenya bukan 'basic'
+        const isCheckIpEnabled = selectedType !== 'basic';
+
+        // Kosongkan container sebelum diisi ulang
+        dynamicWanContainer.innerHTML = '';
+
+        // Looping untuk membuat blok input sebanyak 'count' (jumlah WAN)
+        for (let i = 1; i <= count; i++) {
+          // Pilih IP cek publik otomatis dari array (jika habis, ulang dari awal array)
+          const defaultCheckIp = defaultCheckIps[(i - 1) % defaultCheckIps.length];
+          // Set atribut 'disabled' jika metode failover adalah basic
+          const disableCheckAttr = isCheckIpEnabled ? '' : 'disabled';
+
+          // Membuat HTML untuk satu blok ISP
+          const wanHtml = `
+            <div class="wan-card">
+              <div class="wan-card-header">Jalur ISP - ${i}</div>
+              
+              <div class="input-row">
+                <div class="input-group">
+                  <label>Nama Identity / Comment</label>
+                  <input type="text" id="ident-${i}" value="ISP-${i}" placeholder="Misal: Indihome">
+                </div>
+                <div class="input-group">
+                  <label>Routing Distance</label>
+                  <!-- Semakin kecil distance, prioritasnya semakin utama. ISP-1 default distance 1, ISP-2 distance 2, dst -->
+                  <input type="number" id="dist-${i}" value="${i}" min="1">
+                </div>
+              </div>
+
+              <div class="input-row">
+                <div class="input-group">
+                  <label>IP Gateway / PPPoE Interface</label>
+                  <input type="text" id="gw-${i}" value="192.168.${i}.1" placeholder="Misal: 192.168.1.1 atau pppoe-out1">
+                </div>
+                <div class="input-group">
+                  <label>IP/DNS Target Check (Ping)</label>
+                  <input type="text" id="check-${i}" value="${defaultCheckIp}" ${disableCheckAttr} title="IP Publik stabil untuk memastikan internet hidup">
+                </div>
+              </div>
+            </div>
+          `;
+          // Masukkan HTML yang dibuat ke dalam container
+          dynamicWanContainer.insertAdjacentHTML('beforeend', wanHtml);
+        }
+      }
+
+      // --- FUNGSI 2: EVENT LISTENER UNTUK PERUBAHAN TAMPILAN ---
+      
+      // Saat angka "Jumlah Jalur WAN" diubah, render ulang form ISP
+      numWanInput.addEventListener('change', renderWanInputs);
+
+      // Saat Radio Button "Tipe Failover" diklik, jalankan fungsi render ulang 
+      // untuk mengaktifkan/menonaktifkan kolom "IP/DNS Target Check"
+      failoverTypeRadios.forEach(radio => {
+        radio.addEventListener('change', renderWanInputs);
+      });
+
+      // --- FUNGSI 3: LOGIKA GENERATE SCRIPT (INTI APLIKASI) ---
+      btnGenerate.addEventListener('click', () => {
+        // Kumpulkan data yang dibutuhkan
+        const wanCount = parseInt(numWanInput.value);
+        const type = document.querySelector('input[name="failover-type"]:checked').value;
+        const rosV = rosVersion.value; // 'v6' atau 'v7'
+        const lang = commentLang.value; // 'id', 'en', atau 'none'
+
+        let script = ""; // Variabel string kosong untuk menampung baris script
+
+        // Fungsi kecil pembuat komentar berdasarkan pilihan bahasa
+        const addComment = (idText, enText) => {
+          if (lang === 'none') return '';
+          return lang === 'id' ? `\n# --- ${idText} ---` : `\n# --- ${enText} ---`;
+        };
+
+        // Header Script
+        script += `# ===============================================\n`;
+        script += `# MIKROTIK FAILOVER GENERATOR SCRIPT\n`;
+        script += `# Type: ${type.toUpperCase()} | RouterOS: ${rosV.toUpperCase()} | WANs: ${wanCount}\n`;
+        script += `# Generated via JLA Tools\n`;
+        script += `# ===============================================\n\n`;
+
+        // Mulai membuat baris per baris script tergantung tipe
+        if (type === 'basic') {
+          script += addComment('Metode Failover Gateway Sederhana (Check Gateway)', 'Basic Check Gateway Failover Method');
+          
+          for (let i = 1; i <= countWan(); i++) {
+             // Mengambil nilai dari form yang diinput user
+             const ident = document.getElementById(`ident-${i}`).value;
+             const gw = document.getElementById(`gw-${i}`).value;
+             const dist = document.getElementById(`dist-${i}`).value;
+             
+             // Di ROS v7, parameter check-gateway=ping masih sama di /ip route
+             script += `/ip route add dst-address=0.0.0.0/0 gateway=${gw} distance=${dist} check-gateway=ping comment="${ident}"\n`;
+          }
+          script += addComment('Selesai.', 'Done.');
+
+        } else if (type === 'recursive') {
+          script += addComment('Metode Failover Recursive (Bypass Gateway Lokal ISP)', 'Recursive Failover Method (Bypass Local ISP Gateway)');
+          
+          for (let i = 1; i <= countWan(); i++) {
+             const ident = document.getElementById(`ident-${i}`).value;
+             const gw = document.getElementById(`gw-${i}`).value;
+             const dist = document.getElementById(`dist-${i}`).value;
+             const checkIp = document.getElementById(`check-${i}`).value;
+             
+             // Logika routing recursive:
+             // 1. Buat rute ke DNS publik spesifik via Gateway fisik (Scope 10)
+             script += `/ip route add dst-address=${checkIp} gateway=${gw} scope=10 comment="Host Ping -> ${ident}"\n`;
+             // 2. Buat rute Default (0.0.0.0/0) menunjuk ke DNS publik tersebut dengan target-scope (Resolving)
+             // Perbedaan ROS v6 dan v7 pada target-scope
+             const targetScope = rosV === 'v6' ? 'target-scope=10' : 'target-scope=11'; 
+             script += `/ip route add dst-address=0.0.0.0/0 gateway=${checkIp} distance=${dist} check-gateway=ping ${targetScope} comment="${ident}"\n\n`;
+          }
+
+        } else if (type === 'netwatch') {
+          script += addComment('Metode Failover menggunakan Tool Netwatch', 'Failover Method using Netwatch Tool');
+          
+          // Bagian 1: Pembuatan Route dasar
+          script += addComment('1. Buat Route Utama (Disable Check Gateway jika pakai Netwatch)', '1. Create Base Routes');
+          for (let i = 1; i <= countWan(); i++) {
+             const ident = document.getElementById(`ident-${i}`).value;
+             const gw = document.getElementById(`gw-${i}`).value;
+             const dist = document.getElementById(`dist-${i}`).value;
+             script += `/ip route add dst-address=0.0.0.0/0 gateway=${gw} distance=${dist} comment="${ident}"\n`;
+          }
+
+          // Bagian 2: Routing untuk IP Check Netwatch
+          script += addComment('2. Pastikan IP Netwatch ping lewat jalurnya masing-masing', '2. Ensure Netwatch IP pings through correct paths');
+          for (let i = 1; i <= countWan(); i++) {
+             const gw = document.getElementById(`gw-${i}`).value;
+             const checkIp = document.getElementById(`check-${i}`).value;
+             script += `/ip route add dst-address=${checkIp} gateway=${gw} comment="Netwatch Route ISP-${i}"\n`;
+          }
+
+          // Bagian 3: Rule Netwatch
+          script += addComment('3. Rule Netwatch (Menghidupkan/Mematikan rute secara otomatis)', '3. Netwatch Rules');
+          for (let i = 1; i <= countWan(); i++) {
+             const ident = document.getElementById(`ident-${i}`).value;
+             const checkIp = document.getElementById(`check-${i}`).value;
+             // Jika ping sukses (UP), aktifkan route. Jika gagal (DOWN), matikan route.
+             const onUp = `/ip route enable [find comment="${ident}"]`;
+             const onDown = `/ip route disable [find comment="${ident}"]`;
+             script += `/tool netwatch add host=${checkIp} interval=5s timeout=2s down-script="${onDown}" up-script="${onUp}" comment="Monitor ${ident}"\n`;
+          }
+
+        } else {
+           // Scripting
+           script += addComment('Metode Failover menggunakan Custom Script & Scheduler', 'Failover Method using Custom Script & Scheduler');
+           script += `# Info: Pendekatan ini lebih kompleks. Anda butuh script khusus untuk membaca ping dan merubah gateway.\n`;
+           script += `# Fitur ini hanya preview logika.\n`;
+           script += `/system script add name="failover-checker" source="\\n  :log info \\"Checking ISP Status...\\";\\n"\n`;
+           script += `/system scheduler add name="sch-failover" interval=10s on-event="failover-checker"\n`;
+        }
+
+        // Tampilkan hasil script ke dalam textarea
+        scriptOutput.value = script;
+      });
+
+      // Fungsi bantuan (Helper) untuk mendapatkan jumlah WAN terkini dari form
+      function countWan() {
+        return document.querySelectorAll('.wan-card').length;
+      }
+
+      // --- FUNGSI 4: TOMBOL CLEAR ALL ---
+      // Menghapus hasil script dan mengembalikan input ke setting awal
+      btnClear.addEventListener('click', () => {
+        numWanInput.value = 2; // Kembalikan ke 2 WAN
+        document.querySelector('input[value="basic"]').checked = true; // Radio ke basic
+        rosVersion.value = 'v6';
+        commentLang.value = 'id';
+        scriptOutput.value = ''; // Kosongkan text area
+        renderWanInputs(); // Render ulang tampilan
+      });
+
+      // --- FUNGSI 5: TOMBOL COPY SCRIPT ---
+      btnCopy.addEventListener('click', () => {
+        // Cek jika textarea kosong (atau berisi pesan placeholder bawaan)
+        if (!scriptOutput.value || scriptOutput.value.includes("Klik 'Generate Script'")) {
+          // Mengubah sementara pesan sukses menjadi pesan error merah
+          msgCopied.style.color = '#ef4444'; 
+          msgCopied.innerText = 'Script kosong!';
+          msgCopied.classList.add('show');
+          setTimeout(() => {
+             msgCopied.classList.remove('show');
+             // Kembalikan ke format pesan sukses default
+             setTimeout(() => {
+               msgCopied.style.color = '#10b981';
+               msgCopied.innerText = '✓ Script berhasil disalin!';
+             }, 300);
+          }, 2000);
+          return;
+        }
+
+        // Memilih seluruh teks di dalam textarea
+        scriptOutput.select();
+        scriptOutput.setSelectionRange(0, 99999); // Untuk support browser mobile lama
+
+        try {
+          // Menjalankan perintah copy standar browser (kompatibel walau di dalam iframe)
+          document.execCommand('copy');
+          
+          // Hapus blok seleksi agar tidak terlihat jelek setelah dicopy
+          window.getSelection().removeAllRanges();
+          
+          // Memunculkan teks "✓ Script berhasil disalin!"
+          msgCopied.classList.add('show');
+          // Sembunyikan kembali setelah 2.5 detik
+          setTimeout(() => {
+             msgCopied.classList.remove('show');
+          }, 2500);
+
+        } catch (err) {
+           console.error('Gagal menyalin:', err);
+        }
+      });
+
+      // Inisialisasi Pertama: Panggil fungsi renderWanInputs saat web pertama kali terbuka
+      renderWanInputs();
+
+    });
+  </script>
+</body>
+</html>

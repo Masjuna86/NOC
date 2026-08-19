@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mikrotik Script Converter - JLA Tools</title>
+  
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap');
+    
+    * { 
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+      box-sizing: border-box; 
+    }
+    
+    :root {
+      --bg: #f4f7f6;
+      --text: #334155;
+      --text-dark: #0f172a;
+      --text-muted: #64748b;
+      --accent: #ff6600;
+      --border: #e2e8f0;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    }
+
+    body { 
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
+      background: var(--bg);
+      color: var(--text); 
+      margin: 0; 
+      padding: 0; 
+      display: flex; 
+      flex-direction: column; 
+      min-height: 100vh;
+    }
+
+    .app-header {
+      height: 64px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-logo {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, var(--accent), #ea580c);
+      border-radius: 10px; color: #fff;
+      font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 16px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 12px rgba(255, 102, 0, 0.3);
+    }
+    .brand-title h1 { font-size: 15px; font-weight: 800; color: var(--text-dark); letter-spacing: 0.3px; line-height: 1.2; margin: 0;}
+    .brand-title p { font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; font-weight: 500; margin: 0;}
+
+    .header-actions { display: flex; align-items: center; gap: 12px; }
+
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 9px 16px; border-radius: 8px; border: none; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; transition: all .15s; white-space: nowrap; text-decoration: none; }
+    .btn-secondary { background: #ffffff; color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: #f8fafc; }
+    .btn-wa { background: #25D366; color: white; border-radius: 20px; font-weight: 700; }
+    .btn-wa:hover { background: #128C7E; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3); }
+
+    .main-container { 
+      display: flex; 
+      flex: 1; 
+      max-width: 1000px; 
+      margin: 0 auto; 
+      width: 100%; 
+      padding: 40px 20px; 
+      gap: 30px; 
+    }
+    
+    .content-area { 
+      flex: 1; 
+      background: #ffffff; 
+      border-radius: 16px; 
+      box-shadow: 0 10px 30px rgba(148, 163, 184, 0.1); 
+      border: 1px solid #f1f5f9;
+      padding: 40px; 
+      line-height: 1.6; 
+      min-width: 0;
+    }
+
+    .footer { 
+      text-align: center; 
+      font-size: 13px; 
+      color: #94a3b8; 
+      padding: 30px; 
+      width: 100%; 
+      margin-top: auto;
+    }
+
+    /* FORM STYLES TAMBAHAN */
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 13px; color: var(--text-dark); }
+    .form-control { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 13px; background: #fff; transition: border-color 0.2s; }
+    .form-control:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(255, 102, 0, 0.1); }
+    textarea.form-control { resize: vertical; min-height: 150px; }
+    
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    
+    .btn-primary { background: var(--accent); color: white; padding: 12px 24px; font-size: 14px; width: 100%; border-radius: 8px; margin-top: 10px; }
+    .btn-primary:hover { background: #e65c00; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(255, 102, 0, 0.2); }
+    
+    .output-area { margin-top: 35px; padding-top: 35px; border-top: 1px dashed var(--border); position: relative;}
+    
+    .btn-copy { position: absolute; top: 35px; right: 10px; padding: 6px 12px; font-size: 11px; z-index: 10; }
+    
+    .help-text { color: #94a3b8; font-size: 11px; margin-top: 5px; display: block; }
+
+    @media screen and (max-width: 900px) { 
+      .app-header { flex-direction: column; height: auto; padding: 15px 20px; gap: 15px; align-items: center; justify-content: center; text-align: center;}
+      .brand { flex-direction: column; gap: 8px; }
+      .header-actions { width: 100%; display: flex; justify-content: center; gap: 10px;}
+      .main-container { flex-direction: column; padding: 20px 15px; }
+      .grid-2 { grid-template-columns: 1fr; gap: 0; }
+      .content-area { padding: 25px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-logo">JLA</div>
+      <div class="brand-title">
+        <h1>JAKA LINTAS AKSES GENERATOR</h1>
+        <p>Portal Script Generator Premium JLA</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <a href="index.html" class="btn btn-secondary">🏠 Beranda</a>
+      <a href="https://wa.me/62818386078?text=Halo%20JLA%20Tools,%20saya%20ingin%20bertanya..." target="_blank" class="btn btn-wa">
+        <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Hubungi Kami
+      </a>
+    </div>
+  </header>
+
+  <main class="main-container">
+    <div class="content-area">
+      <h2 style="margin-top: 0; color: #0f172a;">Mikrotik Script Converter</h2>
+      <p style="color: #64748b; margin-bottom: 25px; font-size: 14px;">Ubah format nama address-list, nama pembuat, dan komentar secara otomatis untuk script Firewall Mikrotik.</p>
+      
+      <div class="form-group">
+        <label>1. Paste Script Original (Mentahan)</label>
+        <textarea id="scriptInput" class="form-control" placeholder="Contoh: Paste script anda di sini..."></textarea>
+      </div>
+
+      <div class="grid-2">
+        <div class="form-group">
+          <label>2. Cari Kata Kunci Target</label>
+          <input type="text" id="searchWord" class="form-control" placeholder="Otomatis terdeteksi...">
+          <span class="help-text">* Nama address-list lama yang akan diganti</span>
+        </div>
+        <div class="form-group">
+          <label>3. Nama Address-List Baru</label>
+          <input type="text" id="replaceWord" class="form-control" placeholder="Contoh: Mikrotik-Tiktok">
+          <span class="help-text">* Menjadi parameter address-list=...</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>4. Isi Komentar Baru</label>
+        <input type="text" id="commentWord" class="form-control" placeholder="Contoh: Tiktok">
+        <span class="help-text">* Akan merubah parameter komen menjadi: <b>comment="[Isi Komentar] - nocjakalintasakses"</b></span>
+      </div>
+
+      <div style="display: flex; gap: 10px;">
+        <button class="btn btn-primary" onclick="convertScript()" style="flex: 2; margin-top: 10px;">⚙️ Generate Script Baru</button>
+        <button class="btn btn-secondary" onclick="resetForm()" style="flex: 1; margin-top: 10px; background-color: #f1f5f9; color: #64748b;">🔄 Reset</button>
+      </div>
+
+      <div class="output-area">
+        <div class="form-group">
+          <label>5. Hasil Script Generator</label>
+          <textarea id="scriptOutput" class="form-control" readonly style="min-height: 250px; background: #f8fafc; border-color: #cbd5e1; margin-bottom: 12px;"></textarea>
+          <div style="display: flex; gap: 10px; justify-content: flex-end;">
+            <button id="btnCopy" onclick="copyToClipboard()" class="btn btn-secondary" style="width: auto;">📋 Copy Script</button>
+            <button onclick="downloadScript()" class="btn btn-primary" style="margin-top: 0; width: auto; background-color: #10b981; border-color: #10b981; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);">💾 Save as .rsc</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    Jaka Lintas Akses © 2019. Premium RouterOS Script Tools Portal.
+  </footer>
+
+  <script>
+    function convertScript() {
+      let text = document.getElementById('scriptInput').value;
+      const searchWord = document.getElementById('searchWord').value.trim();
+      const replaceWord = document.getElementById('replaceWord').value.trim();
+      const commentWord = document.getElementById('commentWord').value.trim();
+
+      if (!text) {
+        alert("Silakan paste script mentahan terlebih dahulu!");
+        return;
+      }
+
+      // 0. Bersihkan header lama jika ada
+      text = text.replace(/#{20,}[\s\S]*?#{20,}\n*/g, '');
+      text = text.trimStart();
+
+      // 1. Ganti semua kepemilikan menjadi nocjakalintasakses secara global
+      text = text.replace(/Buananet\.com/gi, "nocjakalintasakses");
+
+      // 2. Ganti target Address List menjadi Address List Baru
+      if (searchWord && replaceWord) {
+        const escapedSearch = searchWord.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const regexSearch = new RegExp(escapedSearch, 'gi');
+        text = text.replace(regexSearch, replaceWord);
+      }
+
+      // 3. Tambahkan komen baru ke SETIAP baris perintah 'add'
+      if (commentWord) {
+        let lines = text.split('\n');
+        let newComment = `comment="${commentWord} - nocjakalintasakses"`;
+        
+        for (let i = 0; i < lines.length; i++) {
+          let originalLine = lines[i];
+          let trimmedLine = originalLine.trim();
+          
+          if (trimmedLine.startsWith('add ')) {
+            let cleanLine = originalLine.replace(/\s*comment\s*=\s*(?:"[^"]*"|'[^']*'|\S+)/gi, '');
+            lines[i] = cleanLine.trimEnd() + ' ' + newComment;
+          }
+        }
+        text = lines.join('\n');
+      }
+
+      // 4. Sisipkan Header Baru di paling atas
+      const namaRawList = replaceWord !== "" ? replaceWord : searchWord;
+      const customHeader = `##########################\n# Created By nocjakalintasakses\n# RAW: ${namaRawList}\n##########################\n\n`;
+      
+      text = customHeader + text;
+
+      // 5. Outputkan hasilnya
+      document.getElementById('scriptOutput').value = text;
+    }
+
+    function resetForm() {
+      document.getElementById('scriptInput').value = '';
+      document.getElementById('searchWord').value = '';
+      document.getElementById('replaceWord').value = '';
+      document.getElementById('commentWord').value = '';
+      document.getElementById('scriptOutput').value = '';
+    }
+
+    function copyToClipboard() {
+      const outputTextarea = document.getElementById('scriptOutput');
+      if (!outputTextarea.value) {
+        alert('Tidak ada script yang bisa dicopy!');
+        return;
+      }
+      
+      outputTextarea.select();
+      outputTextarea.setSelectionRange(0, 99999); 
+      
+      try {
+        document.execCommand("copy");
+        const btn = document.getElementById('btnCopy');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '✅ Tersalin!';
+        setTimeout(() => {
+          btn.innerHTML = originalText;
+        }, 2000);
+      } catch (err) {
+        alert('Gagal menyalin script.');
+      }
+    }
+
+    function downloadScript() {
+      const outputTextarea = document.getElementById('scriptOutput');
+      const scriptContent = outputTextarea.value;
+      
+      if (!scriptContent) {
+        alert('Tidak ada script yang bisa disimpan! Silakan generate terlebih dahulu.');
+        return;
+      }
+
+      let replaceWord = document.getElementById('replaceWord').value.trim();
+      let fileName = replaceWord ? replaceWord : "JLA-Script";
+      fileName += ".rsc";
+
+      const blob = new Blob([scriptContent], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      
+      setTimeout(() => {
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      }, 100);
+    }
+
+    // Auto-Detect Target Address-List (Dibersihkan dari kurung siku / tanda baca ujung)
+    document.getElementById('scriptInput').addEventListener('input', function(e) {
+      const text = e.target.value;
+      if (!text) return;
+      
+      // Mengambil teks address-list dan membuang trailing karakter seperti ']' atau tanda kutip jika ikut terpilih
+      const match = text.match(/address-list="?([^"\s\]]+)"?/i) || text.match(/\blist="?([^"\s\]]+)"?/i);
+      
+      if (match && match[1]) {
+        let cleanDetected = match[1].replace(/[\])]+$/, ''); // Membersihkan sisa bracket penutup
+        document.getElementById('searchWord').value = cleanDetected;
+        
+        const searchInput = document.getElementById('searchWord');
+        searchInput.style.borderColor = '#10b981';
+        searchInput.style.backgroundColor = '#ecfdf5';
+        setTimeout(() => {
+          searchInput.style.borderColor = '';
+          searchInput.style.backgroundColor = '#fff';
+        }, 1500);
+      }
+    });
+  </script>
+</body>
+</html>

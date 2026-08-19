@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DHCP Alert: DHCP Rogue Generator | JLA Tools</title>
+  
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap');
+    
+    * { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-sizing: border-box; }
+    
+    :root {
+      --bg: #f4f7f6;
+      --text: #334155;
+      --text-dark: #0f172a;
+      --text-muted: #64748b;
+      --accent: #ff6600;
+      --accent-hover: #ea580c;
+      --border: #e2e8f0;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      --radius: 8px;
+    }
+
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; display: flex; flex-direction: column; min-height: 100vh;}
+    .app-header { height: 64px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; position: sticky; top: 0; z-index: 100; box-shadow: var(--shadow-sm); }
+    .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+    .brand-logo { width: 40px; height: 40px; background: linear-gradient(135deg, var(--accent), var(--accent-hover)); border-radius: 10px; color: #fff; font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 16px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(255, 102, 0, 0.3); }
+    .brand-title h1 { font-size: 15px; font-weight: 800; color: var(--text-dark); letter-spacing: 0.3px; line-height: 1.2; margin: 0;}
+    .brand-title p { font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; font-weight: 500; margin: 0;}
+    .header-actions { display: flex; align-items: center; gap: 12px; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 9px 16px; border-radius: var(--radius); border: none; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; text-decoration: none; }
+    .btn-secondary { background: #ffffff; color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: #f8fafc; }
+    .btn-wa { background: #25D366; color: white; border-radius: 20px; font-weight: 700; }
+    .btn-wa:hover { background: #128C7E; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3); }
+    .main-container { display: flex; flex: 1; max-width: 1400px; margin: 0 auto; width: 100%; padding: 40px 20px; gap: 30px; }
+    .content-area { flex: 1; background: #ffffff; border-radius: 16px; box-shadow: 0 10px 30px rgba(148, 163, 184, 0.1); border: 1px solid #f1f5f9; padding: 30px; min-width: 0;}
+    .footer { text-align: center; font-size: 13px; color: #94a3b8; padding: 30px; width: 100%; margin-top: auto;}
+    .tool-header { margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+    .tool-header h2 { margin: 0 0 8px 0; color: var(--text-dark); font-size: 20px; }
+    .tool-header p { margin: 0; color: var(--text-muted); font-size: 14px; }
+    .grid-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: stretch; }
+    .panel { display: flex; flex-direction: column; gap: 16px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    label { font-size: 13px; font-weight: 600; color: var(--text-dark); }
+    input[type="text"], select { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 14px; font-family: 'Inter', sans-serif; color: var(--text-dark); background: #fff; }
+    input:focus, select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(255, 102, 0, 0.1); }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+    .terminal-container { display: flex; flex-direction: column; height: 100%; background: #0f172a; border-radius: 12px; overflow: hidden; border: 1px solid #1e293b; }
+    .terminal-header { background: #1e293b; padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; }
+    .terminal-title { color: #94a3b8; font-size: 12px; font-family: 'JetBrains Mono', monospace; font-weight: 600; }
+    .terminal-body { flex: 1; padding: 16px; min-height: 300px; }
+    textarea#script-output { width: 100%; height: 100%; min-height: 400px; background: transparent; border: none; color: #a7f3d0; font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.5; resize: none; outline: none; white-space: pre; }
+    .terminal-footer { padding: 12px 16px; background: #1e293b; display: flex; justify-content: space-between; align-items: center; }
+    .copy-msg { color: #10b981; font-size: 12px; font-weight: 600; opacity: 0; transition: opacity 0.3s; }
+    .copy-msg.show { opacity: 1; }
+
+    .conditional-panel { display: none; background: #f8fafc; border: 1px solid var(--border); padding: 12px; border-radius: var(--radius); gap: 12px; flex-direction: column; }
+    .conditional-panel.show { display: flex; }
+
+    @media screen and (max-width: 900px) { 
+      .app-header { flex-direction: column; padding: 15px; gap: 15px; }
+      .main-container { flex-direction: column; padding: 20px 15px; }
+      .grid-layout { grid-template-columns: 1fr; }
+      .form-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="app-header">
+    <a href="index.html" class="brand">
+      <div class="brand-logo">JLA</div>
+      <div class="brand-title">
+        <h1>JAKA LINTAS AKSES GENERATOR</h1>
+        <p>Portal Script Generator Premium JLA</p>
+      </div>
+    </a>
+    <div class="header-actions">
+      <a href="index.html" class="btn btn-secondary">🏠 Beranda</a>
+      <a href="https://wa.me/62818386078?text=Halo%20JLA%20Tools" target="_blank" class="btn btn-wa">Hubungi Kami</a>
+    </div>
+  </header>
+
+  <main class="main-container">
+    <div class="content-area">
+      <div class="tool-header">
+        <h2>DHCP Alert: Rogue Server Discovery</h2>
+        <p>Hasilkan script alert saat ada DHCP server asing (Rogue) yang terdeteksi di jaringan, dan kirimkan notifikasinya ke berbagai platform.</p>
+      </div>
+
+      <div class="grid-layout">
+        <!-- Left Panel -->
+        <div class="panel">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>DHCP Interface / Bridge</label>
+                    <input type="text" id="iface" value="bridge" placeholder="ether1 atau bridge">
+                </div>
+                <div class="form-group">
+                    <label>Valid MAC Server (Opsional)</label>
+                    <input type="text" id="mac-valid" placeholder="XX:XX:XX:XX:XX:XX">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Alert Timeout (Jeda Laporan)</label>
+                <input type="text" id="timeout" value="00:01:00">
+            </div>
+
+            <div class="form-group">
+                <label>Metode Notifikasi Laporan</label>
+                <select id="option-list">
+                    <option value="log">Hanya Log MikroTik</option>
+                    <option value="telegram">Kirim ke Telegram</option>
+                    <option value="email">Kirim ke E-Mail</option>
+                    <option value="sms">Kirim via SMS Router</option>
+                </select>
+            </div>
+
+            <!-- Conditional Panels -->
+            <div id="panel-telegram" class="conditional-panel">
+                <div class="form-group">
+                    <label>Bot Token Telegram</label>
+                    <input type="text" id="bot-token" placeholder="123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11">
+                </div>
+                <div class="form-group">
+                    <label>Chat ID Telegram</label>
+                    <input type="text" id="chat-id" placeholder="-100123456789">
+                </div>
+            </div>
+
+            <div id="panel-email" class="conditional-panel">
+                <div class="form-group">
+                    <label>Alamat E-Mail Penerima</label>
+                    <input type="text" id="email-target" placeholder="admin@domain.com">
+                </div>
+                <div class="form-group">
+                    <label>Versi RouterOS Server E-Mail</label>
+                    <select id="ros-email">
+                        <option value="v6">RouterOS v6.xx</option>
+                        <option value="v7">RouterOS v7.xx</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="panel-sms" class="conditional-panel">
+                <div class="form-group">
+                    <label>Nomor Tujuan SMS</label>
+                    <input type="text" id="sms-target" placeholder="08123456789">
+                </div>
+                <div class="form-group">
+                    <label>Interface Modem USB (Port)</label>
+                    <input type="text" id="sms-port" placeholder="usb1">
+                </div>
+            </div>
+
+            <div class="form-row" style="margin-top: 8px;">
+                <button id="btn-generate" class="btn btn-primary" style="font-size: 14px; padding: 12px;">Generate Script</button>
+            </div>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="terminal-container">
+            <div class="terminal-header">
+                <span class="terminal-title">~/terminal/dhcp_rogue_alert.rsc</span>
+            </div>
+            <div class="terminal-body">
+                <textarea id="script-output" readonly placeholder="Klik 'Generate Script' untuk melihat hasil..."></textarea>
+            </div>
+            <div class="terminal-footer">
+                <span id="copy-msg" class="copy-msg">✓ Script berhasil disalin!</span>
+                <button id="btn-copy" class="btn btn-primary" style="background: #3b82f6;">📋 Copy Script</button>
+            </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">Jaka Lintas Akses © 2024. Premium RouterOS Script Tools Portal.</footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const optSelect = document.getElementById('option-list');
+        const telegramPanel = document.getElementById('panel-telegram');
+        const emailPanel = document.getElementById('panel-email');
+        const smsPanel = document.getElementById('panel-sms');
+
+        const btnGen = document.getElementById('btn-generate');
+        const btnCopy = document.getElementById('btn-copy');
+        const scriptOutput = document.getElementById('script-output');
+        const copyMsg = document.getElementById('copy-msg');
+
+        optSelect.addEventListener('change', () => {
+            telegramPanel.classList.remove('show');
+            emailPanel.classList.remove('show');
+            smsPanel.classList.remove('show');
+
+            if (optSelect.value === 'telegram') {
+                telegramPanel.classList.add('show');
+            } else if (optSelect.value === 'email') {
+                emailPanel.classList.add('show');
+            } else if (optSelect.value === 'sms') {
+                smsPanel.classList.add('show');
+            }
+        });
+
+        btnGen.addEventListener('click', () => {
+            const iface = document.getElementById('iface').value || "bridge";
+            const mac = document.getElementById('mac-valid').value;
+            const timeout = document.getElementById('timeout').value || "00:01:00";
+            const mode = optSelect.value;
+            
+            let macStr = mac ? ` valid-server="${mac}"` : '';
+
+            let s = `###############################################################\n`;
+            s += `# DHCP Alert: DHCP Rogue Discovery\n`;
+            s += `# Created By: JLA Tools\n`;
+            s += `###############################################################\n\n`;
+
+            s += `/ip dhcp-server alert\n`;
+            s += `add alert-timeout="${timeout}" interface="${iface}"${macStr} comment="DHCP Rogue Alert by JLA Tools" disabled=no on-alert=":local DeviceName [/system identity get name];\\r\\n`;
+
+            if (mode === 'log') {
+                s += `:log warning \\"## UNKNOWN DHCP SERVER FOUND !! ## \\\\nROUTER -> $DeviceName \\\\nINTERFACE -> $interface \\\\nMAC ROGUE -> $\\"mac-address\\" \\\\nIP LOCATION -> $address\\"\\r\\n`;
+            } 
+            else if (mode === 'telegram') {
+                const token = document.getElementById('bot-token').value || "<BOT_TOKEN>";
+                const chatId = document.getElementById('chat-id').value || "<CHAT_ID>";
+                s += `/tool fetch url=\\"https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=%E2%9D%8C UNKNOWN DHCP SERVER FOUND !! %0AROUTER: $DeviceName %0AINTERFACE: $interface %0AMAC ROGUE: $\\"mac-address\\" %0AIP LOCATION: $address\\" keep-result=no\\r\\n`;
+            }
+            else if (mode === 'email') {
+                const target = document.getElementById('email-target').value || "admin@domain.com";
+                const ros = document.getElementById('ros-email').value;
+                const tlsSetting = ros === "v7" ? "tls=starttls" : "start-tls=yes";
+                s += `/tool e-mail send to=\\"${target}\\" from=\\"$DeviceName Monitoring\\" subject=\\"$DeviceName UNKNOWN DHCP SERVER FOUND !!\\" body=\\"UNKNOWN DHCP SERVER FOUND !! \\\\nROUTER: $DeviceName \\\\nINTERFACE: $interface \\\\nMAC ROGUE: $\\"mac-address\\" \\\\nIP LOCATION: $address\\" ${tlsSetting}\\r\\n`;
+            }
+            else if (mode === 'sms') {
+                const num = document.getElementById('sms-target').value || "08123456789";
+                const port = document.getElementById('sms-port').value || "usb1";
+                s += `/tool sms send port=\\"${port}\\" phone-number=\\"${num}\\" message=\\"UNKNOWN DHCP SERVER FOUND !! ROUTER: $DeviceName INTERFACE: $interface MAC ROGUE: $\\"mac-address\\" IP LOCATION: $address\\"\\r\\n`;
+            }
+
+            s += `"\n`;
+
+            scriptOutput.value = s;
+        });
+
+        btnCopy.addEventListener('click', () => {
+            if(!scriptOutput.value) return;
+            scriptOutput.select();
+            document.execCommand('copy');
+            window.getSelection().removeAllRanges();
+            copyMsg.classList.add('show');
+            setTimeout(() => copyMsg.classList.remove('show'), 2000);
+        });
+    });
+  </script>
+</body>
+</html>

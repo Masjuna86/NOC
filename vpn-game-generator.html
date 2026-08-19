@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>JLA Tools - MikroTik VPN Game Script Generator</title>
+  
+  <!-- Memuat font Inter untuk teks biasa dan JetBrains Mono untuk teks terminal -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    * { 
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+      box-sizing: border-box; 
+    }
+    
+    /* Variabel warna agar mudah diubah nantinya */
+    :root {
+      --bg: #f4f7f6;
+      --text: #334155;
+      --text-dark: #0f172a;
+      --text-muted: #64748b;
+      --accent: #ff6600;
+      --border: #e2e8f0;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --term-bg: #1e1e1e; /* Warna background terminal */
+      --term-header: #2d2d2d; /* Warna header terminal */
+      --term-text: #d4d4d4; /* Warna teks terminal */
+    }
+
+    body { 
+      font-family: 'Inter', -apple-system, sans-serif; 
+      background: var(--bg);
+      color: var(--text); 
+      margin: 0; 
+      padding: 0; 
+      display: flex; 
+      flex-direction: column; 
+      min-height: 100vh;
+    }
+
+    /* === BAGIAN HEADER === */
+    .app-header {
+      height: 64px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-logo {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, var(--accent), #ea580c);
+      border-radius: 10px; color: #fff;
+      font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 16px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 12px rgba(255, 102, 0, 0.3);
+    }
+    .brand-title h1 { font-size: 15px; font-weight: 800; color: var(--text-dark); letter-spacing: 0.3px; line-height: 1.2; margin: 0;}
+    .brand-title p { font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; font-weight: 500; margin: 0;}
+
+    .header-actions { display: flex; align-items: center; gap: 12px; }
+
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 9px 16px; border-radius: 8px; border: none; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; transition: all .15s; white-space: nowrap; text-decoration: none; }
+    .btn-secondary { background: #ffffff; color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: #f8fafc; }
+    .btn-wa { background: #25D366; color: white; border-radius: 20px; font-weight: 700; }
+    .btn-wa:hover { background: #128C7E; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3); }
+
+    /* === BAGIAN KONTEN UTAMA (FLEXBOX UNTUK KIRI DAN KANAN) === */
+    .main-container { 
+      display: flex; 
+      flex: 1; 
+      max-width: 1400px; 
+      margin: 0 auto; 
+      width: 100%; 
+      padding: 40px 20px; 
+      gap: 30px; 
+    }
+    
+    .content-area { 
+      flex: 1; 
+      background: #ffffff; 
+      border-radius: 16px; 
+      box-shadow: 0 10px 30px rgba(148, 163, 184, 0.1); 
+      border: 1px solid #f1f5f9;
+      padding: 30px; 
+      display: flex; /* Membagi dua kolom */
+      gap: 30px;
+    }
+
+    /* Kolom Sidebar Kiri (Input Form) */
+    .sidebar-left {
+      width: 35%;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    /* Kolom Terminal Kanan */
+    .terminal-right {
+      width: 65%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* === CSS UNTUK INPUT FORM === */
+    .input-group { display: flex; flex-direction: column; gap: 5px; }
+    .input-group label { font-size: 13px; font-weight: 600; color: var(--text-dark); }
+    .input-group input[type="text"], .input-group select {
+      width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; outline: none; font-family: 'Inter', sans-serif;
+    }
+    .input-group input[type="text"]:focus, .input-group select:focus {
+      border-color: var(--accent); box-shadow: 0 0 0 3px rgba(255,102,0,0.1);
+    }
+    
+    /* Box List Game Scrollable */
+    .game-list-box {
+      border: 1px solid var(--border); border-radius: 8px; height: 250px; overflow-y: auto; padding: 10px; background: #f8fafc;
+    }
+    .game-category { font-weight: 700; color: var(--accent); font-size: 12px; margin-top: 10px; margin-bottom: 5px; display: block;}
+    .game-item { display: flex; align-items: center; gap: 8px; font-size: 13px; margin-bottom: 6px; }
+    .game-item input[type="checkbox"] { cursor: pointer; }
+    .game-item label { cursor: pointer; user-select: none; }
+
+    /* Tombol Generate & Clear */
+    .action-buttons { display: flex; gap: 10px; margin-top: 10px; }
+    .btn-primary { background: var(--accent); color: white; flex: 1; padding: 12px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; }
+    .btn-primary:hover { background: #e65c00; }
+    .btn-clear { background: #e2e8f0; color: var(--text-dark); padding: 12px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; }
+    .btn-clear:hover { background: #cbd5e1; }
+
+    /* === CSS TERMINAL WINBOX (SESUAI GAMBAR) === */
+    .terminal-window {
+      background-color: var(--term-bg);
+      border-radius: 10px;
+      overflow: hidden; /* Supaya sudutnya tetap melengkung */
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      border: 1px solid #3c3c3c;
+    }
+
+    .terminal-header {
+      background-color: var(--term-header);
+      padding: 10px 15px;
+      display: flex;
+      align-items: center;
+      position: relative;
+      border-bottom: 1px solid #1a1a1a;
+    }
+
+    /* 3 Titik ala MacOS */
+    .mac-dots { display: flex; gap: 8px; align-items: center; }
+    .dot { width: 12px; height: 12px; border-radius: 50%; }
+    .dot.red { background-color: #ff5f56; }
+    .dot.yellow { background-color: #ffbd2e; }
+    .dot.green { background-color: #27c93f; }
+
+    /* Judul Terminal */
+    .terminal-title {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #9ca3af;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    /* Tombol Copy Script Orange */
+    .copy-btn {
+      margin-left: auto; /* Dorong ke paling kanan */
+      background-color: #ff7800; /* Warna orange terang dari gambar */
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    .copy-btn:hover { background-color: #e66a00; }
+    .copy-btn:active { transform: scale(0.95); }
+
+    /* Isi Terminal (Script) */
+    .terminal-body {
+      padding: 20px;
+      color: var(--term-text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      overflow-y: auto;
+      flex: 1; /* Mengisi sisa ruang */
+      height: 500px;
+      white-space: pre-wrap; /* Agar spasi dan enter terbaca */
+      word-wrap: break-word;
+    }
+
+    /* Warna khusus teks dalam terminal */
+    .t-comment { color: #ff7800; } /* Komentar warna orange */
+    .t-cmd { color: #56b6c2; font-weight: bold; } /* Perintah warna biru cyan */
+    .t-val { color: #ce9178; } /* Value string warna oranye pucat */
+
+    .footer { 
+      text-align: center; 
+      font-size: 13px; 
+      color: #94a3b8; 
+      padding: 30px; 
+      width: 100%; 
+      margin-top: auto;
+    }
+
+    /* Responsif untuk HP */
+    @media screen and (max-width: 900px) { 
+      .app-header { flex-direction: column; height: auto; padding: 15px 20px; gap: 15px; align-items: center; justify-content: center; text-align: center;}
+      .brand { flex-direction: column; gap: 8px; }
+      .header-actions { width: 100%; display: flex; justify-content: center; gap: 10px;}
+      
+      .content-area { flex-direction: column; padding: 20px 15px;}
+      .sidebar-left { width: 100%; }
+      .terminal-right { width: 100%; }
+      .terminal-title { position: static; transform: none; display: none; } /* Sembunyikan judul di HP agar tombol copy muat */
+    }
+  </style>
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-logo">JLA</div>
+      <div class="brand-title">
+        <h1>JAKA LINTAS AKSES GENERATOR</h1>
+        <p>Portal Script Generator Premium JLA</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <a href="#" class="btn btn-secondary">🏠 Beranda</a>
+      <a href="https://wa.me/62818386078?text=Halo%20JLA%20Tools" target="_blank" class="btn btn-wa">
+        <!-- SVG Icon Whatsapp -->
+        <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Hubungi Kami
+      </a>
+    </div>
+  </header>
+
+  <main class="main-container">
+    <div class="content-area">
+      
+      <!-- KOLOM KIRI: FORMULIR INPUT -->
+      <div class="sidebar-left">
+        
+        <div class="input-group">
+          <label>VPN Connection</label>
+          <select id="vpn-list" onchange="generateScript()">
+            <option value="pptp">PPTP - Point to Point Tunneling Protocol</option>
+            <option value="sstp">SSTP - Secure Socket Tunneling Protocol</option>          
+            <option value="l2tp">L2TP - Layer Two Tunneling Protocol</option>
+            <option value="ovpn">OVPN - Open VPN (Virtual Private Network)</option>
+          </select>
+        </div>
+
+        <div class="input-group">
+          <label>VPN Name on Interface</label>
+          <input type="text" id="vpn-name" value="VPN-GAME" placeholder="VPN-GAME" onkeyup="generateScript()">
+        </div>
+
+        <div class="input-group">
+          <label>VPN IP Address / Host</label>
+          <input type="text" id="vpn-ip" placeholder="contoh: 137.129.63.112" onkeyup="generateScript()">
+        </div>
+
+        <div class="input-group">
+          <label>VPN Username</label>
+          <input type="text" id="vpn-username" placeholder="Masukkan username" onkeyup="generateScript()">
+        </div>
+
+        <div class="input-group">
+          <label>VPN Password</label>
+          <input type="text" id="vpn-password" placeholder="Masukkan password" onkeyup="generateScript()">
+        </div>
+
+        <div class="input-group" style="flex-direction: row; align-items: center; margin-top: 5px;">
+          <input type="checkbox" id="ip-gateway-check" onchange="toggleGateway(); generateScript()">
+          <label for="ip-gateway-check" style="cursor: pointer;">IP Gateway ISP Game (opsional)</label>
+        </div>
+        
+        <div class="input-group">
+          <input disabled type="text" id="ip-gateway-input" placeholder="contoh: 192.168.2.1" onkeyup="generateScript()">
+        </div>
+
+        <div class="input-group">
+          <label>Pilih Mangle Games</label>
+          <input type="text" id="search-game" onkeyup="filterGames()" placeholder="Cari Game..."> 
+          
+          <div class="game-list-box" id="gameListContainer">
+            
+            <span class="game-category">MOBILE GAMES</span>
+            <div class="game-item"><input type="checkbox" class="game-cb" id="MobileLegends-Mobile" onchange="generateScript()"><label for="MobileLegends-Mobile">Mobile Legends (ML) - Mobile</label></div>
+            <div class="game-item"><input type="checkbox" class="game-cb" id="FreeFire-Mobile" onchange="generateScript()"><label for="FreeFire-Mobile">FreeFire (FF) - Mobile</label></div>
+            <div class="game-item"><input type="checkbox" class="game-cb" id="PUBG-Mobile" onchange="generateScript()"><label for="PUBG-Mobile">PUBG - Mobile</label></div>
+            <div class="game-item"><input type="checkbox" class="game-cb" id="CODCallOfDuty-Mobile" onchange="generateScript()"><label for="CODCallOfDuty-Mobile">Call of Duty (COD) - Mobile</label></div>
+            <div class="game-item"><input type="checkbox" class="game-cb" id="ArenaOfValor-Mobile" onchange="generateScript()"><label for="ArenaOfValor-Mobile">Arena Of Valor - Mobile</label></div>
+            <div class="game-item"><input type="checkbox" class="game-cb" id="ClashOfClans-Mobile" onchange="generateScript()"><label for="ClashOfClans-Mobile">Clash Of Clans - Mobile</label></div>
+            
+            <span class="game-category">PC / DESKTOP GAMES</span>
+            <div class="game-item"><input type="checkbox" class="game-cb" id="Valorant-PC" onchange="generateScript()"><label for="Valorant-PC">Valorant (RIOT) - PC</label></div>
+            <div class="game-item"><input type="checkbox" class="game-cb" id="PointBlank-PC" onchange="generateScript()"><label for="PointBlank-PC">Point Blank - PC</label></div>
+            <div class="game-item"><input type="checkbox" class="game-cb" id="Dota2Steam-PC" onchange="generateScript()"><label for="Dota2Steam-PC">DOTA 2 Steam - PC</label></div>
+            <div class="game-item"><input type="checkbox" class="game-cb" id="CSGOSteam-PC" onchange="generateScript()"><label for="CSGOSteam-PC">CSGO Steam - PC</label></div>
+            <div class="game-item"><input type="checkbox" class="game-cb" id="OriginAPEXLegends-PC" onchange="generateScript()"><label for="OriginAPEXLegends-PC">APEX Legends - PC</label></div>
+            <div class="game-item"><input type="checkbox" class="game-cb" id="BlackDesertOnline-PC" onchange="generateScript()"><label for="BlackDesertOnline-PC">Black Desert Online - PC</label></div>
+            
+            <span class="game-category">WEB GAMES</span>
+            <div class="game-item"><input type="checkbox" class="game-cb" id="Roblox-WebGames" onchange="generateScript()"><label for="Roblox-WebGames">Roblox - WebGames</label></div>
+            <div class="game-item"><input type="checkbox" class="game-cb" id="BallPool-WebGames" onchange="generateScript()"><label for="BallPool-WebGames">8 Ball Pool - WebGames</label></div>
+          </div>
+        </div>
+
+        <div class="action-buttons">
+          <button type="button" class="btn-primary" onclick="generateScript()">Generate</button> 
+          <button type="button" class="btn-clear" onclick="location.reload()">Clear All</button>
+        </div>
+
+      </div>
+
+      <!-- KOLOM KANAN: TERMINAL WINBOX -->
+      <div class="terminal-right">
+        
+        <div class="terminal-window">
+          <!-- Header Terminal (Titik Mac, Judul, Tombol Copy) -->
+          <div class="terminal-header">
+            <div class="mac-dots">
+              <span class="dot red"></span>
+              <span class="dot yellow"></span>
+              <span class="dot green"></span>
+            </div>
+            
+            <div class="terminal-title">Terminal Winbox</div>
+            
+            <!-- Tombol Copy persis gambar -->
+            <button class="copy-btn" onclick="copyTerminalText()" id="copyBtn">
+              <!-- Icon Copy SVG -->
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              Copy Script
+            </button>
+          </div>
+
+          <!-- Body Terminal tempat Script Muncul -->
+          <div class="terminal-body" id="terminalOutput">
+<!-- Isi Script akan digenerate oleh Javascript disini -->
+<span class="t-comment">######################################################
+# Vpn Game Script Generator By JLA Tools
+# Generated Date: <span id="out-date"></span>
+# VPN Protocol -> <span id="out-proto-top">PPTP</span>
+######################################################</span>
+
+<span class="t-cmd">/interface <span id="out-proto">pptp</span>-client</span>
+add connect-to="<span class="t-val" id="out-ip">x.x.x.x</span>" disabled=no name="<span class="t-val" id="out-name1">VPN-GAME</span>" user="<span class="t-val" id="out-user">******</span>" password="<span class="t-val" id="out-pass">******</span>" comment="<span class="t-val" id="out-name2">VPN-GAME</span>"
+
+<span class="t-cmd">/ip firewall nat</span>
+add chain=srcnat out-interface="<span class="t-val" id="out-name3">VPN-GAME</span>" action=masquerade comment="<span class="t-val" id="out-name4">VPN-GAME</span>"
+
+<span class="t-cmd">/ip route</span>
+add gateway="<span class="t-val" id="out-name5">VPN-GAME</span>" routing-mark=vpn-routing-game comment="<span class="t-val" id="out-name6">VPN-GAME</span>"
+
+<span id="gateway-block" style="display:none;">
+<span class="t-cmd">/ip route</span>
+add dst-address="<span class="t-val" id="out-ip2">x.x.x.x</span>" gateway="<span class="t-val" id="out-gate">x.x.x.x</span>" comment="<span class="t-val" id="out-name7">VPN-GAME</span>"
+</span>
+<span class="t-cmd">/ip firewall mangle</span>
+
+<!-- Tempat Mangle Game Muncul -->
+<span id="mangle-output"></span>
+
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    Jaka Lintas Akses © 2026. Premium RouterOS Script Tools Portal.
+  </footer>
+
+  <script>
+    // Set Tanggal Otomatis di Terminal saat halaman dimuat
+    document.getElementById('out-date').innerText = new Date().toLocaleString('id-ID');
+
+    // Mangle Database - Berisi script mikrotik untuk setiap game
+    // Komen: Object ini menyimpan data port untuk tiap game sesuai dengan ID checkbox-nya.
+    const mangleData = {
+      'MobileLegends-Mobile': '<span class="t-comment"># Mobile Legends - Mobile</span>\nadd action=mark-routing chain=prerouting comment="Mobile Legends - Mobile" dst-port=5001-5180,5501-5680,9443,30000-30220,9001 new-routing-mark=vpn-routing-game passthrough=no protocol=tcp\nadd action=mark-routing chain=prerouting dst-port=5001-5180,5501-5680,9992,30020-30220,9001 new-routing-mark=vpn-routing-game passthrough=no protocol=udp\n',
+      'FreeFire-Mobile': '<span class="t-comment"># Free Fire - Mobile</span>\nadd action=mark-routing chain=prerouting comment="Free Fire - Mobile" dst-port=6006,7006,8006,9006,11000-11019,39003,39006,39698,39779,10000-10007 new-routing-mark=vpn-routing-game passthrough=no protocol=tcp\nadd action=mark-routing chain=prerouting dst-port=6008,7008,8008,9008,10000-10009,11000-11019 new-routing-mark=vpn-routing-game passthrough=no protocol=udp\n',
+      'PUBG-Mobile': '<span class="t-comment"># PUBG - Mobile</span>\nadd action=mark-routing chain=prerouting comment="PUBG - Mobile" dst-port=14000,17000,17500,18081,20000-20002,10012,17500 new-routing-mark=vpn-routing-game passthrough=no protocol=tcp\nadd action=mark-routing chain=prerouting dst-port=10020-14000,17000,17500,20000-20002,7086-7995,12070-12460,41182-42474 new-routing-mark=vpn-routing-game passthrough=no protocol=udp\n',
+      'CODCallOfDuty-Mobile': '<span class="t-comment"># Call Of Duty - Mobile</span>\nadd action=mark-routing chain=prerouting comment="Call Of Duty - Mobile" dst-port=3013,10000-10019,50000,65010,65050 new-routing-mark=vpn-routing-game passthrough=no protocol=tcp\nadd action=mark-routing chain=prerouting dst-port=7085-7995,8700,9030,10010-10019 new-routing-mark=vpn-routing-game passthrough=no protocol=udp\n',
+      'ArenaOfValor-Mobile': '<span class="t-comment"># Arena Of Valor - Mobile</span>\nadd action=mark-routing chain=prerouting comment="Arena Of Valor - Mobile" dst-port=10001-10094 new-routing-mark=vpn-routing-game passthrough=no protocol=tcp\nadd action=mark-routing chain=prerouting dst-port=10080,17000 new-routing-mark=vpn-routing-game passthrough=no protocol=udp\n',
+      'ClashOfClans-Mobile': '<span class="t-comment"># Clash Of Clans - Mobile</span>\nadd action=mark-routing chain=prerouting comment="Clash Of Clans - Mobile" dst-port=9330-9340 new-routing-mark=vpn-routing-game passthrough=no protocol=tcp\n',
+      'Valorant-PC': '<span class="t-comment"># Valorant - PC Games</span>\nadd action=mark-routing chain=prerouting comment="Valorant - PC Games" dst-port=2099,5222-5223,8088,8393-8400 new-routing-mark=vpn-routing-game passthrough=no protocol=tcp\nadd action=mark-routing chain=prerouting dst-port=7000-7500,8088 new-routing-mark=vpn-routing-game passthrough=no protocol=udp\n',
+      'PointBlank-PC': '<span class="t-comment"># Point Blank - PC</span>\nadd action=mark-routing chain=prerouting comment="Point Blank - PC" dst-port=39190-39200 new-routing-mark=vpn-routing-game passthrough=no protocol=tcp\nadd action=mark-routing chain=prerouting dst-port=40000-40010 new-routing-mark=vpn-routing-game passthrough=no protocol=udp\n',
+      'Dota2Steam-PC': '<span class="t-comment"># DOTA2 Steam - PC</span>\nadd action=mark-routing chain=prerouting comment="Dota 2 Steam - PC" dst-port=9100-9200,8230-8250,8110-8120 new-routing-mark=vpn-routing-game passthrough=no protocol=tcp\nadd action=mark-routing chain=prerouting dst-port=28010-28200,27010-27200,39000 new-routing-mark=vpn-routing-game passthrough=no protocol=udp\n',
+      'CSGOSteam-PC': '<span class="t-comment"># CSGO Steam - PC</span>\nadd action=mark-routing chain=prerouting comment="CSGO Steam - PC" dst-port=27015-27030,27036-27037 new-routing-mark=vpn-routing-game passthrough=no protocol=tcp\nadd action=mark-routing chain=prerouting dst-port=4380,27000-27031,27036 new-routing-mark=vpn-routing-game passthrough=no protocol=udp\n',
+      'OriginAPEXLegends-PC': '<span class="t-comment"># Origin APEX Legends - PC</span>\nadd action=mark-routing chain=prerouting comment="Origin APEX Legends - PC" dst-port=9960-9969,1024-1124,3216,18000,18120,18060,27900,28910,29900 new-routing-mark=vpn-routing-game passthrough=no protocol=tcp\nadd action=mark-routing chain=prerouting dst-port=1024-1124,18000,29900,37000-40000 new-routing-mark=vpn-routing-game passthrough=no protocol=udp\n',
+      'BlackDesertOnline-PC': '<span class="t-comment"># Black Desert Online - PC</span>\nadd action=mark-routing chain=prerouting comment="Black Desert Online - PC" dst-port=8888,9991-9993 new-routing-mark=vpn-routing-game passthrough=no protocol=tcp\nadd action=mark-routing chain=prerouting dst-port=8888,9991-9993 new-routing-mark=vpn-routing-game passthrough=no protocol=udp\n',
+      'Roblox-WebGames': '<span class="t-comment"># Roblox - Web Games</span>\nadd action=mark-routing chain=prerouting comment="Roblox - Web Games" dst-port=49152-65535 new-routing-mark=vpn-routing-game passthrough=no protocol=udp\n',
+      'BallPool-WebGames': '<span class="t-comment"># 8 Ball Pool - Web Games</span>\nadd action=mark-routing chain=prerouting comment="8 Ball Pool (Miniclips - Web Games" dst-port=4000 new-routing-mark=vpn-routing-game passthrough=no protocol=tcp\n'
+    };
+
+    // Fungsi untuk mengaktifkan / mematikan input Gateway ISP
+    // Komen: Jika checkbox di centang, input teks gateway bisa diketik.
+    function toggleGateway() {
+      const isChecked = document.getElementById('ip-gateway-check').checked;
+      const gatewayInput = document.getElementById('ip-gateway-input');
+      gatewayInput.disabled = !isChecked;
+    }
+
+    // Fungsi Utama untuk memproses form dan menampilkan di Terminal
+    // Komen: Fungsi ini mengambil nilai dari form input dan mengubah teks di dalam elemen Terminal
+    function generateScript() {
+      // 1. Ambil Nilai dari Form
+      let proto = document.getElementById('vpn-list').value;
+      let name = document.getElementById('vpn-name').value || "VPN-GAME";
+      let ip = document.getElementById('vpn-ip').value || "x.x.x.x";
+      let user = document.getElementById('vpn-username').value || "******";
+      let pass = document.getElementById('vpn-password').value || "******";
+      
+      let isGatewayChecked = document.getElementById('ip-gateway-check').checked;
+      let gate = document.getElementById('ip-gateway-input').value || "x.x.x.x";
+
+      // 2. Lempar nilai ke Terminal UI (Bagian Header & Interface)
+      document.getElementById('out-proto').innerText = proto;
+      document.getElementById('out-proto-top').innerText = proto.toUpperCase();
+      
+      document.getElementById('out-name1').innerText = name;
+      document.getElementById('out-name2').innerText = name;
+      document.getElementById('out-name3').innerText = name;
+      document.getElementById('out-name4').innerText = name;
+      document.getElementById('out-name5').innerText = name;
+      document.getElementById('out-name6').innerText = name;
+      document.getElementById('out-name7').innerText = name;
+      
+      document.getElementById('out-ip').innerText = ip;
+      document.getElementById('out-ip2').innerText = ip;
+      
+      document.getElementById('out-user').innerText = user;
+      document.getElementById('out-pass').innerText = pass;
+
+      // 3. Logika untuk memunculkan blok IP Route Gateway
+      if(isGatewayChecked) {
+        document.getElementById('gateway-block').style.display = 'block';
+        document.getElementById('out-gate').innerText = gate;
+      } else {
+        document.getElementById('gateway-block').style.display = 'none';
+      }
+
+      // 4. Logika untuk Mangle Games yang dicentang
+      let mangleResult = "";
+      const checkboxes = document.querySelectorAll('.game-cb');
+      checkboxes.forEach(cb => {
+        if(cb.checked && mangleData[cb.id]) {
+          mangleResult += "\n" + mangleData[cb.id];
+        }
+      });
+      
+      document.getElementById('mangle-output').innerHTML = mangleResult;
+    }
+
+    // Fungsi untuk mencari/filter game di daftar
+    // Komen: Saat diketik, akan menyembunyikan item game yang tidak sesuai dengan pencarian
+    function filterGames() {
+      let filter = document.getElementById('search-game').value.toUpperCase();
+      let items = document.querySelectorAll('.game-item');
+      
+      items.forEach(item => {
+        let label = item.querySelector('label').innerText;
+        if (label.toUpperCase().indexOf(filter) > -1) {
+          item.style.display = "flex";
+        } else {
+          item.style.display = "none";
+        }
+      });
+    }
+
+    // Fungsi untuk tombol Copy Script
+    // Komen: Menyalin isi dari dalam terminal menggunakan API Clipboard (atau Fallback jika tidak support)
+    function copyTerminalText() {
+      // Ambil teks dari terminal, hapus tag HTML-nya
+      let terminal = document.getElementById('terminalOutput');
+      let textToCopy = terminal.innerText; 
+      
+      // Gunakan navigator clipboard
+      navigator.clipboard.writeText(textToCopy).then(() => {
+        let btn = document.getElementById('copyBtn');
+        let originalText = btn.innerHTML;
+        
+        // Ubah text button sementara
+        btn.innerHTML = "✅ Copied!";
+        btn.style.backgroundColor = "#25D366"; // Jadi Hijau
+        
+        // Kembalikan seperti semula setelah 2 detik
+        setTimeout(() => {
+          btn.innerHTML = originalText;
+          btn.style.backgroundColor = "#ff7800"; // Kembali Orange
+        }, 2000);
+      }).catch(err => {
+        alert('Gagal menyalin teks: ', err);
+      });
+    }
+
+    // Jalankan generate script sekali saat halaman baru diload
+    window.onload = function() {
+      generateScript();
+    };
+  </script>
+
+</body>
+</html>

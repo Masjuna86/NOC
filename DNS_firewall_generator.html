@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MikroTik DNS & Proteksi Generator - JLA Tools</title>
+  
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap');
+    
+    * { 
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+      box-sizing: border-box; 
+    }
+    
+    :root {
+      --bg: #f4f7f6;
+      --text: #334155;
+      --text-dark: #0f172a;
+      --text-muted: #64748b;
+      --accent: #ff6600;
+      --accent-hover: #e65c00;
+      --border: #e2e8f0;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    body { 
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
+      background: var(--bg);
+      color: var(--text); 
+      margin: 0; 
+      padding: 0; 
+      display: flex; 
+      flex-direction: column; 
+      min-height: 100vh;
+    }
+
+    .app-header {
+      height: 64px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-logo {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, var(--accent), #ea580c);
+      border-radius: 10px; color: #fff;
+      font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 16px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 12px rgba(255, 102, 0, 0.3);
+    }
+    .brand-title h1 { font-size: 15px; font-weight: 800; color: var(--text-dark); letter-spacing: 0.3px; line-height: 1.2; margin: 0;}
+    .brand-title p { font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; font-weight: 500; margin: 0;}
+
+    .header-actions { display: flex; align-items: center; gap: 12px; }
+
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 9px 16px; border-radius: 8px; border: none; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; transition: all .15s; white-space: nowrap; text-decoration: none; }
+    .btn-secondary { background: #ffffff; color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: #f8fafc; }
+    .btn-wa { background: #25D366; color: white; border-radius: 20px; font-weight: 700; }
+    .btn-wa:hover { background: #128C7E; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3); }
+
+    .main-container { 
+      display: flex; 
+      flex: 1; 
+      max-width: 1400px; 
+      margin: 0 auto; 
+      width: 100%; 
+      padding: 40px 20px; 
+      gap: 30px; 
+    }
+    
+    /* Sidebar Kiri (Form) */
+    .sidebar-panel {
+      flex: 0 0 350px;
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: var(--shadow-md);
+      border: 1px solid #f1f5f9;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      height: fit-content;
+    }
+
+    /* Konten Kanan (Terminal) */
+    .terminal-panel { 
+      flex: 1; 
+      background: #0f172a; 
+      border-radius: 16px; 
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.2); 
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-width: 0;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .form-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-dark);
+      margin: 0;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .checkbox-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      cursor: pointer;
+    }
+
+    .checkbox-item input[type="checkbox"] {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border: 2px solid #cbd5e1;
+      border-radius: 4px;
+      margin: 0;
+      margin-top: 2px;
+      cursor: pointer;
+      position: relative;
+      background: white;
+    }
+
+    .checkbox-item input[type="checkbox"]:checked {
+      background-color: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .checkbox-item input[type="checkbox"]:checked::after {
+      content: '';
+      position: absolute;
+      left: 5px;
+      top: 2px;
+      width: 4px;
+      height: 8px;
+      border: solid white;
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+    }
+
+    .checkbox-label {
+      font-size: 13px;
+      color: var(--text);
+      line-height: 1.4;
+      flex: 1;
+    }
+    
+    .checkbox-label strong {
+      display: block;
+      color: var(--text-dark);
+      margin-bottom: 2px;
+    }
+
+    textarea.custom-input {
+      width: 100%;
+      min-height: 100px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--text-dark);
+      resize: vertical;
+      background: #f8fafc;
+    }
+
+    textarea.custom-input:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: #ffffff;
+    }
+
+    .terminal-header {
+      background: #1e293b;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #334155;
+    }
+
+    .terminal-title {
+      color: #94a3b8;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .terminal-title::before {
+      content: '';
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      background: #10b981;
+      border-radius: 50%;
+      box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+    }
+
+    .btn-copy {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-copy:hover { background: var(--accent-hover); }
+
+    .terminal-body {
+      padding: 20px;
+      overflow-y: auto;
+      flex: 1;
+      background: #0f172a;
+    }
+
+    .terminal-body pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    .terminal-body code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      color: #e2e8f0;
+    }
+
+    .code-comment { color: #64748b; }
+    .code-command { color: #38bdf8; }
+    .code-param { color: #a3e635; }
+    .code-string { color: #fca5a5; }
+
+    .footer { 
+      text-align: center; 
+      font-size: 13px; 
+      color: #94a3b8; 
+      padding: 30px; 
+      width: 100%; 
+      margin-top: auto;
+    }
+
+    @media screen and (max-width: 900px) { 
+      .app-header { flex-direction: column; height: auto; padding: 15px 20px; gap: 15px; align-items: center; justify-content: center; text-align: center;}
+      .brand { flex-direction: column; gap: 8px; }
+      .header-actions { width: 100%; display: flex; justify-content: center; gap: 10px;}
+      .main-container { flex-direction: column; padding: 20px 15px; }
+      .sidebar-panel { flex: none; width: 100%; }
+      .terminal-panel { height: 500px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-logo">JLA</div>
+      <div class="brand-title">
+        <h1>JAKA LINTAS AKSES GENERATOR</h1>
+        <p>Portal Script Generator Premium JLA</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <a href="index.html" class="btn btn-secondary">🏠 Beranda</a>
+      <a href="https://wa.me/62818386078?text=Halo%20JLA%20Tools,%20saya%20ingin%20bertanya..." target="_blank" class="btn btn-wa">
+        <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Hubungi Kami
+      </a>
+    </div>
+  </header>
+
+  <main class="main-container">
+    
+    <!-- Sidebar / Konfigurator -->
+    <div class="sidebar-panel">
+      
+      <!-- DNS Settings -->
+      <div class="form-group">
+        <h3 class="form-title">Pilihan DNS Terpercaya</h3>
+        
+        <label class="checkbox-item">
+          <input type="checkbox" id="dnsGoogle" checked onchange="generateScript()">
+          <span class="checkbox-label"><strong>Google DNS</strong> (8.8.8.8, 8.8.4.4)</span>
+        </label>
+        
+        <label class="checkbox-item">
+          <input type="checkbox" id="dnsCloudflare" checked onchange="generateScript()">
+          <span class="checkbox-label"><strong>Cloudflare DNS</strong> (1.1.1.1, 1.0.0.1)</span>
+        </label>
+        
+        <label class="checkbox-item">
+          <input type="checkbox" id="dnsQuad9" checked onchange="generateScript()">
+          <span class="checkbox-label"><strong>Quad9 Secure</strong> (9.9.9.9, 149.112.112.112)</span>
+        </label>
+        
+        <label class="checkbox-item">
+          <input type="checkbox" id="dnsOpenDNS" checked onchange="generateScript()">
+          <span class="checkbox-label"><strong>OpenDNS</strong> (208.67.222.222, 208.67.220.220)</span>
+        </label>
+      </div>
+
+      <!-- Proteksi Router & Jaringan -->
+      <div class="form-group">
+        <h3 class="form-title">Proteksi Firewall (Raw)</h3>
+        
+        <label class="checkbox-item">
+          <input type="checkbox" id="protInvalid" checked onchange="generateScript()">
+          <span class="checkbox-label"><strong>Drop Invalid Connection</strong><br>Menghemat CPU router dari paket tidak valid.</span>
+        </label>
+        
+        <label class="checkbox-item">
+          <input type="checkbox" id="protDNS" checked onchange="generateScript()">
+          <span class="checkbox-label"><strong>DNS Proteksi</strong><br>Cegah router dipakai alat DDoS DNS Amplification.</span>
+        </label>
+
+        <label class="checkbox-item">
+          <input type="checkbox" id="protVirus" checked onchange="generateScript()">
+          <span class="checkbox-label"><strong>Blokir Port Virus (SMB)</strong><br>Drop trafik port 135-139, 445 (TCP/UDP).</span>
+        </label>
+
+        <label class="checkbox-item">
+          <input type="checkbox" id="protMemcached" checked onchange="generateScript()">
+          <span class="checkbox-label"><strong>UDP Reflection Attack</strong><br>Drop Memcached DDoS (Port 11211).</span>
+        </label>
+
+        <label class="checkbox-item">
+          <input type="checkbox" id="protSMTP" onchange="generateScript()">
+          <span class="checkbox-label"><strong>Blokir Port SMTP</strong><br>Cegah klien nyepam email (Drop port 25).</span>
+        </label>
+      </div>
+
+      <!-- Custom IP Bot -->
+      <div class="form-group">
+        <h3 class="form-title">Daftar IP Bot/Bahaya Tambahan</h3>
+        <span style="font-size: 11px; color: var(--text-muted); margin-bottom: -5px;">Masukkan 1 IP/Domain per baris:</span>
+        <textarea id="customBots" class="custom-input" placeholder="176.57.168.134&#10;dvrhelper.anondns.net" oninput="generateScript()">176.57.168.134
+dvrhelper.anondns.net</textarea>
+        <label class="checkbox-item" style="margin-top: 5px;">
+          <input type="checkbox" id="protBots" checked onchange="generateScript()">
+          <span class="checkbox-label"><strong>Drop IP Bot/Bahaya</strong> (Terapkan list ke Raw)</span>
+        </label>
+      </div>
+
+    </div>
+
+    <!-- Terminal Kanan -->
+    <div class="terminal-panel">
+      <div class="terminal-header">
+        <div class="terminal-title">admin@mikrotik: /terminal</div>
+        <button class="btn-copy" onclick="copyToClipboard(this)">
+          <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          Copy Script
+        </button>
+      </div>
+      <div class="terminal-body" id="scriptContainer">
+        <!-- Script Hasil Generate akan muncul di sini -->
+        <pre><code id="scriptOutput"></code></pre>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="footer">
+    Jaka Lintas Akses © 2026. Premium RouterOS Script Tools Portal.
+  </footer>
+
+  <script>
+    // Fungsi untuk mengubah syntax biasa menjadi colored syntax HTML
+    function formatSyntax(text) {
+      let lines = text.split('\n');
+      let formatted = '';
+
+      lines.forEach(line => {
+        if (line.trim().startsWith('#')) {
+          // Mewarnai komentar
+          formatted += `<span class="code-comment">${line}</span>\n`;
+        } else if (line.trim() !== '') {
+          // Mewarnai command
+          let parts = line.split(' ');
+          let styledLine = '';
+          
+          parts.forEach(part => {
+             if (part.startsWith('add') || part.startsWith('/ip')) {
+               styledLine += `<span class="code-command">${part}</span> `;
+             } else if (part.includes('=')) {
+               let kv = part.split('=');
+               let val = kv.slice(1).join('=');
+               // Beri warna khusus pada parameter (sebelum sama dengan)
+               styledLine += `<span class="code-param">${kv[0]}</span>=`;
+               // Jika value pakai tanda kutip
+               if (val.startsWith('"') && val.endsWith('"')) {
+                 styledLine += `<span class="code-string">${val}</span> `;
+               } else {
+                 styledLine += `<span>${val}</span> `;
+               }
+             } else {
+               styledLine += `<span>${part}</span> `;
+             }
+          });
+          formatted += styledLine.trimEnd() + '\n';
+        } else {
+          formatted += '\n'; // Baris kosong
+        }
+      });
+      return formatted;
+    }
+
+    // Fungsi utama generator script
+    function generateScript() {
+      let scriptRawText = "";
+
+      // --------- SECTION: ADDRESS LIST ---------
+      scriptRawText += "/ip firewall address-list\n";
+      scriptRawText += "# Daftar DNS Terpercaya (Anycast)\n";
+      
+      if (document.getElementById('dnsGoogle').checked) {
+        scriptRawText += 'add address=8.8.8.8 list=securedns comment="Google DNS"\n';
+        scriptRawText += 'add address=8.8.4.4 list=securedns comment="Google DNS"\n';
+      }
+      if (document.getElementById('dnsCloudflare').checked) {
+        scriptRawText += 'add address=1.1.1.1 list=securedns comment="Cloudflare"\n';
+        scriptRawText += 'add address=1.0.0.1 list=securedns comment="Cloudflare"\n';
+      }
+      if (document.getElementById('dnsQuad9').checked) {
+        scriptRawText += 'add address=9.9.9.9 list=securedns comment="Quad9 Secure"\n';
+        scriptRawText += 'add address=149.112.112.112 list=securedns comment="Quad9 Secure"\n';
+      }
+      if (document.getElementById('dnsOpenDNS').checked) {
+        scriptRawText += 'add address=208.67.222.222 list=securedns comment="OpenDNS"\n';
+        scriptRawText += 'add address=208.67.220.220 list=securedns comment="OpenDNS"\n';
+      }
+
+      let customBotsRaw = document.getElementById('customBots').value;
+      let botsArray = customBotsRaw.split('\n').map(ip => ip.trim()).filter(ip => ip !== '');
+      
+      if (botsArray.length > 0) {
+        scriptRawText += "\n# Daftar IP yang sudah diidentifikasi sebagai Bot/Bahaya\n";
+        botsArray.forEach(ip => {
+          scriptRawText += `add address=${ip} list=IP_RustoBot\n`;
+        });
+      }
+
+      // --------- SECTION: RAW FIREWALL ---------
+      scriptRawText += "\n/ip firewall raw\n";
+      
+      if (document.getElementById('protInvalid').checked) {
+        scriptRawText += "# 1. DROP Paket Tidak Valid (Menghemat CPU secara signifikan)\n";
+        scriptRawText += 'add action=drop chain=prerouting connection-state=invalid comment="Drop Invalid Connections"\n\n';
+      }
+
+      if (document.getElementById('protDNS').checked) {
+        scriptRawText += "# 2. Proteksi DNS (Mencegah Router jadi alat DDoS orang lain)\n";
+        scriptRawText += "# Mengizinkan trafik DNS ke daftar securedns, sisanya yang dari luar akan di-drop\n";
+        scriptRawText += 'add action=accept chain=prerouting dst-port=53 protocol=udp dst-address-list=securedns comment="Allow Trusted DNS"\n';
+        scriptRawText += 'add action=accept chain=prerouting dst-port=53 protocol=tcp dst-address-list=securedns comment="Allow Trusted DNS"\n\n';
+      }
+
+      if (document.getElementById('protVirus').checked) {
+        scriptRawText += "# 3. Blokir Port Berbahaya (Virus & Malware Port)\n";
+        scriptRawText += 'add action=drop chain=prerouting dst-port=135-139 protocol=tcp comment="Drop SMB Windows (Virus)"\n';
+        scriptRawText += 'add action=drop chain=prerouting dst-port=135-139 protocol=udp comment="Drop SMB Windows (Virus)"\n';
+        scriptRawText += 'add action=drop chain=prerouting dst-port=445 protocol=tcp comment="Drop SMB Windows (Virus)"\n\n';
+      }
+
+      if (document.getElementById('protMemcached').checked) {
+        scriptRawText += "# 4. Proteksi dari UDP Reflection Attack (Memcached & Amplification)\n";
+        scriptRawText += 'add action=drop chain=prerouting protocol=udp src-port=11211 comment="Drop Memcached (DDoS)"\n';
+        scriptRawText += 'add action=drop chain=prerouting dst-port=11211 protocol=udp comment="Drop Memcached (DDoS)"\n\n';
+      }
+
+      if (document.getElementById('protSMTP').checked) {
+        scriptRawText += "# 5. Blokir Port SMTP (Untuk mencegah Spamming dari jaringan lokal)\n";
+        scriptRawText += 'add action=drop chain=prerouting dst-port=25 protocol=tcp comment="Drop Spamming SMTP Port"\n\n';
+      }
+
+      if (document.getElementById('protBots').checked && botsArray.length > 0) {
+        scriptRawText += "# 6. Blokir IP yang sudah masuk daftar Blacklist/Bot\n";
+        scriptRawText += 'add action=drop chain=prerouting src-address-list=IP_RustoBot comment="Drop Known Bots"\n';
+      }
+
+      // Assign teks murni untuk dicopy dan html untuk display
+      window.rawScriptText = scriptRawText;
+      document.getElementById('scriptOutput').innerHTML = formatSyntax(scriptRawText);
+    }
+
+    function copyToClipboard(btnElement) {
+      if (!window.rawScriptText) return;
+
+      // Membuat elemen textarea sementara untuk proses copy
+      const el = document.createElement('textarea');
+      el.value = window.rawScriptText;
+      document.body.appendChild(el);
+      el.select();
+      
+      try {
+        document.execCommand('copy');
+        
+        // Animasi tombol copy sukses
+        const originalText = btnElement.innerHTML;
+        btnElement.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><polyline points="20 6 9 17 4 12"></polyline></svg> Tersalin!';
+        btnElement.style.background = '#10b981';
+        
+        setTimeout(() => {
+          btnElement.innerHTML = originalText;
+          btnElement.style.background = 'var(--accent)';
+        }, 2000);
+      } catch (err) {
+        alert('Gagal menyalin text, silakan copy manual.');
+      }
+      
+      document.body.removeChild(el);
+    }
+
+    // Eksekusi generator pertama kali ketika halaman selesai dimuat
+    window.onload = function() {
+      generateScript();
+    }
+  </script>
+</body>
+</html>
