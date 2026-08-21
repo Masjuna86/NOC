@@ -1,52 +1,195 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MikroTik OVPN & Watchdog Generator</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f3f4f6;
-        }
-        /* Custom scrollbar for textarea */
-        textarea::-webkit-scrollbar {
-            width: 8px;
-        }
-        textarea::-webkit-scrollbar-track {
-            background: #1f2937;
-        }
-        textarea::-webkit-scrollbar-thumb {
-            background: #4b5563;
-            border-radius: 4px;
-        }
-        textarea::-webkit-scrollbar-thumb:hover {
-            background: #6b7280;
-        }
-    </style>
-</head>
-<body class="text-gray-800 antialiased min-h-screen p-4 md:p-8 flex items-center justify-center">
+  <meta charset="utf-8">
+  <!-- Tag meta viewport sangat penting agar tampilan web menyesuaikan ukuran layar HP (Responsive) -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MikroTik OVPN & Watchdog Generator - JLA</title>
+  
+  <!-- Memuat Tailwind CSS: Framework untuk mempermudah styling (warna, jarak, ukuran) tanpa menulis CSS manual -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Memuat Font (huruf) 'Inter' dan 'JetBrains Mono' dari Google Fonts agar tulisan terlihat lebih modern -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    /* ==========================================================================
+       BAGIAN CSS MANUAL (Gaya bawaan dari template JLA Tools)
+       ========================================================================== */
+    
+    /* Menerapkan efek transisi halus dan ukuran box standar ke semua elemen (*) */
+    * { 
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+      box-sizing: border-box; 
+    }
+    
+    /* Membuat variabel warna dasar agar mudah diubah jika ingin ganti tema */
+    :root {
+      --bg: #f4f7f6; /* Warna latar belakang abu-abu terang */
+      --text: #334155; /* Warna teks utama */
+      --text-dark: #0f172a; /* Warna teks tebal/judul */
+      --text-muted: #64748b; /* Warna teks sekunder (agak pudar) */
+      --accent: #ff6600; /* Warna oranye khas JLA */
+      --border: #e2e8f0; /* Warna garis batas (border) */
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    }
 
-    <div class="max-w-6xl w-full bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col md:flex-row">
+    /* Pengaturan dasar untuk body (latar belakang seluruh halaman) */
+    body { 
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
+      background: var(--bg);
+      color: var(--text); 
+      margin: 0; 
+      padding: 0; 
+      display: flex; 
+      flex-direction: column; 
+      min-height: 100vh; /* Memastikan tinggi halaman minimal menutupi seluruh layar */
+    }
+
+    /* ==========================================================================
+       STYLING UNTUK HEADER (Navigasi Atas)
+       ========================================================================== */
+    .app-header {
+      height: 64px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px); /* Memberikan efek blur/kaca transparan */
+      -webkit-backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between; /* Membuat isi header renggang kiri-kanan */
+      padding: 0 24px;
+      position: sticky; /* Membuat header tetap di atas saat di-scroll */
+      top: 0;
+      z-index: 100; /* Memastikan header tidak tertimpa elemen lain */
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Styling untuk Logo JLA dan teks di Header */
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-logo {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, var(--accent), #ea580c); /* Gradasi warna oranye */
+      border-radius: 10px; color: #fff;
+      font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 16px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 12px rgba(255, 102, 0, 0.3);
+    }
+    .brand-title h1 { font-size: 15px; font-weight: 800; color: var(--text-dark); letter-spacing: 0.3px; line-height: 1.2; margin: 0;}
+    .brand-title p { font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; font-weight: 500; margin: 0;}
+
+    /* Styling untuk tombol di Header */
+    .header-actions { display: flex; align-items: center; gap: 12px; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 9px 16px; border-radius: 8px; border: none; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; transition: all .15s; white-space: nowrap; text-decoration: none; }
+    .btn-secondary { background: #ffffff; color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: #f8fafc; }
+    .btn-wa { background: #25D366; color: white; border-radius: 20px; font-weight: 700; }
+    .btn-wa:hover { background: #128C7E; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3); }
+
+    /* Pembungkus konten utama (Tengah halaman) */
+    .main-container { 
+      display: flex; 
+      flex: 1; 
+      max-width: 1200px; /* Lebar maksimal konten */
+      margin: 0 auto; /* Supaya konten berada di tengah */
+      width: 100%; 
+      padding: 40px 20px; 
+      gap: 30px; 
+    }
+
+    /* Styling untuk tulisan copyright di bawah (Footer) */
+    .footer { 
+      text-align: center; 
+      font-size: 13px; 
+      color: #94a3b8; 
+      padding: 30px; 
+      width: 100%; 
+      margin-top: auto; /* Mendorong footer agar selalu di paling bawah */
+    }
+
+    /* ==========================================================================
+       MEDIA QUERY: Membuat Halaman Responsive (Berubah bentuk di layar HP)
+       ========================================================================== */
+    @media screen and (max-width: 900px) { 
+      .app-header { flex-direction: column; height: auto; padding: 15px 20px; gap: 15px; align-items: center; justify-content: center; text-align: center;}
+      .brand { flex-direction: column; gap: 8px; }
+      .header-actions { width: 100%; display: flex; justify-content: center; gap: 10px;}
+      .main-container { flex-direction: column; padding: 20px 15px; }
+    }
+
+    /* ==========================================================================
+       CSS KUSUS: Mempercantik Scrollbar pada kolom Terminal
+       ========================================================================== */
+    textarea::-webkit-scrollbar {
+      width: 8px; /* Lebar scrollbar */
+    }
+    textarea::-webkit-scrollbar-track {
+      background: #1f2937; /* Warna jalur scrollbar (gelap) */
+    }
+    textarea::-webkit-scrollbar-thumb {
+      background: #4b5563; /* Warna batang scrollbar yang bisa digeser */
+      border-radius: 4px; /* Ujung scrollbar membulat */
+    }
+    textarea::-webkit-scrollbar-thumb:hover {
+      background: #6b7280; /* Warna scrollbar saat kursor disorot */
+    }
+  </style>
+</head>
+<body class="antialiased">
+
+  <!-- ================= HEADER MULAI DARI SINI ================= -->
+  <header class="app-header">
+    <div class="brand">
+      <!-- Logo JLA -->
+      <div class="brand-logo">JLA</div>
+      <!-- Teks Judul Website -->
+      <div class="brand-title">
+        <h1>JAKA LINTAS AKSES</h1>
+        <p>Portal Script Generator</p>
+      </div>
+    </div>
+    <!-- Tombol navigasi (Beranda & WhatsApp) -->
+    <div class="header-actions">
+      <a href="index.html" class="btn btn-secondary">🏠 Beranda</a>
+      <a href="https://wa.me/62818386078?text=Halo%20JLA%20Tools,%20saya%20ingin%20bertanya..." target="_blank" class="btn btn-wa">
+        <!-- SVG adalah kode untuk menampilkan gambar/ikon vektor tanpa pecah -->
+        <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Hubungi Kami
+      </a>
+    </div>
+  </header>
+
+  <!-- ================= KONTEN UTAMA (Generator) MULAI DARI SINI ================= -->
+  <!-- main-container memastikan posisinya di tengah -->
+  <main class="main-container items-start">
+    
+    <!-- Kotak Pembungkus Utama (Putih, bayangan besar, ujung membulat) -->
+    <!-- md:flex-row artinya: di layar besar(PC), tata letak menyamping (kiri-kanan) -->
+    <div class="w-full bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col md:flex-row border border-gray-200">
         
-        <!-- Left Panel: Input Form -->
-        <div class="w-full md:w-5/12 bg-gray-50 p-6 md:p-8 border-r border-gray-200 overflow-y-auto max-h-screen">
+        <!-- ================= KOLOM KIRI: FORM INPUT ================= -->
+        <!-- md:w-5/12 artinya lebarnya memakan 5 bagian dari total 12 bagian (sekitar 41%) -->
+        <div class="w-full md:w-5/12 bg-gray-50 p-6 md:p-8 border-b md:border-b-0 md:border-r border-gray-200 overflow-y-auto max-h-[80vh]">
+            
+            <!-- Judul Form (Terdapat Ikon Jaringan SVG berwarna biru) -->
             <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                 Hostddns Generator
             </h2>
 
+            <!-- Form ID 'configForm' penting agar mudah ditangkap oleh JavaScript nanti -->
             <form id="configForm" class="space-y-5">
                 
+                <!-- ====== Bagian 1: Konfigurasi VPN ====== -->
                 <div class="space-y-3">
                     <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider">1. Konfigurasi VPN Client</h3>
                     
+                    <!-- grid-cols-2 membagi kotak menjadi 2 kolom bersebelahan -->
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Jenis VPN</label>
-                            <select id="vpnType" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition bg-white">
+                            <!-- Dropdown Pilihan VPN -->
+                            <select id="vpnType" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition bg-white outline-none">
                                 <option value="ovpn-client">OpenVPN (OVPN)</option>
                                 <option value="l2tp-client">L2TP</option>
                                 <option value="pptp-client">PPTP</option>
@@ -55,204 +198,268 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Nama Interface</label>
-                            <input type="text" id="ifaceName" value="bumn@mytunnel.id" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                            <input type="text" id="ifaceName" value="bumn@mytunnel.id" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition outline-none">
                         </div>
                     </div>
                     
+                    <!-- Input Server -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Server (Connect To)</label>
-                        <input type="text" id="serverHost" placeholder="id1.mytunnel.id" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                        <input type="text" id="serverHost" placeholder="id1.mytunnel.id" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition outline-none">
                     </div>
 
+                    <!-- Input User & Password -->
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
-                            <input type="text" id="vpnUser" placeholder="user_vpn" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                            <input type="text" id="vpnUser" placeholder="user_vpn" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition outline-none">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                            <input type="text" id="vpnPass" placeholder="pass_vpn" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                            <input type="text" id="vpnPass" placeholder="pass_vpn" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition outline-none">
                         </div>
                     </div>
                 </div>
 
+                <!-- Garis abu-abu pemisah -->
                 <hr class="border-gray-200">
 
+                <!-- ====== Bagian 2: Setting Watchdog ====== -->
                 <div class="space-y-3">
                     <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider">2. Setting Watchdog (Monitor)</h3>
                     
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Metode Monitor</label>
-                        <select id="monitorMethod" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition bg-white">
+                        <!-- Pilihan Scheduler atau Netwatch -->
+                        <select id="monitorMethod" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition bg-white outline-none">
                             <option value="scheduler">Scheduler (Tanpa Ping - Cek Status)</option>
                             <option value="netwatch">Netwatch (Gunakan Ping)</option>
                         </select>
                     </div>
 
+                    <!-- Kolom IP ini awalnya "hidden" (tersembunyi). Nanti dibuka oleh Javascript jika milih Netwatch -->
                     <div id="targetIpContainer" class="hidden">
                         <label class="block text-sm font-medium text-gray-700 mb-1">IP Target Ping (IP Tunnel VPN)</label>
-                        <input type="text" id="targetIp" value="10.8.0.1" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                        <input type="text" id="targetIp" value="10.8.0.1" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition outline-none">
                         <p class="text-xs text-gray-500 mt-1">Hanya diperlukan jika memilih Netwatch.</p>
                     </div>
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Interval Pengecekan (Detik)</label>
-                        <input type="number" id="checkInterval" value="30" min="10" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                        <input type="number" id="checkInterval" value="30" min="10" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition outline-none">
                     </div>
                 </div>
-
             </form>
         </div>
 
-        <!-- Right Panel: Script Output -->
-        <div class="w-full md:w-7/12 bg-gray-900 flex flex-col relative">
+        <!-- ================= KOLOM KANAN: TERMINAL SCRIPT ================= -->
+        <!-- md:w-7/12 artinya mengambil sisa lebar (sekitar 59%), bg-gray-900 membuatnya berwarna hitam/gelap -->
+        <div class="w-full md:w-7/12 bg-gray-900 flex flex-col relative h-[500px] md:h-auto">
+            
+            <!-- Kepala Terminal (Meniru tampilan jendela Mac OS) -->
             <div class="p-4 border-b border-gray-700 flex justify-between items-center bg-gray-800">
                 <div class="flex items-center gap-2">
-                    <!-- Mac Window Buttons (Traffic Lights) -->
+                    <!-- 3 Tombol Bulat (Merah, Kuning, Hijau) khas Apple/Mac -->
                     <div class="w-3 h-3 rounded-full bg-red-500"></div>
                     <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
                     <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                    <!-- Judul di header terminal -->
                     <span class="text-gray-400 font-mono text-sm ml-3">bash - root@mikrotik:~</span>
                 </div>
+                
+                <!-- Tombol Copy Script -->
                 <button id="copyBtn" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-1.5 rounded text-sm font-medium transition flex items-center gap-2 shadow-sm">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
                     Copy Script
                 </button>
             </div>
             
-            <div class="flex-grow p-4 relative">
-                <textarea id="scriptOutput" readonly class="w-full h-full bg-transparent text-green-400 font-mono text-sm resize-none focus:outline-none p-2" spellcheck="false"></textarea>
+            <!-- Isi Terminal -->
+            <div class="flex-grow relative flex flex-col">
+                <!-- Textarea: Kotak untuk menampilkan script. 
+                     Perhatikan class 'text-gray-200' ini mengubah warna teks menjadi putih abu standar, bukan hijau lagi -->
+                <textarea id="scriptOutput" readonly class="w-full h-full bg-transparent text-gray-200 font-mono text-sm resize-none focus:outline-none p-4" spellcheck="false"></textarea>
                 
-                <!-- Toast Notification Container -->
-                <div id="toast" class="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-lg shadow-lg text-sm font-medium transition-opacity duration-300 opacity-0 pointer-events-none flex items-center gap-2 border border-gray-600">
-                    <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                    Script Copied!
+                <!-- Notifikasi Toast (Teks pop-up melayang di bawah terminal jika copy berhasil) -->
+                <!-- Awalnya 'opacity-0 pointer-events-none' (Transparan/tidak kelihatan dan tidak bisa diklik) -->
+                <div id="toast" class="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-lg shadow-lg text-sm font-medium transition-opacity duration-300 opacity-0 pointer-events-none flex items-center gap-2 border border-gray-600 z-50">
+                    <!-- Ikon Check / Centang -->
+                    <svg id="toastIcon" class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    <span id="toastText">Script berhasil disalin!</span>
                 </div>
             </div>
         </div>
     </div>
+  </main>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            // Get DOM Elements
-            const inputs = document.querySelectorAll('#configForm input, #configForm select');
-            const vpnTypeEl = document.getElementById('vpnType');
-            const ifaceNameEl = document.getElementById('ifaceName');
-            const serverHostEl = document.getElementById('serverHost');
-            const vpnUserEl = document.getElementById('vpnUser');
-            const vpnPassEl = document.getElementById('vpnPass');
-            const monitorMethodEl = document.getElementById('monitorMethod');
-            const targetIpEl = document.getElementById('targetIp');
-            const checkIntervalEl = document.getElementById('checkInterval');
-            
-            const targetIpContainer = document.getElementById('targetIpContainer');
-            const scriptOutput = document.getElementById('scriptOutput');
-            const copyBtn = document.getElementById('copyBtn');
-            const toast = document.getElementById('toast');
+  <!-- ================= FOOTER ================= -->
+  <!-- Tahun telah diubah menjadi 2019 sesuai permintaan -->
+  <footer class="footer">
+    Jaka Lintas Akses © 2019. Premium RouterOS Script Tools Portal.
+  </footer>
 
-            // Function to generate script based on inputs
-            function generateScript() {
-                const type = vpnTypeEl.value;
-                const iface = ifaceNameEl.value || "vpn-out1";
-                const host = serverHostEl.value || "SERVER_IP";
-                const user = vpnUserEl.value || "USERNAME";
-                const pass = vpnPassEl.value || "PASSWORD";
-                const method = monitorMethodEl.value;
-                const ip = targetIpEl.value || "10.8.0.1";
-                const interval = checkIntervalEl.value || "30";
+  <!-- ================= JAVASCRIPT (Logika Aplikasi) ================= -->
+  <script>
+    // Memastikan seluruh HTML siap sebelum Javascript dijalankan
+    document.addEventListener("DOMContentLoaded", () => {
+        
+        // 1. MENDAPATKAN ELEMEN HTML
+        // Di sini kita menangkap elemen (kolom input) dari HTML agar bisa dibaca nilainya
+        const inputs = document.querySelectorAll('#configForm input, #configForm select'); 
+        
+        const vpnTypeEl = document.getElementById('vpnType');
+        const ifaceNameEl = document.getElementById('ifaceName');
+        const serverHostEl = document.getElementById('serverHost');
+        const vpnUserEl = document.getElementById('vpnUser');
+        const vpnPassEl = document.getElementById('vpnPass');
+        const monitorMethodEl = document.getElementById('monitorMethod');
+        const targetIpEl = document.getElementById('targetIp');
+        const checkIntervalEl = document.getElementById('checkInterval');
+        
+        const targetIpContainer = document.getElementById('targetIpContainer');
+        const scriptOutput = document.getElementById('scriptOutput');
+        const copyBtn = document.getElementById('copyBtn');
+        
+        // Elemen untuk notifikasi sukses (toast)
+        const toast = document.getElementById('toast');
+        const toastIcon = document.getElementById('toastIcon');
+        const toastText = document.getElementById('toastText');
 
-                const typeLabel = type.split('-')[0].toUpperCase();
+        // 2. FUNGSI MERAKIT SCRIPT MIKROTIK
+        function generateScript() {
+            // Ambil data yang diketik user. 
+            // Tanda || (OR) berarti: "Kalau user biarkan kosong, pakai teks bawaan ini"
+            const type = vpnTypeEl.value;
+            const iface = ifaceNameEl.value || "vpn-out1";
+            const host = serverHostEl.value || "SERVER_IP";
+            const user = vpnUserEl.value || "USERNAME";
+            const pass = vpnPassEl.value || "PASSWORD";
+            const method = monitorMethodEl.value;
+            const ip = targetIpEl.value || "10.8.0.1";
+            const interval = checkIntervalEl.value || "30";
 
-                // 1. Build VPN Creation script
-                let script = `/interface ${type}\n`;
-                script += `add name="${iface}" connect-to="${host}" user="${user}" password="${pass}" disabled=no\n\n`;
+            // Membuat nama rapi (Misal "ovpn-client" -> "OVPN")
+            const typeLabel = type.split('-')[0].toUpperCase();
 
-                // 2. Build Monitor script
-                if (method === "netwatch") {
-                    script += `/tool netwatch\n`;
-                    script += `add comment="Auto-Restart ${typeLabel} ${iface}" \\\n`;
-                    script += `host=${ip} interval=${interval}s timeout=2s \\\n`;
-                    script += `down-script="/interface ${type} disable [find name=\\"${iface}\\"]; \\r\\\n`;
-                    script += `    \\n:delay 3s; \\r\\\n`;
-                    script += `    \\n/interface ${type} enable [find name=\\"${iface}\\"]; \\r\\\n`;
-                    script += `    \\n:log warning \\"${typeLabel} Terminating/RTO. Interface direstart oleh Netwatch.\\"" \\\n`;
-                    script += `up-script=":log info \\"Koneksi ${typeLabel} ${iface} Kembali Normal.\\""\n`;
-                } else {
-                    script += `/system scheduler\n`;
-                    script += `add name="Watchdog-${iface}" interval=${interval}s on-event={\n`;
-                    script += `    :local iface "${iface}";\n`;
-                    script += `    :local isRunning [/interface get [find name=$iface] running];\n`;
-                    script += `    \n`;
-                    script += `    :if ($isRunning = false) do={\n`;
-                    script += `        :log warning "${typeLabel} Terminating terdeteksi pada $iface! Merestart interface...";\n`;
-                    script += `        /interface ${type} disable [find name=$iface];\n`;
-                    script += `        :delay 3s;\n`;
-                    script += `        /interface ${type} enable [find name=$iface];\n`;
-                    script += `    }\n`;
-                    script += `}\n`;
-                }
+            // Tahap A: Buat Script Konfigurasi Interface VPN (Gunakan let supaya bisa disambung)
+            // \n berfungsi untuk ganti baris (Enter) di dalam textarea
+            let script = `/interface ${type}\n`;
+            script += `add name="${iface}" connect-to="${host}" user="${user}" password="${pass}" disabled=no\n\n`;
 
-                scriptOutput.value = script;
+            // Tahap B: Buat Script untuk Watchdog (Pengecek Otomatis)
+            if (method === "netwatch") {
+                // Skrip jika memilih Netwatch
+                script += `/tool netwatch\n`;
+                script += `add comment="Auto-Restart ${typeLabel} ${iface}" \\\n`;
+                script += `host=${ip} interval=${interval}s timeout=2s \\\n`;
+                
+                // Perhatikan penggunaan \\r\\n dan \\" karena kita memasukkan script ke dalam teks (string)
+                script += `down-script="/interface ${type} disable [find name=\\"${iface}\\"]; \\r\\\n`;
+                script += `    \\n:delay 3s; \\r\\\n`;
+                script += `    \\n/interface ${type} enable [find name=\\"${iface}\\"]; \\r\\\n`;
+                script += `    \\n:log warning \\"${typeLabel} Terminating/RTO. Interface direstart oleh Netwatch.\\"" \\\n`;
+                script += `up-script=":log info \\"Koneksi ${typeLabel} ${iface} Kembali Normal.\\""\n`;
+            } else {
+                // Skrip jika memilih Scheduler
+                script += `/system scheduler\n`;
+                script += `add name="Watchdog-${iface}" interval=${interval}s on-event={\n`;
+                script += `    :local iface "${iface}";\n`;
+                script += `    :local isRunning [/interface get [find name=$iface] running];\n`;
+                script += `    \n`;
+                script += `    :if ($isRunning = false) do={\n`;
+                script += `        :log warning "${typeLabel} Terminating terdeteksi pada $iface! Merestart interface...";\n`;
+                script += `        /interface ${type} disable [find name=$iface];\n`;
+                script += `        :delay 3s;\n`;
+                script += `        /interface ${type} enable [find name=$iface];\n`;
+                script += `    }\n`;
+                script += `}\n`;
             }
 
-            // Add listeners to update script on any input change
-            inputs.forEach(input => {
-                input.addEventListener('input', generateScript);
-                input.addEventListener('change', generateScript);
-            });
+            // Memasukkan hasil rakitan script ke dalam Textarea di Terminal
+            scriptOutput.value = script;
+        }
 
-            // Toggle Target IP visibility based on dropdown
-            monitorMethodEl.addEventListener('change', (e) => {
-                if(e.target.value === 'netwatch') {
-                    targetIpContainer.classList.remove('hidden');
-                } else {
-                    targetIpContainer.classList.add('hidden');
-                }
-            });
-
-            // Fallback copy function for iframe compatibility
-            function copyToClipboard(text) {
-                if (navigator.clipboard && window.isSecureContext) {
-                    return navigator.clipboard.writeText(text);
-                } else {
-                    let textArea = document.createElement("textarea");
-                    textArea.value = text;
-                    textArea.style.position = "fixed";
-                    textArea.style.left = "-999999px";
-                    textArea.style.top = "-999999px";
-                    document.body.appendChild(textArea);
-                    textArea.focus();
-                    textArea.select();
-                    return new Promise((res, rej) => {
-                        document.execCommand('copy') ? res() : rej();
-                        textArea.remove();
-                    });
-                }
-            }
-
-            // Copy Button Click handler
-            copyBtn.addEventListener('click', () => {
-                const textToCopy = scriptOutput.value;
-                if(!textToCopy) return;
-
-                copyToClipboard(textToCopy)
-                    .then(() => {
-                        // Show toast
-                        toast.classList.remove('opacity-0');
-                        setTimeout(() => {
-                            toast.classList.add('opacity-0');
-                        }, 2000);
-                    })
-                    .catch(err => {
-                        console.error('Failed to copy!', err);
-                        // Fallback simple alert if totally fails
-                        alert("Gagal copy text, silakan copy manual.");
-                    });
-            });
-
-            // Generate script on initial load
-            generateScript();
+        // 3. EVENT: DETEKSI PERUBAHAN
+        // Setiap kali user mengetik ('input') atau memilih opsi ('change'), script langsung berubah otomatis
+        inputs.forEach(input => {
+            input.addEventListener('input', generateScript);
+            input.addEventListener('change', generateScript);
         });
-    </script>
+
+        // 4. EVENT: SEMBUNYIKAN/MUNCULKAN KOLOM IP TARGET
+        monitorMethodEl.addEventListener('change', (e) => {
+            if(e.target.value === 'netwatch') {
+                targetIpContainer.classList.remove('hidden'); // Memunculkan input IP Target
+            } else {
+                targetIpContainer.classList.add('hidden'); // Menyembunyikan input IP Target
+            }
+        });
+
+        // 5. FUNGSI COPY KE CLIPBOARD
+        // Berusaha menggunakan fitur modern navigator.clipboard, jika gagal (seperti di beberapa browser lama) pakai cara jadul textarea bayangan
+        function copyToClipboard(text) {
+            if (navigator.clipboard && window.isSecureContext) {
+                return navigator.clipboard.writeText(text);
+            } else {
+                let textArea = document.createElement("textarea");
+                textArea.value = text;
+                textArea.style.position = "fixed";
+                textArea.style.left = "-999999px";
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                return new Promise((res, rej) => {
+                    document.execCommand('copy') ? res() : rej();
+                    textArea.remove();
+                });
+            }
+        }
+
+        // Fungsi pembantu untuk memunculkan pesan (toast) melayang
+        function showToast(message, isError = false) {
+            toastText.textContent = message;
+            
+            // Ubah warna ikon jika gagal
+            if(isError) {
+                toastIcon.classList.remove('text-green-400');
+                toastIcon.classList.add('text-red-400');
+                toastIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>`; // Ikon silang (X)
+            } else {
+                toastIcon.classList.remove('text-red-400');
+                toastIcon.classList.add('text-green-400');
+                toastIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>`; // Ikon Centang
+            }
+
+            // Tampilkan toast
+            toast.classList.remove('opacity-0');
+            
+            // Sembunyikan otomatis setelah 2,5 detik
+            setTimeout(() => {
+                toast.classList.add('opacity-0');
+            }, 2500);
+        }
+
+        // 6. EVENT: KETIKA TOMBOL COPY DIKLIK
+        copyBtn.addEventListener('click', () => {
+            const textToCopy = scriptOutput.value;
+            if(!textToCopy) return; // Jangan copy jika kosong
+
+            copyToClipboard(textToCopy)
+                .then(() => {
+                    // Berhasil disalin
+                    showToast("Script berhasil disalin!");
+                })
+                .catch(err => {
+                    // Gagal disalin (Menggantikan penggunaan alert bawaan browser agar lebih elegan)
+                    console.error('Failed to copy!', err);
+                    showToast("Gagal menyalin, silakan block manual", true);
+                });
+        });
+
+        // 7. INISIALISASI PERTAMA KALI
+        // Panggil fungsi ini 1x di awal agar terminal tidak kosong saat web baru dibuka
+        generateScript();
+    });
+  </script>
 </body>
 </html>
