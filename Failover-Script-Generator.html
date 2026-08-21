@@ -239,7 +239,6 @@
     }
     .action-row button { flex: 1; }
 
-
     .output-panel {
       display: flex;
       flex-direction: column;
@@ -250,7 +249,7 @@
     .terminal-container {
       background: var(--term-bg);
       border-radius: 8px;
-      overflow: hidden; /* Agar sudut melengkung menutupi isinya */
+      overflow: hidden;
       display: flex;
       flex-direction: column;
       height: 100%;
@@ -335,7 +334,7 @@
     .terminal-body::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
     .terminal-body::-webkit-scrollbar-thumb:hover { background: #64748b; }
 
-    /* Bagian bawah area output (Dropdown bahasa komentar) */
+    /* Bagian bawah area output */
     .output-footer {
       display: flex;
       justify-content: flex-end;
@@ -343,8 +342,6 @@
       margin-top: 15px;
       gap: 10px;
     }
-    .output-footer label { color: var(--text-muted); }
-    .output-footer select { width: auto; padding: 6px 10px; }
 
     /* Pesan Notifikasi Sukses Copy */
     .msg-success {
@@ -385,15 +382,15 @@
     <div class="brand">
       <div class="brand-logo">JLA</div>
       <div class="brand-title">
-        <h1>JAKA LINTAS AKSES GENERATOR</h1>
-        <p>Portal Script Generator Premium JLA</p>
+        <h1>JAKA LINTAS AKSES</h1>
+        <p>Portal Script Generator</p>
       </div>
     </div>
     <div class="header-actions">
       <!-- Tombol Home -->
       <a href="index.html" class="btn btn-secondary">🏠 Beranda</a>
       <!-- Tombol WhatsApp -->
-      <a href="https://wa.me/62818386078" class="btn btn-wa">
+      <a href="https://wa.me/62818386078?text=Halo%20JLA%20Tools,%20saya%20ingin%20bertanya..." class="btn btn-wa">
         <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
         Hubungi Kami
       </a>
@@ -512,12 +509,6 @@
           <div class="output-footer">
              <!-- Teks sukses setelah tombol copy ditekan -->
             <span id="msg-copied" class="msg-success">✓ Script berhasil disalin!</span>
-            <label for="comment-lang">Bahasa Komentar:</label>
-            <select id="comment-lang">
-              <option value="id">Indonesia</option>
-              <option value="en">English</option>
-              <option value="none">Tanpa Komentar</option>
-            </select>
           </div>
 
         </div> <!-- Akhir Panel Kanan -->
@@ -528,7 +519,7 @@
 
   <!-- Bagian Footer Website (Bawaan Template) -->
   <footer class="footer">
-    Jaka Lintas Akses © 2019-2026. Premium RouterOS Script Tools Portal.
+    Jaka Lintas Akses © 2019. Premium RouterOS Script Tools Portal.
   </footer>
 
   <script>
@@ -545,37 +536,47 @@
       const scriptOutput = document.getElementById('script-output');
       const msgCopied = document.getElementById('msg-copied');
       const rosVersion = document.getElementById('ros-version');
-      const commentLang = document.getElementById('comment-lang');
 
       // IP/DNS Publik bawaan untuk pengecekan (digunakan untuk recursive/netwatch)
       const defaultCheckIps = ['1.1.1.1', '8.8.8.8', '9.9.9.9', '8.8.4.4', '1.0.0.1'];
 
       // --- FUNGSI 1: MEMBUAT FORM INPUT ISP SECARA DINAMIS ---
-      // Fungsi ini dipanggil saat halaman dimuat atau jumlah WAN diubah
       function renderWanInputs() {
-        // Ambil angka dari input Jumlah WAN
+        // 1. Simpan data form yang sudah diisi user agar tidak hilang (Persistence)
+        const currentData = [];
+        for (let i = 1; i <= 5; i++) {
+          const identEl = document.getElementById(`ident-${i}`);
+          if (identEl) {
+            currentData[i] = {
+              ident: identEl.value,
+              dist: document.getElementById(`dist-${i}`).value,
+              gw: document.getElementById(`gw-${i}`).value,
+              check: document.getElementById(`check-${i}`).value
+            };
+          }
+        }
+
         let count = parseInt(numWanInput.value);
-        // Validasi, pastikan minimal 2 dan maksimal 5
         if (isNaN(count) || count < 2) count = 2;
         if (count > 5) count = 5;
-        numWanInput.value = count;
+        // Jangan timpa value saat user sedang mengetik secara real-time
 
-        // Cek metode failover apa yang sedang aktif sekarang
         const selectedType = document.querySelector('input[name="failover-type"]:checked').value;
-        // Pengecekan IP (IP/DNS Check) hanya diaktifkan jika tipenya bukan 'basic'
         const isCheckIpEnabled = selectedType !== 'basic';
 
-        // Kosongkan container sebelum diisi ulang
         dynamicWanContainer.innerHTML = '';
 
-        // Looping untuk membuat blok input sebanyak 'count' (jumlah WAN)
         for (let i = 1; i <= count; i++) {
-          // Pilih IP cek publik otomatis dari array (jika habis, ulang dari awal array)
           const defaultCheckIp = defaultCheckIps[(i - 1) % defaultCheckIps.length];
-          // Set atribut 'disabled' jika metode failover adalah basic
           const disableCheckAttr = isCheckIpEnabled ? '' : 'disabled';
+          
+          // 2. Ambil nilai yang sudah disimpan tadi, jika belum ada, pakai default
+          const prev = currentData[i] || {};
+          const identVal = prev.ident || `ISP-${i}`;
+          const distVal = prev.dist || i;
+          const gwVal = prev.gw || `192.168.${i}.1`;
+          const checkVal = prev.check || defaultCheckIp;
 
-          // Membuat HTML untuk satu blok ISP
           const wanHtml = `
             <div class="wan-card">
               <div class="wan-card-header">Jalur ISP - ${i}</div>
@@ -583,58 +584,45 @@
               <div class="input-row">
                 <div class="input-group">
                   <label>Nama Identity / Comment</label>
-                  <input type="text" id="ident-${i}" value="ISP-${i}" placeholder="Misal: Indihome">
+                  <input type="text" id="ident-${i}" value="${identVal}" placeholder="Misal: Indihome">
                 </div>
                 <div class="input-group">
                   <label>Routing Distance</label>
-                  <!-- Semakin kecil distance, prioritasnya semakin utama. ISP-1 default distance 1, ISP-2 distance 2, dst -->
-                  <input type="number" id="dist-${i}" value="${i}" min="1">
+                  <input type="number" id="dist-${i}" value="${distVal}" min="1">
                 </div>
               </div>
 
               <div class="input-row">
                 <div class="input-group">
                   <label>IP Gateway / PPPoE Interface</label>
-                  <input type="text" id="gw-${i}" value="192.168.${i}.1" placeholder="Misal: 192.168.1.1 atau pppoe-out1">
+                  <input type="text" id="gw-${i}" value="${gwVal}" placeholder="Misal: 192.168.1.1 atau pppoe-out1">
                 </div>
                 <div class="input-group">
                   <label>IP/DNS Target Check (Ping)</label>
-                  <input type="text" id="check-${i}" value="${defaultCheckIp}" ${disableCheckAttr} title="IP Publik stabil untuk memastikan internet hidup">
+                  <input type="text" id="check-${i}" value="${checkVal}" ${disableCheckAttr} title="IP Publik stabil untuk memastikan internet hidup">
                 </div>
               </div>
             </div>
           `;
-          // Masukkan HTML yang dibuat ke dalam container
           dynamicWanContainer.insertAdjacentHTML('beforeend', wanHtml);
         }
       }
 
       // --- FUNGSI 2: EVENT LISTENER UNTUK PERUBAHAN TAMPILAN ---
-      
-      // Saat angka "Jumlah Jalur WAN" diubah, render ulang form ISP
-      numWanInput.addEventListener('change', renderWanInputs);
+      // Ubah dari 'change' ke 'input' agar responsif seketika saat diketik / diklik panah form
+      numWanInput.addEventListener('input', renderWanInputs);
 
-      // Saat Radio Button "Tipe Failover" diklik, jalankan fungsi render ulang 
-      // untuk mengaktifkan/menonaktifkan kolom "IP/DNS Target Check"
       failoverTypeRadios.forEach(radio => {
         radio.addEventListener('change', renderWanInputs);
       });
 
       // --- FUNGSI 3: LOGIKA GENERATE SCRIPT (INTI APLIKASI) ---
       btnGenerate.addEventListener('click', () => {
-        // Kumpulkan data yang dibutuhkan
         const wanCount = parseInt(numWanInput.value);
         const type = document.querySelector('input[name="failover-type"]:checked').value;
         const rosV = rosVersion.value; // 'v6' atau 'v7'
-        const lang = commentLang.value; // 'id', 'en', atau 'none'
 
         let script = ""; // Variabel string kosong untuk menampung baris script
-
-        // Fungsi kecil pembuat komentar berdasarkan pilihan bahasa
-        const addComment = (idText, enText) => {
-          if (lang === 'none') return '';
-          return lang === 'id' ? `\n# --- ${idText} ---` : `\n# --- ${enText} ---`;
-        };
 
         // Header Script
         script += `# ===============================================\n`;
@@ -645,75 +633,118 @@
 
         // Mulai membuat baris per baris script tergantung tipe
         if (type === 'basic') {
-          script += addComment('Metode Failover Gateway Sederhana (Check Gateway)', 'Basic Check Gateway Failover Method');
-          
           for (let i = 1; i <= countWan(); i++) {
-             // Mengambil nilai dari form yang diinput user
              const ident = document.getElementById(`ident-${i}`).value;
              const gw = document.getElementById(`gw-${i}`).value;
              const dist = document.getElementById(`dist-${i}`).value;
              
-             // Di ROS v7, parameter check-gateway=ping masih sama di /ip route
              script += `/ip route add dst-address=0.0.0.0/0 gateway=${gw} distance=${dist} check-gateway=ping comment="${ident}"\n`;
           }
-          script += addComment('Selesai.', 'Done.');
 
         } else if (type === 'recursive') {
-          script += addComment('Metode Failover Recursive (Bypass Gateway Lokal ISP)', 'Recursive Failover Method (Bypass Local ISP Gateway)');
-          
           for (let i = 1; i <= countWan(); i++) {
              const ident = document.getElementById(`ident-${i}`).value;
              const gw = document.getElementById(`gw-${i}`).value;
              const dist = document.getElementById(`dist-${i}`).value;
              const checkIp = document.getElementById(`check-${i}`).value;
              
-             // Logika routing recursive:
-             // 1. Buat rute ke DNS publik spesifik via Gateway fisik (Scope 10)
              script += `/ip route add dst-address=${checkIp} gateway=${gw} scope=10 comment="Host Ping -> ${ident}"\n`;
-             // 2. Buat rute Default (0.0.0.0/0) menunjuk ke DNS publik tersebut dengan target-scope (Resolving)
-             // Perbedaan ROS v6 dan v7 pada target-scope
+             
              const targetScope = rosV === 'v6' ? 'target-scope=10' : 'target-scope=11'; 
              script += `/ip route add dst-address=0.0.0.0/0 gateway=${checkIp} distance=${dist} check-gateway=ping ${targetScope} comment="${ident}"\n\n`;
           }
 
         } else if (type === 'netwatch') {
-          script += addComment('Metode Failover menggunakan Tool Netwatch', 'Failover Method using Netwatch Tool');
-          
           // Bagian 1: Pembuatan Route dasar
-          script += addComment('1. Buat Route Utama (Disable Check Gateway jika pakai Netwatch)', '1. Create Base Routes');
           for (let i = 1; i <= countWan(); i++) {
              const ident = document.getElementById(`ident-${i}`).value;
              const gw = document.getElementById(`gw-${i}`).value;
              const dist = document.getElementById(`dist-${i}`).value;
              script += `/ip route add dst-address=0.0.0.0/0 gateway=${gw} distance=${dist} comment="${ident}"\n`;
           }
+          script += `\n`;
 
           // Bagian 2: Routing untuk IP Check Netwatch
-          script += addComment('2. Pastikan IP Netwatch ping lewat jalurnya masing-masing', '2. Ensure Netwatch IP pings through correct paths');
           for (let i = 1; i <= countWan(); i++) {
              const gw = document.getElementById(`gw-${i}`).value;
              const checkIp = document.getElementById(`check-${i}`).value;
              script += `/ip route add dst-address=${checkIp} gateway=${gw} comment="Netwatch Route ISP-${i}"\n`;
           }
+          script += `\n`;
 
           // Bagian 3: Rule Netwatch
-          script += addComment('3. Rule Netwatch (Menghidupkan/Mematikan rute secara otomatis)', '3. Netwatch Rules');
           for (let i = 1; i <= countWan(); i++) {
              const ident = document.getElementById(`ident-${i}`).value;
              const checkIp = document.getElementById(`check-${i}`).value;
-             // Jika ping sukses (UP), aktifkan route. Jika gagal (DOWN), matikan route.
              const onUp = `/ip route enable [find comment="${ident}"]`;
              const onDown = `/ip route disable [find comment="${ident}"]`;
              script += `/tool netwatch add host=${checkIp} interval=5s timeout=2s down-script="${onDown}" up-script="${onUp}" comment="Monitor ${ident}"\n`;
           }
 
         } else {
-           // Scripting
-           script += addComment('Metode Failover menggunakan Custom Script & Scheduler', 'Failover Method using Custom Script & Scheduler');
-           script += `# Info: Pendekatan ini lebih kompleks. Anda butuh script khusus untuk membaca ping dan merubah gateway.\n`;
-           script += `# Fitur ini hanya preview logika.\n`;
-           script += `/system script add name="failover-checker" source="\\n  :log info \\"Checking ISP Status...\\";\\n"\n`;
-           script += `/system scheduler add name="sch-failover" interval=10s on-event="failover-checker"\n`;
+           // Scripting (Custom Script & Scheduler - Pengecekan Lanjutan)
+           // Array IP alternatif untuk pengecekan target ke-2 secara otomatis
+           const altIps = ['1.0.0.1', '8.8.4.4', '9.9.9.10', '208.67.220.220', '149.112.112.112'];
+
+           // Bagian 1: IP Route (Default & Host Check)
+           script += `/ip route\n`;
+           for (let i = 1; i <= countWan(); i++) {
+             const ident = document.getElementById(`ident-${i}`).value;
+             const gw = document.getElementById(`gw-${i}`).value;
+             const dist = document.getElementById(`dist-${i}`).value;
+             const checkIp1 = document.getElementById(`check-${i}`).value;
+             const checkIp2 = altIps[(i - 1) % altIps.length];
+
+             // Route utama disesuaikan persis dengan parameter logika user
+             script += `add check-gateway=ping comment="${ident}_route" distance=${dist} dst-address=0.0.0.0/0 gateway=${gw} scope=30 target-scope=10\n`;
+             // Route untuk masing-masing IP check agar dipaksa melewati gateway terkait (distance=1)
+             script += `add comment="${ident}_CHECK_1" distance=1 dst-address=${checkIp1} gateway=${gw} scope=30 target-scope=10\n`;
+             script += `add comment="${ident}_CHECK_2" distance=1 dst-address=${checkIp2} gateway=${gw} scope=30 target-scope=10\n`;
+           }
+           script += `\n`;
+
+           // Bagian 2: Scheduler
+           script += `/system scheduler\n`;
+           for (let i = 1; i <= countWan(); i++) {
+             const ident = document.getElementById(`ident-${i}`).value;
+             script += `add comment="Scheduler ${ident}" interval=10s name="run-check-${ident}" on-event="/system script run check-${ident}-script" policy=ftp,reboot,read,write,policy,test,password,sniff,sensitive,romon\n`;
+           }
+           script += `\n`;
+
+           // Bagian 3: System Script (Logika Pengecekan Loop)
+           script += `/system script\n`;
+           for (let i = 1; i <= countWan(); i++) {
+             const ident = document.getElementById(`ident-${i}`).value;
+             const gw = document.getElementById(`gw-${i}`).value;
+             const checkIp1 = document.getElementById(`check-${i}`).value;
+             const checkIp2 = altIps[(i - 1) % altIps.length];
+
+             script += `add comment="${ident} Health Check" dont-require-permissions=no name="check-${ident}-script" policy=ftp,reboot,read,write,policy,test,password,sniff,sensitive,romon source="
+    :local wanName \\"${ident}\\";
+    :local routeComment \\"${ident}_route\\";
+    :local gatewayAddress \\"${gw}\\";
+    :local checkIps (\\"${checkIp1}\\",\\"${checkIp2}\\");
+    :local unreachableCount 0;
+    :local threshold 2;
+    
+    :foreach ip in=$checkIps do={
+        :if ([/ping $ip count=3] = 0) do={
+            :set unreachableCount ($unreachableCount + 1);
+        }
+    }
+    
+    :if ($unreachableCount >= $threshold) do={
+        :if (![/ip route get [find comment=$routeComment] disabled]) do={
+            /ip route disable [find comment=$routeComment];
+            :log error \\"WAN $wanName ($gatewayAddress) DOWN - RTO! Route $routeComment dimatikan.\\";
+        }
+    } else={
+        :if ([/ip route get [find comment=$routeComment] disabled]) do={
+            /ip route enable [find comment=$routeComment];
+            :log info \\"WAN $wanName ($gatewayAddress) UP - Koneksi stabil! Route $routeComment diaktifkan.\\";
+        }
+    }"\n\n`;
+           }
         }
 
         // Tampilkan hasil script ke dalam textarea
@@ -726,27 +757,22 @@
       }
 
       // --- FUNGSI 4: TOMBOL CLEAR ALL ---
-      // Menghapus hasil script dan mengembalikan input ke setting awal
       btnClear.addEventListener('click', () => {
         numWanInput.value = 2; // Kembalikan ke 2 WAN
         document.querySelector('input[value="basic"]').checked = true; // Radio ke basic
         rosVersion.value = 'v6';
-        commentLang.value = 'id';
         scriptOutput.value = ''; // Kosongkan text area
         renderWanInputs(); // Render ulang tampilan
       });
 
       // --- FUNGSI 5: TOMBOL COPY SCRIPT ---
       btnCopy.addEventListener('click', () => {
-        // Cek jika textarea kosong (atau berisi pesan placeholder bawaan)
         if (!scriptOutput.value || scriptOutput.value.includes("Klik 'Generate Script'")) {
-          // Mengubah sementara pesan sukses menjadi pesan error merah
           msgCopied.style.color = '#ef4444'; 
           msgCopied.innerText = 'Script kosong!';
           msgCopied.classList.add('show');
           setTimeout(() => {
              msgCopied.classList.remove('show');
-             // Kembalikan ke format pesan sukses default
              setTimeout(() => {
                msgCopied.style.color = '#10b981';
                msgCopied.innerText = '✓ Script berhasil disalin!';
@@ -755,20 +781,14 @@
           return;
         }
 
-        // Memilih seluruh teks di dalam textarea
         scriptOutput.select();
-        scriptOutput.setSelectionRange(0, 99999); // Untuk support browser mobile lama
+        scriptOutput.setSelectionRange(0, 99999);
 
         try {
-          // Menjalankan perintah copy standar browser (kompatibel walau di dalam iframe)
           document.execCommand('copy');
-          
-          // Hapus blok seleksi agar tidak terlihat jelek setelah dicopy
           window.getSelection().removeAllRanges();
           
-          // Memunculkan teks "✓ Script berhasil disalin!"
           msgCopied.classList.add('show');
-          // Sembunyikan kembali setelah 2.5 detik
           setTimeout(() => {
              msgCopied.classList.remove('show');
           }, 2500);
@@ -778,7 +798,7 @@
         }
       });
 
-      // Inisialisasi Pertama: Panggil fungsi renderWanInputs saat web pertama kali terbuka
+      // Inisialisasi Pertama
       renderWanInputs();
 
     });
