@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Judul halaman yang akan muncul di tab browser -->
+  <title>FTTH Optical Signal Calculator - JLA Tools</title>
+  
+  <style>
+    /* Mengambil font Inter dan JetBrains Mono dari Google Fonts untuk teks agar terlihat modern */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap');
+    
+    /* Aturan dasar untuk semua elemen, memberikan efek transisi halus saat berubah */
+    * { 
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+      box-sizing: border-box; 
+    }
+    
+    /* Variabel warna bawaan template JLA Tools */
+    :root {
+      --bg: #f4f7f6;
+      --text: #334155;
+      --text-dark: #0f172a;
+      --text-muted: #64748b;
+      --accent: #ff6600; /* Warna Oranye khas */
+      --border: #e2e8f0;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      
+      /* Warna khusus untuk Kalkulator Sinyal */
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --card-bg: #ffffff;
+      --input-bg: #f8fafc;
+    }
+
+    /* Mengatur style body agar rapi di seluruh layar */
+    body { 
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
+      background: var(--bg);
+      color: var(--text); 
+      margin: 0; 
+      padding: 0; 
+      display: flex; 
+      flex-direction: column; 
+      min-height: 100vh;
+    }
+
+    /* Header Atas */
+    .app-header {
+      height: 64px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .brand { display: flex; align-items: center; gap: 12px; }
+    
+    /* Logo JLA (Kotak Oranye) */
+    .brand-logo {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, var(--accent), #ea580c);
+      border-radius: 10px; color: #fff;
+      font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 16px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 12px rgba(255, 102, 0, 0.3);
+    }
+    
+    .brand-title h1 { font-size: 15px; font-weight: 800; color: var(--text-dark); letter-spacing: 0.3px; line-height: 1.2; margin: 0;}
+    .brand-title p { font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; font-weight: 500; margin: 0;}
+
+    .header-actions { display: flex; align-items: center; gap: 12px; }
+
+    /* Tombol Navigasi di Header */
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 9px 16px; border-radius: 8px; border: none; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; transition: all .15s; white-space: nowrap; text-decoration: none; }
+    .btn-secondary { background: #ffffff; color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: #f8fafc; }
+    .btn-wa { background: #25D366; color: white; border-radius: 20px; font-weight: 700; }
+    .btn-wa:hover { background: #128C7E; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3); }
+
+    /* Area Konten */
+    .main-container { 
+      display: flex; 
+      flex: 1; 
+      max-width: 1000px; /* Dipersempit agar kalkulator lebih fokus */
+      margin: 0 auto; 
+      width: 100%; 
+      padding: 40px 20px; 
+      gap: 30px; 
+    }
+    
+    .content-area { 
+      flex: 1; 
+      background: var(--card-bg); 
+      border-radius: 16px; 
+      box-shadow: 0 10px 30px rgba(148, 163, 184, 0.1); 
+      border: 1px solid #f1f5f9;
+      padding: 30px; 
+      min-width: 0;
+    }
+
+    /* === STYLING KHUSUS KALKULATOR FTTH === */
+    .calc-header {
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 15px;
+      margin-bottom: 25px;
+    }
+    .calc-header h2 {
+      margin: 0 0 5px 0;
+      color: var(--text-dark);
+      font-size: 22px;
+      font-weight: 800;
+    }
+    .calc-header h2 span { color: var(--accent); }
+    .calc-header p { margin: 0; font-size: 13px; color: var(--text-muted); }
+
+    /* Grid Pembagian Kiri (Form) dan Kanan (Hasil) */
+    .calc-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 30px;
+    }
+    @media (min-width: 768px) {
+      .calc-grid { grid-template-columns: 1.1fr 0.9fr; } /* Layout 2 kolom di PC */
+    }
+
+    /* Styling Label dan Input/Select */
+    .form-group { margin-bottom: 15px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-dark);
+      margin-bottom: 6px;
+    }
+    
+    select, input[type="number"] {
+      width: 100%;
+      padding: 10px 12px;
+      background-color: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 13px;
+      color: var(--text-dark);
+      outline: none;
+      font-family: 'Inter', sans-serif;
+    }
+    select:focus, input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(255,102,0,0.1); }
+    
+    /* Menghilangkan tombol panah (spinner) bawaan browser pada input number */
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type="number"] {
+      -moz-appearance: textfield;
+    }
+    
+    /* Teks Catatan Kecil di bawah input */
+    .note { font-size: 11px; color: var(--text-muted); margin-top: 4px; display: block; }
+
+    /* Tombol Pindah Mode (Simple vs Pro) */
+    .mode-switch {
+      display: flex;
+      background: var(--input-bg);
+      border-radius: 8px;
+      padding: 4px;
+      margin-bottom: 20px;
+      border: 1px solid var(--border);
+    }
+    .mode-btn {
+      flex: 1;
+      padding: 8px;
+      border: none;
+      background: transparent;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .mode-btn.active {
+      background: var(--card-bg);
+      color: var(--accent);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    /* Panel Hasil (Kanan) */
+    .result-panel {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+    .result-box {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+      margin-bottom: 15px;
+      box-shadow: var(--shadow-sm);
+    }
+    .result-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;}
+    .result-value { font-size: 42px; font-weight: 800; margin: 10px 0; color: var(--text-dark); }
+    .result-value span { font-size: 16px; font-weight: 600; color: var(--text-muted); }
+    
+    /* Lencana Status */
+    .status-badge {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .status-excellent { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+    .status-warning { background: #fef9c3; color: #854d0e; border: 1px solid #fef08a; }
+    .status-critical { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+
+    /* Daftar Rincian Redaman */
+    .breakdown { margin-top: 10px; }
+    .breakdown-item {
+      display: flex; justify-content: space-between;
+      padding: 8px 0; border-bottom: 1px dashed var(--border);
+      font-size: 12px; color: var(--text);
+    }
+    .breakdown-item.total {
+      font-weight: 700; color: var(--text-dark); border-bottom: none;
+      font-size: 14px; padding-top: 12px;
+    }
+
+    /* Tabel Referensi Redaman */
+    .ref-table-wrapper { margin-top: 40px; overflow-x: auto; }
+    .ref-table { width: 100%; border-collapse: collapse; font-size: 12px; text-align: center; }
+    .ref-table th { background: var(--input-bg); color: var(--text-dark); padding: 10px; border: 1px solid var(--border); font-weight: 700;}
+    .ref-table td { padding: 8px; border: 1px solid var(--border); color: var(--text); }
+    .ref-table tr:nth-child(even) { background: #fdfdfd; }
+    
+    /* Footer */
+    .footer { text-align: center; font-size: 12px; color: #94a3b8; padding: 20px; width: 100%; margin-top: auto; }
+
+    /* Class Bantuan JS */
+    .hidden { display: none !important; }
+
+    /* === OPTIMASI TAMPILAN MOBILE === */
+    @media screen and (max-width: 600px) {
+      /* Form yang tadinya 2 kolom bersampingan diubah menjadi atas-bawah di HP */
+      .form-row { grid-template-columns: 1fr; gap: 10px; } 
+    }
+
+    /* Memindahkan styling kotak ODC ke dalam class agar bisa dibuat responsif */
+    .odc-box { margin-top: -5px; margin-bottom: 20px; padding: 15px; background: #f8fafc; border: 1px dashed var(--accent); border-radius: 8px; display: flex; flex-direction: column; gap: 12px; }
+    .odc-box-title { text-align: center; font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px; }
+    .odc-box-content { display: flex; justify-content: space-around; align-items: center; }
+    .odc-divider { width: 1px; height: 35px; background: var(--border); }
+    
+    /* Jika layar HP sangat kecil, kotak ODC juga disusun ke bawah */
+    @media (max-width: 480px) {
+      .odc-box-content { flex-direction: column; gap: 12px; }
+      .odc-divider { width: 100%; height: 1px; margin: 4px 0; } /* Garis tegak berubah jadi garis mendatar */
+    }
+
+    @media screen and (max-width: 900px) { 
+      .app-header { flex-direction: column; height: auto; padding: 15px 20px; gap: 15px; align-items: center; justify-content: center; text-align: center;}
+      .brand { flex-direction: column; gap: 8px; }
+      .header-actions { width: 100%; display: flex; justify-content: center; gap: 10px;}
+      .main-container { flex-direction: column; padding: 20px 15px; }
+      .content-area { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- BAGIAN HEADER: Tidak perlu diubah, ini bawaan template Anda -->
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-logo">JLA</div>
+      <div class="brand-title">
+        <h1>JAKA LINTAS AKSES</h1>
+        <p>Portal Script Generator</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <a href="index.html" class="btn btn-secondary">🏠 Beranda</a>
+      <a href="https://wa.me/62818386078?text=Halo%20JLA%20Tools,%20saya%20ingin%20bertanya..." target="_blank" class="btn btn-wa">
+        <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Hubungi Kami
+      </a>
+    </div>
+  </header>
+
+  <!-- KONTEN UTAMA: Area ini adalah tempat Kalkulator berada -->
+  <main class="main-container">
+    <div class="content-area">
+      
+      <!-- Judul Kalkulator -->
+      <div class="calc-header">
+        <h2>FTTH <span>LINK BUDGET</span> CALCULATOR</h2>
+        <p>Estimasi Redaman Kabel Fiber Optik & Kalkulator Sinyal ONT (Modem)</p>
+      </div>
+
+      <!-- Membagi area menjadi Grid Kiri (Input) dan Kanan (Hasil) -->
+      <div class="calc-grid">
+        
+        <!-- KOLOM KIRI: Form Input Parameter Jaringan -->
+        <div class="calc-input">
+          
+          <!-- Tombol Pemilih Mode -->
+          <div class="mode-switch">
+            <button class="mode-btn active" id="btnPro" onclick="setMode('pro')">Mode Lengkap (Pro)</button>
+            <button class="mode-btn" id="btnSimple" onclick="setMode('simple')">Mode Sederhana</button>
+          </div>
+
+          <!-- Pilihan SFP OLT (Dibuat Rentang 7-10) -->
+          <div class="form-group">
+            <label>Daya SFP OLT / Transmitter (dBm)</label>
+            <!-- Menggunakan input number namun panahnya disembunyikan via CSS -->
+            <input type="number" id="inputSfp" value="7.0" oninput="kalkulasiLoss()">
+            <span class="note">*Rentang SFP OLT umumnya antara 7.0 s/d 10.0 dBm</span>
+          </div>
+
+          <!-- Pilihan Splitter 1 -->
+          <div class="form-row">
+            <div class="form-group">
+              <label>Splitter 1 (ODC) / Rasio</label>
+              <!-- Format value="LossDrop|LossPass" untuk memisahkan redaman kedua port -->
+              <select id="inputSp1" onchange="kalkulasiLoss()">
+                <option value="0|0">Tanpa Splitter (0 dB)</option>
+                <optgroup label="Splitter Rasio Sama (PLC)">
+                  <option value="3.5|3.5">1 : 2 (~3.5 dB)</option>
+                  <option value="7.2|7.2">1 : 4 (~7.2 dB)</option>
+                  <option value="10.5|10.5">1 : 8 (~10.5 dB)</option>
+                  <option value="13.8|13.8">1 : 16 (~13.8 dB)</option>
+                </optgroup>
+                <optgroup label="Splitter Rasio Beda (TAP)">
+                  <option value="20.20|0.24" selected>1 : 99 (20.2dB | 0.24dB)</option>
+                  <option value="17.19|0.29">2 : 98 (17.2dB | 0.29dB)</option>
+                  <option value="15.43|0.33">3 : 97 (15.4dB | 0.33dB)</option>
+                  <option value="14.18|0.38">4 : 96 (14.2dB | 0.38dB)</option>
+                  <option value="13.21|0.42">5 : 95 (13.2dB | 0.42dB)</option>
+                  <option value="12.22|0.47">6 : 94 (12.2dB | 0.47dB)</option>
+                  <option value="10.87|0.58">8 : 92 (10.9dB | 0.58dB)</option>
+                  <option value="10.38|0.63">9 : 91 (10.4dB | 0.63dB)</option>
+                  <option value="10.20|0.66">10 : 90 (10.2dB | 0.66dB)</option>
+                  <option value="9.21|0.79">12 : 88 (9.2dB | 0.79dB)</option>
+                  <option value="8.44|0.91">15 : 85 (8.4dB | 0.91dB)</option>
+                  <option value="7.19|1.17">20 : 80 (7.2dB | 1.17dB)</option>
+                  <option value="6.22|1.45">25 : 75 (6.2dB | 1.45dB)</option>
+                  <option value="5.43|1.75">30 : 70 (5.4dB | 1.75dB)</option>
+                  <option value="4.18|2.42">40 : 60 (4.2dB | 2.42dB)</option>
+                  <option value="3.47|2.92">45 : 55 (3.5dB | 2.92dB)</option>
+                  <option value="3.21|3.21">50 : 50 (3.2dB | 3.21dB)</option>
+                </optgroup>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label>Jalur menuju ODP</label>
+              <!-- Pemilihan ODP dicolok ke Port yang mana -->
+              <select id="inputJalurOdp" onchange="kalkulasiLoss()">
+                <option value="drop" id="optJalurDrop" selected>Port Redaman Besar</option>
+                <option value="pass" id="optJalurPass">Port Redaman Kecil</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- INFO INLINE OUTPUT ODC (Memakai class responsif) -->
+          <div class="odc-box">
+            <div class="odc-box-title">Estimasi Output Splitter 1 (ODC)</div>
+            <div class="odc-box-content">
+              <div style="text-align: center;">
+                <span id="lblInlineDrop" style="color: var(--text-muted); display: block; font-size: 11px; margin-bottom: 4px;">Output Port</span>
+                <strong id="inlineOdcDrop" style="color: var(--text-dark); font-size: 16px;">0 dBm</strong>
+              </div>
+              <!-- Garis pemisah -->
+              <div class="odc-divider"></div>
+              <div style="text-align: center;">
+                <span id="lblInlinePass" style="color: var(--text-muted); display: block; font-size: 11px; margin-bottom: 4px;">Output Port</span>
+                <strong id="inlineOdcPass" style="color: var(--text-dark); font-size: 16px;">0 dBm</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 25px;">
+            <label>Splitter 2 (ODP) / Distribusi ke Rumah</label>
+            <select id="inputSp2" onchange="kalkulasiLoss()">
+              <option value="0|0">Tanpa Splitter (0 dB)</option>
+              <optgroup label="Splitter Rasio Sama (PLC)">
+                <option value="3.5|0">1 : 2 (~3.5 dB)</option>
+                <option value="7.2|0">1 : 4 (~7.2 dB)</option>
+                <option value="10.5|0" selected>1 : 8 (~10.5 dB)</option>
+                <option value="13.8|0">1 : 16 (~13.8 dB)</option>
+              </optgroup>
+            </select>
+          </div>
+
+          <!-- Area Detail Ekstra: Panjang Kabel, Konektor, Splicing (Disembunyikan saat Mode Simple) -->
+          <!-- ID 'advancedFields' akan ditargetkan oleh JavaScript untuk Hide/Show -->
+          <div id="advancedFields">
+            <div class="form-group">
+              <label>Panjang Kabel Fiber (Meter)</label>
+              <!-- Input panjang dalam meter. Asumsi redaman 0.35 dB per 1000m (1Km) -->
+              <input type="number" id="inputKabel" value="1000" min="0" oninput="kalkulasiLoss()">
+              <span class="note">*Estimasi redaman kabel ~0.35 dB per Kilometer</span>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Konektor Pasif (Pcs)</label>
+                <!-- Jumlah Fast Connector. 1 Pcs = 0.3 dB loss -->
+                <input type="number" id="inputKonektor" value="4" min="0" oninput="kalkulasiLoss()">
+                <span class="note">~0.3 dB / pcs</span>
+              </div>
+              <div class="form-group">
+                <label>Titik Splicing / Sambungan</label>
+                <!-- Jumlah penyambungan mesin (splicing). 1 Titik = 0.1 dB loss -->
+                <input type="number" id="inputSplice" value="2" min="0" oninput="kalkulasiLoss()">
+                <span class="note">~0.1 dB / titik</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- KOLOM KANAN: Panel Hasil Perhitungan -->
+        <div class="result-panel">
+          
+          <!-- Kotak Besar Penunjuk Nilai dBm (ONT) -->
+          <div class="result-box">
+            <div class="result-label">Sinyal Diterima ONT (Modem)</div>
+            <!-- Angka ini akan diubah oleh JavaScript -->
+            <div class="result-value" id="hasilOnt">-15.00 <span>dBm</span></div>
+            <!-- Lencana Indikator Sinyal Bagus/Buruk -->
+            <div class="status-badge status-excellent" id="badgeStatus">✅ Sangat Bagus / Ideal</div>
+          </div>
+
+          <!-- Rincian Redaman (Breakdown) -->
+          <div class="breakdown">
+            <div class="breakdown-item">
+              <span>Total Loss Splitter:</span>
+              <strong id="teksLossSp">14.00 dB</strong>
+            </div>
+            
+            <!-- Rincian ekstra yang disembunyikan saat Mode Simple (Punya class 'adv-text') -->
+            <div class="breakdown-item adv-text">
+              <span>Loss Kabel FO:</span>
+              <strong id="teksLossKabel">0.35 dB</strong>
+            </div>
+            <div class="breakdown-item adv-text">
+              <span>Loss Konektor:</span>
+              <strong id="teksLossKonektor">1.20 dB</strong>
+            </div>
+            <div class="breakdown-item adv-text">
+              <span>Loss Splicing:</span>
+              <strong id="teksLossSplice">0.20 dB</strong>
+            </div>
+            
+            <!-- Total Loss Keseluruhan -->
+            <div class="breakdown-item total">
+              <span style="color:var(--accent);">Total Seluruh Redaman:</span>
+              <span id="teksLossTotal" style="color:var(--accent);">15.75 dB</span>
+            </div>
+          </div>
+          
+          <p style="font-size: 11px; color: var(--text-muted); margin-top: 20px; text-align: center; line-height: 1.5;">
+            Sinyal optimal ONT: <b>-15 dBm s/d -24 dBm</b>.<br>
+            Di bawah <b>-27 dBm</b> modem akan berstatus LOS (Merah).
+          </p>
+
+        </div>
+      </div>
+
+      <!-- TABEL REFERENSI (Hanya Tampil di Mode Pro) -->
+      <div id="referenceTables" class="ref-table-wrapper">
+        <h3 style="font-size: 14px; margin-bottom: 10px;">Tabel Referensi Standar Komponen</h3>
+        <div class="form-row">
+          <table class="ref-table">
+            <thead>
+              <tr><th>Pasif Splitter PLC</th><th>Redaman (-dB)</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>1 : 2</td><td>3.25 dB</td></tr>
+              <tr><td>1 : 4</td><td>7.00 dB</td></tr>
+              <tr><td>1 : 8</td><td>10.00 dB</td></tr>
+              <tr><td>1 : 16</td><td>13.50 dB</td></tr>
+            </tbody>
+          </table>
+          
+          <table class="ref-table">
+            <thead>
+              <tr><th>Komponen Lain</th><th>Nilai Redaman</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Kabel Fiber Optik</td><td>0.30 - 0.35 dB / Km</td></tr>
+              <tr><td>Fast Connector</td><td>0.30 dB / pc</td></tr>
+              <tr><td>Adapter / Pigtail</td><td>0.30 dB / pc</td></tr>
+              <tr><td>Splicing (Mesin)</td><td>0.03 - 0.10 dB / titik</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    Jaka Lintas Akses © 2019. Premium RouterOS Script Tools Portal.
+  </footer>
+
+  <!-- BAGIAN JAVASCRIPT: Logika Kalkulator -->
+  <script>
+    // 1. Variabel penanda mode saat ini (default: pro)
+    let currentMode = 'pro';
+
+    // 2. Fungsi untuk mengganti mode (Simple vs Pro)
+    function setMode(mode) {
+      currentMode = mode; // Simpan mode yang dipilih
+      
+      // Ambil elemen-elemen tombol mode
+      const btnPro = document.getElementById('btnPro');
+      const btnSimple = document.getElementById('btnSimple');
+      
+      // Ambil elemen yang akan disembunyikan/dimunculkan
+      const advancedFields = document.getElementById('advancedFields');
+      const refTables = document.getElementById('referenceTables');
+      const advTexts = document.querySelectorAll('.adv-text'); // Mengambil semua elemen rincian detail
+
+      if (mode === 'simple') {
+        // Jika mode simple, aktifkan tombol simple, matikan tombol pro
+        btnSimple.classList.add('active');
+        btnPro.classList.remove('active');
+        
+        // Sembunyikan field input detail dan tabel
+        advancedFields.classList.add('hidden');
+        refTables.classList.add('hidden');
+        
+        // Sembunyikan setiap teks rincian kabel/konektor di panel kanan
+        advTexts.forEach(el => el.classList.add('hidden'));
+        
+      } else {
+        // Jika mode pro, aktifkan tombol pro, matikan tombol simple
+        btnPro.classList.add('active');
+        btnSimple.classList.remove('active');
+        
+        // Tampilkan field input detail dan tabel
+        advancedFields.classList.remove('hidden');
+        refTables.classList.remove('hidden');
+        
+        // Tampilkan setiap teks rincian kabel/konektor di panel kanan
+        advTexts.forEach(el => el.classList.remove('hidden'));
+      }
+
+      // Selalu jalankan hitung ulang setelah ganti mode
+      kalkulasiLoss();
+    }
+
+    // 3. Fungsi Utama untuk menghitung redaman (Loss)
+    function kalkulasiLoss() {
+      // a. Ambil Nilai dari Inputan (SFP)
+      // Jika kosong atau salah ketik, anggap 0
+      const sfp = parseFloat(document.getElementById('inputSfp').value) || 0;
+      
+      // b. Ambil Nilai Splitter 1 (ODC)
+      // Memisahkan nilai Drop dan Pass dari format "20.2|0.24"
+      const sp1_select = document.getElementById('inputSp1');
+      const sp1_vals = sp1_select.value.split('|');
+      const sp1_drop = parseFloat(sp1_vals[0]) || 0; // Index 0 (Kiri) = Redaman Besar
+      const sp1_pass = parseFloat(sp1_vals[1]) || 0; // Index 1 (Kanan) = Redaman Kecil
+      
+      // c. Fitur mendeteksi nama rasio dan mengubah teks % secara dinamis
+      const selectedText = sp1_select.options[sp1_select.selectedIndex].text;
+      const optGroup = sp1_select.options[sp1_select.selectedIndex].parentNode.label || "";
+      
+      let dropText = "Output Port";
+      let passText = "Output Port";
+      let optDropText = "Port Redaman Besar";
+      let optPassText = "Port Redaman Kecil";
+      
+      if (optGroup.includes('TAP')) {
+        // Jika yang dipilih splitter TAP/Rasio Beda, ambil angkanya (misal 1 dan 99)
+        const ratioMatch = selectedText.match(/(\d+)\s*:\s*(\d+)/);
+        if (ratioMatch) {
+            dropText = `Output Port (${ratioMatch[1]}%)`;
+            passText = `Output Port (${ratioMatch[2]}%)`;
+            optDropText = `Pilih Jalur Drop (${ratioMatch[1]}%)`;
+            optPassText = `Pilih Jalur Pass (${ratioMatch[2]}%)`;
+        }
+      } else if (optGroup.includes('PLC')) {
+        // Jika splitter rata/PLC, tampilkan keterangan "Bagi Rata"
+        dropText = "Output Port (Bagi Rata)";
+        passText = "Output Port (Bagi Rata)";
+        optDropText = "Jalur Bebas (Sama Saja)";
+        optPassText = "Jalur Bebas (Sama Saja)";
+      }
+
+      // Terapkan teks dinamis ke HTML
+      document.getElementById('lblInlineDrop').innerText = dropText;
+      document.getElementById('lblInlinePass').innerText = passText;
+      document.getElementById('optJalurDrop').innerText = optDropText;
+      document.getElementById('optJalurPass').innerText = optPassText;
+
+      // Hitung dan Tampilkan Output Sementara di ODC
+      const sinyalOdcDrop = sfp - sp1_drop;
+      const sinyalOdcPass = sfp - sp1_pass;
+
+      // Update kotak hasil inline di bawah Splitter 1
+      document.getElementById('inlineOdcDrop').innerText = sinyalOdcDrop.toFixed(2) + " dBm";
+      document.getElementById('inlineOdcPass').innerText = sinyalOdcPass.toFixed(2) + " dBm";
+
+      // c. Tentukan Redaman Splitter 1 berdasarkan Jalur yang dipilih ke ODP
+      const jalurOdp = document.getElementById('inputJalurOdp').value;
+      const sp1_terpakai = (jalurOdp === 'drop') ? sp1_drop : sp1_pass;
+
+      // Ambil Nilai Splitter 2 (ODP)
+      const sp2_vals = document.getElementById('inputSp2').value.split('|');
+      const sp2_terpakai = parseFloat(sp2_vals[0]) || 0;
+
+      // d. Siapkan variabel nilai detail tambahan
+      let kabelLoss = 0;
+      let konektorLoss = 0;
+      let spliceLoss = 0;
+
+      // Jika menggunakan mode PRO, barulah kita hitung nilai detail tambahan
+      if (currentMode === 'pro') {
+        const p_kabel = parseFloat(document.getElementById('inputKabel').value) || 0;
+        kabelLoss = (p_kabel / 1000) * 0.35;
+        
+        const p_konektor = parseFloat(document.getElementById('inputKonektor').value) || 0;
+        konektorLoss = p_konektor * 0.3;
+        
+        const p_splice = parseFloat(document.getElementById('inputSplice').value) || 0;
+        spliceLoss = p_splice * 0.1;
+      }
+
+      // e. Hitung Total Redaman
+      const totalLossSp = sp1_terpakai + sp2_terpakai; // Total loss splitter yang LEWAT JALUR SAJA
+      const totalLossSemua = totalLossSp + kabelLoss + konektorLoss + spliceLoss; // Total keseluruhan
+      
+      // f. Hitung Sinyal Akhir (Daya SFP OLT dikurangi Total Redaman)
+      const hasilONT = sfp - totalLossSemua;
+
+      // g. Tulis Hasil ke Layar (Update HTML)
+      document.getElementById('hasilOnt').innerHTML = hasilONT.toFixed(2) + " <span>dBm</span>";
+
+      // g. Logika Pengecekan Kualitas Sinyal (Status Badge)
+      const badge = document.getElementById('badgeStatus');
+      
+      // Aturan Status (Mirip aslinya):
+      // >= -8 dBm : Terlalu Kuat (Bahaya laser rusak)
+      // -8 sampai -24 : Bagus / Ideal
+      // -24 sampai -27 : Warning (Hampir putus)
+      // <= -27 : Critical (Koneksi Putus/LOS)
+      
+      if (hasilONT >= -8) {
+        badge.className = "status-badge status-warning";
+        badge.innerText = "🟡 Sinyal Terlalu Kuat (Overpower)";
+      } else if (hasilONT < -8 && hasilONT >= -24) {
+        badge.className = "status-badge status-excellent";
+        badge.innerText = "✅ Sangat Bagus / Ideal";
+      } else if (hasilONT < -24 && hasilONT > -27) {
+        badge.className = "status-badge status-warning";
+        badge.innerText = "🟡 Waspada / Toleransi Limit";
+      } else { // Lebih kecil sama dengan -27
+        badge.className = "status-badge status-critical";
+        badge.innerText = "🔴 Kritis (Potensi LOS / Merah)";
+      }
+    }
+
+    // 4. Jalankan perhitungan pertama kali saat halaman selesai di-load
+    window.onload = function() {
+      kalkulasiLoss();
+    };
+
+  </script>
+</body>
+</html>

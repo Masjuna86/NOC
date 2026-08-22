@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MikroTik IP Calculator - JLA Tools</title>
+  
+  <style>
+    /* Mengimpor font Inter untuk teks biasa dan JetBrains Mono untuk teks terminal/angka */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap');
+    
+    /* Pengaturan dasar untuk semua elemen agar perubahannya halus (animasi) */
+    * { 
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+      box-sizing: border-box; 
+    }
+    
+    /* Variabel warna utama aplikasi (Template JLA) */
+    :root {
+      --bg: #f4f7f6;           /* Warna latar belakang halaman */
+      --text: #334155;         /* Warna teks utama */
+      --text-dark: #0f172a;    /* Warna teks gelap (judul) */
+      --text-muted: #64748b;   /* Warna teks redup */
+      --accent: #ff6600;       /* Warna oranye khas MikroTik/JLA */
+      --border: #e2e8f0;       /* Warna garis batas */
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      
+      /* Variabel khusus untuk area "Terminal" */
+      --term-bg: #1e1e1e;      /* Latar belakang terminal (hitam) */
+      --term-text: #a0aabf;    /* Teks biasa di terminal */
+      --term-green: #4ade80;   /* Warna hijau terminal (untuk nilai penting) */
+      --term-blue: #60a5fa;    /* Warna biru terminal */
+      --term-orange: #fb923c;  /* Warna oranye terminal */
+    }
+
+    /* Pengaturan Body Halaman */
+    body { 
+      font-family: 'Inter', sans-serif; 
+      background: var(--bg);
+      color: var(--text); 
+      margin: 0; 
+      padding: 0; 
+      display: flex; 
+      flex-direction: column; 
+      min-height: 100vh;
+    }
+
+    /* =========================================
+       BAGIAN HEADER (ATAS)
+       ========================================= */
+    .app-header {
+      height: 64px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-logo {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, var(--accent), #ea580c);
+      border-radius: 10px; color: #fff;
+      font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 16px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 12px rgba(255, 102, 0, 0.3);
+    }
+    .brand-title h1 { font-size: 15px; font-weight: 800; color: var(--text-dark); margin: 0;}
+    .brand-title p { font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; font-weight: 500; margin: 0;}
+
+    .header-actions { display: flex; align-items: center; gap: 12px; }
+
+    /* Gaya Tombol Header */
+    .btn { 
+      display: inline-flex; align-items: center; justify-content: center; gap: 7px; 
+      padding: 9px 16px; border-radius: 8px; border: none; 
+      font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; 
+      cursor: pointer; text-decoration: none; 
+    }
+    .btn-secondary { background: #ffffff; color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: #f8fafc; }
+    .btn-wa { background: #25D366; color: white; border-radius: 20px; font-weight: 700; }
+    .btn-wa:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3); }
+
+    /* =========================================
+       BAGIAN KONTEN UTAMA
+       ========================================= */
+    .main-container { 
+      display: flex; 
+      flex: 1; 
+      max-width: 1200px; /* Lebar maksimal halaman */
+      margin: 0 auto; 
+      width: 100%; 
+      padding: 40px 20px; 
+    }
+    
+    .content-area { 
+      width: 100%;
+      background: #ffffff; 
+      border-radius: 16px; 
+      box-shadow: 0 10px 30px rgba(148, 163, 184, 0.1); 
+      border: 1px solid #f1f5f9;
+      padding: 30px; 
+    }
+
+    .page-title {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--text-dark);
+      margin-top: 0;
+      margin-bottom: 20px;
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 10px;
+    }
+    .page-title span { color: var(--accent); }
+
+    /* Grid Layout: Membagi layar jadi 2 kolom (Kiri: Input, Kanan: Hasil Terminal) */
+    .calc-wrapper {
+      display: grid;
+      grid-template-columns: 300px 1fr; /* Kolom kiri 300px, kanan sisanya */
+      gap: 30px;
+      align-items: start;
+    }
+
+    /* =========================================
+       STYLING UNTUK FORM INPUT (KOLOM KIRI)
+       ========================================= */
+    .input-panel {
+      background: #f8fafc;
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-dark);
+      margin-bottom: 8px;
+    }
+
+    /* Gaya untuk kotak teks dan dropdown */
+    .form-control {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-family: 'JetBrains Mono', monospace; /* Font angka agar rapi */
+      font-size: 14px;
+      color: var(--text-dark);
+      outline: none;
+    }
+    .form-control:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(255, 102, 0, 0.1);
+    }
+
+    /* Gaya Checkbox */
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 10px;
+      margin-bottom: 20px;
+    }
+    .checkbox-group input { cursor: pointer; }
+    .checkbox-group label { margin: 0; font-size: 13px; color: var(--text-muted); cursor: pointer; }
+
+    /* Tombol Hitung */
+    .btn-calculate {
+      width: 100%;
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn-calculate:hover { background: #e55a00; }
+
+    /* =========================================
+       STYLING UNTUK HASIL TERMINAL (KOLOM KANAN)
+       ========================================= */
+    .terminal-panel {
+      background: var(--term-bg);
+      border-radius: 12px;
+      overflow: hidden; /* Agar sudut tabel tidak keluar dari kotak */
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+
+    /* Header tiruan terminal (titik merah, kuning, hijau) */
+    .terminal-header {
+      background: #2d2d2d;
+      padding: 10px 15px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .term-dot { width: 12px; height: 12px; border-radius: 50%; }
+    .term-dot.red { background: #ff5f56; }
+    .term-dot.yellow { background: #ffbd2e; }
+    .term-dot.green { background: #27c93f; }
+    .term-title { color: #858585; font-size: 12px; font-family: monospace; margin-left: 10px; }
+
+    /* Tabel Hasil di dalam Terminal */
+    .result-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: 'JetBrains Mono', monospace; /* Font coding */
+      font-size: 13px;
+    }
+    
+    .result-table th, .result-table td {
+      padding: 10px 15px;
+      text-align: left;
+      border-bottom: 1px solid #333;
+    }
+    
+    .result-table th {
+      background-color: rgba(255,255,255,0.05);
+      color: #fff;
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 1px;
+    }
+
+    .result-table tr:hover { background-color: rgba(255,255,255,0.02); }
+    
+    /* Warna teks kolom kiri (Label) */
+    .result-table td:first-child { 
+      color: #8892b0; 
+      width: 40%;
+    }
+    
+    /* Warna teks kolom kanan (Hasil Nilai) */
+    .result-table td:last-child { 
+      color: var(--term-blue); 
+      font-weight: 600;
+    }
+
+    /* Class warna khusus untuk hasil tertentu */
+    .c-green { color: var(--term-green) !important; }
+    .c-orange { color: var(--term-orange) !important; }
+    .c-white { color: #fff !important; }
+
+    /* Menyembunyikan baris biner secara default */
+    .binary-row { display: none; }
+    .binary-row td:last-child { color: #64748b !important; font-size: 12px; letter-spacing: 1px; }
+
+    /* Footer */
+    .footer { text-align: center; font-size: 13px; color: #94a3b8; padding: 30px; }
+
+    /* Responsif untuk HP (Layar kecil) */
+    @media screen and (max-width: 900px) { 
+      .app-header { flex-direction: column; height: auto; padding: 15px 20px; gap: 15px;}
+      .calc-wrapper { grid-template-columns: 1fr; } /* Jadi 1 kolom dari atas ke bawah */
+      .result-table { font-size: 12px; }
+      .result-table td { padding: 8px 10px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- =========================================
+       BAGIAN HEADER
+       ========================================= -->
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-logo">JLA</div>
+      <div class="brand-title">
+        <h1>JAKA LINTAS AKSES</h1>
+        <p>Portal Script Generator</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <a href="index.html" class="btn btn-secondary">🏠 Beranda</a>
+      <a href="https://wa.me/62818386078?text=Halo%20JLA%20Tools,%20saya%20ingin%20bertanya..." target="_blank" class="btn btn-wa">Hubungi Kami</a>
+    </div>
+  </header>
+
+  <!-- =========================================
+       BAGIAN KONTEN UTAMA
+       ========================================= -->
+  <main class="main-container">
+    <div class="content-area">
+      <h2 class="page-title">MikroTik <span>IP Subnet</span> Calculator</h2>
+      
+      <div class="calc-wrapper">
+        
+        <!-- KOLOM KIRI: FORM INPUT -->
+        <div class="input-panel">
+          <div class="form-group">
+            <label for="ipAddress">IP Address:</label>
+            <!-- Input teks untuk memasukkan IP -->
+            <input type="text" id="ipAddress" class="form-control" value="192.168.88.1" placeholder="Contoh: 192.168.88.1">
+          </div>
+          
+          <div class="form-group">
+            <label for="cidrDropdown">Netmask (CIDR):</label>
+            <!-- Dropdown pilihan prefix CIDR (/8 sampai /32) akan diisi oleh JavaScript -->
+            <select id="cidrDropdown" class="form-control"></select>
+          </div>
+          
+          <div class="checkbox-group">
+            <!-- Checkbox untuk menampilkan angka biner -->
+            <input type="checkbox" id="showBinary" onchange="toggleBinaryDisplay()">
+            <label for="showBinary">Tampilkan Biner (0/1)</label>
+          </div>
+          
+          <!-- Tombol untuk menjalankan fungsi JavaScript calculateIp() -->
+          <button class="btn-calculate" onclick="calculateIp()">Hitung Subnet</button>
+        </div>
+
+        <!-- KOLOM KANAN: HASIL TERMINAL -->
+        <div class="terminal-panel">
+          <div class="terminal-header">
+            <div class="term-dot red"></div>
+            <div class="term-dot yellow"></div>
+            <div class="term-dot green"></div>
+            <div class="term-title">Terminal Mikrotik</div>
+          </div>
+          
+          <table class="result-table">
+            <thead>
+              <tr><th colspan="2">IP Subnet Details</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Your Input IP</td>
+                <td id="res-ip">192.168.88.1</td>
+              </tr>
+              <tr class="binary-row">
+                <td>IP Binary</td>
+                <td id="res-ip-bin"></td>
+              </tr>
+              <tr>
+                <td>IP Class</td>
+                <td id="res-class" class="c-orange">Class C</td>
+              </tr>
+              <tr>
+                <td>Netmask / Prefix</td>
+                <td id="res-mask">255.255.255.0 /24</td>
+              </tr>
+              <tr>
+                <td>IP Type</td>
+                <td id="res-type" class="c-green">Private</td>
+              </tr>
+              <tr class="binary-row">
+                <td>Netmask Binary</td>
+                <td id="res-mask-bin"></td>
+              </tr>
+              <tr>
+                <td>Network Address</td>
+                <td id="res-network" class="c-white">192.168.88.0 /24</td>
+              </tr>
+              <tr class="binary-row">
+                <td>Network Binary</td>
+                <td id="res-network-bin"></td>
+              </tr>
+              <tr>
+                <td>Broadcast Address</td>
+                <td id="res-broadcast" class="c-white">192.168.88.255</td>
+              </tr>
+              <tr class="binary-row">
+                <td>Broadcast Binary</td>
+                <td id="res-broadcast-bin"></td>
+              </tr>
+              <tr>
+                <td>Usable Host Range</td>
+                <td id="res-range">192.168.88.1 - 192.168.88.254</td>
+              </tr>
+              <tr>
+                <td>Total Usable Hosts</td>
+                <td id="res-total" class="c-orange">254</td>
+              </tr>
+            </tbody>
+            <thead>
+              <tr><th colspan="2">MikroTik DHCP & IP Pool</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Suggested Gateway IP</td>
+                <td id="res-mt-gateway" class="c-white">192.168.88.1</td>
+              </tr>
+              <tr>
+                <td>DHCP Network</td>
+                <td id="res-mt-network">192.168.88.0</td>
+              </tr>
+              <tr>
+                <td>IP Pool Range</td>
+                <td id="res-mt-pool">192.168.88.2 - 192.168.88.254</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div> <!-- End calc-wrapper -->
+    </div>
+  </main>
+
+  <footer class="footer">
+    Jaka Lintas Akses © 2019. Premium RouterOS Script Tools Portal.
+  </footer>
+
+  <!-- =========================================
+       BAGIAN JAVASCRIPT (LOGIKA PERHITUNGAN)
+       ========================================= -->
+  <script>
+    // --- FUNGSI 1: MENGISI DROPDOWN CIDR SAAT HALAMAN DIMUAT ---
+    // Fungsi ini membuat pilihan /8 sampai /32 secara otomatis
+    function populateCIDR() {
+      const select = document.getElementById('cidrDropdown');
+      for (let i = 8; i <= 32; i++) {
+        // Menghitung jumlah host maksimum (2 pangkat (32-CIDR) dikurangi 2)
+        let hosts = Math.pow(2, 32 - i) - 2;
+        if (hosts < 0) hosts = 0; // Menghindari angka negatif untuk /31 dan /32
+        
+        let label = `/${i} - Hosts: ${hosts}`;
+        if (i === 31) label = `/31 - Hosts: 2 (P2P)`;
+        if (i === 32) label = `/32 - Hosts: 1 (Single)`;
+
+        let option = document.createElement('option');
+        option.value = i;
+        option.text = label;
+        if (i === 24) option.selected = true; // Set default ke /24
+        select.appendChild(option);
+      }
+    }
+
+    // --- FUNGSI 2: MENAMPILKAN/MENYEMBUNYIKAN BINER ---
+    // Dipanggil saat checkbox diklik
+    function toggleBinaryDisplay() {
+      const isChecked = document.getElementById('showBinary').checked;
+      // Mencari semua baris tabel yang memiliki class 'binary-row'
+      const rows = document.querySelectorAll('.binary-row');
+      rows.forEach(row => {
+        // Ubah style display: table-row (tampil) atau none (sembunyi)
+        row.style.display = isChecked ? 'table-row' : 'none';
+      });
+    }
+
+    // --- FUNGSI BANTUAN MATEMATIKA IP ---
+    // Mengubah string IP "192.168.1.1" menjadi angka Integer (bilangan bulat)
+    function ipToInt(ip) {
+      return ip.split('.').reduce((int, octet) => (int << 8) + parseInt(octet, 10), 0) >>> 0; 
+      // >>> 0 (unsigned right shift) penting di JavaScript agar angka 32-bit tidak jadi negatif
+    }
+
+    // Mengubah angka Integer kembali menjadi format string IP "x.x.x.x"
+    function intToIp(int) {
+      return [
+        (int >>> 24) & 255,
+        (int >>> 16) & 255,
+        (int >>> 8) & 255,
+        int & 255
+      ].join('.');
+    }
+
+    // Menghasilkan Subnet Mask dalam bentuk Integer dari nilai CIDR
+    // Contoh: CIDR 24 -> 255.255.255.0
+    function getMaskInt(cidr) {
+      if (cidr === 0) return 0;
+      return (~0 << (32 - cidr)) >>> 0;
+    }
+
+    // Mengubah angka Integer menjadi string Biner "11000000.10101000..."
+    function intToBinaryStr(int) {
+      let bin = (int >>> 0).toString(2).padStart(32, '0'); // Ubah ke biner, pastikan 32 karakter
+      // Sisipkan titik setiap 8 karakter
+      return bin.match(/.{1,8}/g).join('.');
+    }
+
+    // Menentukan Class IP berdasarkan angka pertama (oktet pertama)
+    function getIpClass(firstOctet) {
+      if (firstOctet >= 1 && firstOctet <= 126) return "Class A";
+      if (firstOctet >= 128 && firstOctet <= 191) return "Class B";
+      if (firstOctet >= 192 && firstOctet <= 223) return "Class C";
+      if (firstOctet >= 224 && firstOctet <= 239) return "Class D (Multicast)";
+      if (firstOctet >= 240 && firstOctet <= 255) return "Class E (Experimental)";
+      return "Unknown";
+    }
+
+    // Mengecek apakah IP adalah Private atau Public
+    function checkIpType(ipStr) {
+      const parts = ipStr.split('.');
+      const o1 = parseInt(parts[0]);
+      const o2 = parseInt(parts[1]);
+      
+      // Rentang IP Private: 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16
+      if (o1 === 10) return "Private";
+      if (o1 === 172 && o2 >= 16 && o2 <= 31) return "Private";
+      if (o1 === 192 && o2 === 168) return "Private";
+      
+      // Localhost / Loopback
+      if (o1 === 127) return "Loopback";
+      
+      return "Public";
+    }
+
+    // --- FUNGSI UTAMA: MENGHITUNG DAN MENAMPILKAN HASIL ---
+    // Dipanggil saat tombol "Hitung Subnet" diklik
+    function calculateIp() {
+      const ipInput = document.getElementById('ipAddress').value.trim();
+      const cidr = parseInt(document.getElementById('cidrDropdown').value);
+
+      // Validasi input IP menggunakan Regular Expression (Regex)
+      const ipRegex = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+      if (!ipRegex.test(ipInput)) {
+        alert("Format IP Address tidak valid! Harap masukkan format yang benar (contoh: 192.168.1.1).");
+        return;
+      }
+
+      // --- PROSES MATEMATIKA ---
+      const ipInt = ipToInt(ipInput);
+      const maskInt = getMaskInt(cidr);
+      
+      // Network Address = IP (AND) Mask
+      const networkInt = (ipInt & maskInt) >>> 0; 
+      
+      // Broadcast Address = Network (OR) kebalikan dari Mask
+      const broadcastInt = (networkInt | (~maskInt >>> 0)) >>> 0; 
+
+      // Hitung Host Pertama dan Host Terakhir
+      let firstHostInt = networkInt + 1;
+      let lastHostInt = broadcastInt - 1;
+      let totalHosts = broadcastInt - networkInt - 1;
+
+      // Aturan Khusus untuk point-to-point (/31) dan single host (/32)
+      if (cidr === 31) {
+        firstHostInt = networkInt;
+        lastHostInt = broadcastInt;
+        totalHosts = 2;
+      } else if (cidr === 32) {
+        firstHostInt = ipInt;
+        lastHostInt = ipInt;
+        totalHosts = 1;
+      }
+
+      // --- MENCETAK HASIL KE LAYAR (HTML) ---
+      
+      // Update Nilai Utama
+      document.getElementById('res-ip').innerText = ipInput;
+      document.getElementById('res-mask').innerText = `${intToIp(maskInt)} /${cidr}`;
+      document.getElementById('res-network').innerText = `${intToIp(networkInt)} /${cidr}`;
+      document.getElementById('res-broadcast').innerText = intToIp(broadcastInt);
+      
+      // Update Info Klasifikasi
+      document.getElementById('res-class').innerText = getIpClass(parseInt(ipInput.split('.')[0]));
+      document.getElementById('res-type').innerText = checkIpType(ipInput);
+      document.getElementById('res-total').innerText = totalHosts;
+      
+      // Host Range
+      if (cidr === 32) {
+        document.getElementById('res-range').innerText = "N/A (Single Host)";
+      } else {
+        document.getElementById('res-range').innerText = `${intToIp(firstHostInt)} - ${intToIp(lastHostInt)}`;
+      }
+
+      // Update Biner
+      document.getElementById('res-ip-bin').innerText = intToBinaryStr(ipInt);
+      document.getElementById('res-mask-bin').innerText = intToBinaryStr(maskInt);
+      document.getElementById('res-network-bin').innerText = intToBinaryStr(networkInt);
+      document.getElementById('res-broadcast-bin').innerText = intToBinaryStr(broadcastInt);
+
+      // --- MIKROTIK DHCP INFO ---
+      // Asumsi Gateway adalah IP Input itu sendiri (karena biasanya kita masukkan IP Router)
+      document.getElementById('res-mt-gateway').innerText = ipInput;
+      document.getElementById('res-mt-network').innerText = intToIp(networkInt);
+      
+      // Asumsi Pool: Host pertama (gateway) tidak ikut Pool, sisanya masuk Pool
+      if (cidr >= 31) {
+         document.getElementById('res-mt-pool').innerText = "N/A";
+      } else {
+         // Jika IP input sama dengan first host (misal 192.168.1.1), maka pool mulai dari .2
+         let poolStart = (ipInt === firstHostInt) ? firstHostInt + 1 : firstHostInt;
+         // Jika IP input sama dengan last host (jarang, tapi jaga-jaga), pool sampai -1
+         let poolEnd = (ipInt === lastHostInt) ? lastHostInt - 1 : lastHostInt;
+         
+         if(poolStart > poolEnd) {
+             document.getElementById('res-mt-pool').innerText = "N/A";
+         } else {
+             document.getElementById('res-mt-pool').innerText = `${intToIp(poolStart)} - ${intToIp(poolEnd)}`;
+         }
+      }
+    }
+
+    // --- INISIALISASI SAAT HALAMAN DIMUAT ---
+    window.onload = function() {
+      populateCIDR(); // Isi dropdown CIDR
+      calculateIp();  // Lakukan perhitungan awal menggunakan nilai default
+    };
+  </script>
+</body>
+</html>
