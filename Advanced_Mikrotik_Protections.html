@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<!-- Tag <!DOCTYPE html> memberi tahu browser bahwa ini adalah dokumen HTML5 -->
+
+<html lang="id">
+<!-- Tag <html> adalah bungkus utama dari seluruh halaman web. 
+     Atribut 'lang="id"' memberitahu mesin pencari bahwa bahasa web ini adalah bahasa Indonesia -->
+
+<head>
+  <!-- Tag <head> menyimpan informasi penting tentang halaman web (meta-data), 
+       yang tidak akan terlihat langsung oleh pengunjung di layar utama -->
+
+  <meta charset="utf-8">
+  <!-- Tag <meta charset="utf-8"> memastikan web mendukung semua karakter teks (termasuk simbol dan emoji) -->
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Tag ini sangat penting agar website "Responsive" (tampilannya menyesuaikan ukuran layar HP atau Komputer) -->
+
+  <title>Advanced MikroTik Security - JLA Tools</title>
+  <!-- Tag <title> adalah judul yang akan muncul di tab browser Anda -->
+  
+  <style>
+    /* Tag <style> digunakan untuk menaruh kode CSS. 
+       CSS berfungsi untuk mendesain tampilan web (warna, ukuran, letak, dll) */
+
+    /* Mengambil font dari Google Fonts */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap');
+    
+    /* Tanda bintang (*) artinya pengaturan ini berlaku untuk SEMUA elemen di web */
+    * { 
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Efek animasi halus saat ada perubahan (misal tombol di-hover) */
+      box-sizing: border-box; /* Memastikan ukuran padding tidak menambah lebar kotak */
+    }
+    
+    /* :root digunakan untuk membuat variabel warna agar mudah diubah-ubah nantinya */
+    :root {
+      --bg: #f4f7f6; /* Warna latar belakang halaman */
+      --text: #334155; /* Warna teks utama */
+      --text-dark: #0f172a; /* Warna teks yang lebih gelap/tebal */
+      --text-muted: #64748b; /* Warna teks pudar (untuk keterangan) */
+      --accent: #ff6600; /* Warna oranye khas tema Anda */
+      --border: #e2e8f0; /* Warna garis batas (border) */
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* Efek bayangan tipis */
+    }
+
+    /* Pengaturan tampilan untuk tag <body> (seluruh isi web) */
+    body { 
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; /* Jenis huruf teks biasa */
+      background: var(--bg); /* Menggunakan variabel warna latar dari :root */
+      color: var(--text); /* Menggunakan variabel warna teks */
+      margin: 0; /* Menghilangkan jarak bawaan browser di pinggir layar */
+      padding: 0; 
+      display: flex; /* Membuat tata letak fleksibel */
+      flex-direction: column; /* Menyusun dari atas ke bawah */
+      min-height: 100vh; /* Tinggi minimal web sama dengan tinggi layar penuh */
+    }
+
+    /* --- GAYA UNTUK HEADER (BAGIAN ATAS) --- */
+    .app-header {
+      height: 64px; /* Tinggi header */
+      background: rgba(255, 255, 255, 0.95); /* Warna putih agak transparan */
+      backdrop-filter: blur(8px); /* Efek kaca buram (blur) di belakang header */
+      -webkit-backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border); /* Garis bawah header */
+      display: flex; /* Susunan fleksibel kiri-kanan */
+      align-items: center; /* Meratakan isi di tengah secara vertikal */
+      justify-content: space-between; /* Memberi jarak maksimal antara logo dan tombol menu */
+      padding: 0 24px; /* Jarak ruang di dalam header (kiri-kanan) */
+      position: sticky; /* Membuat header melayang dan tetap di atas saat di-scroll */
+      top: 0; 
+      z-index: 100; /* Memastikan header selalu berada di tumpukan paling atas, tidak tertutup konten lain */
+      box-shadow: var(--shadow-sm); /* Memberi bayangan */
+    }
+
+    .brand { display: flex; align-items: center; gap: 12px; } /* Susunan logo dan teks judul */
+    
+    .brand-logo {
+      width: 40px; height: 40px; /* Lebar dan tinggi kotak logo JLA */
+      background: linear-gradient(135deg, var(--accent), #ea580c); /* Warna gradasi oranye */
+      border-radius: 10px; color: #fff; /* Sudut melengkung dan teks putih */
+      font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 16px;
+      display: flex; align-items: center; justify-content: center; /* Membuat tulisan 'JLA' persis di tengah kotak */
+      box-shadow: 0 4px 12px rgba(255, 102, 0, 0.3);
+    }
+    
+    .brand-title h1 { font-size: 15px; font-weight: 800; color: var(--text-dark); letter-spacing: 0.3px; line-height: 1.2; margin: 0;}
+    .brand-title p { font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; font-weight: 500; margin: 0;}
+
+    .header-actions { display: flex; align-items: center; gap: 12px; } /* Jarak antar tombol di header */
+
+    /* --- GAYA UNTUK TOMBOL --- */
+    .btn { 
+      display: inline-flex; align-items: center; justify-content: center; gap: 7px; 
+      padding: 9px 16px; border-radius: 8px; border: none; 
+      font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; 
+      cursor: pointer; /* Mengubah kursor jadi gambar tangan saat diarahkan */
+      transition: all .15s; white-space: nowrap; text-decoration: none; 
+    }
+    .btn-secondary { background: #ffffff; color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: #f8fafc; } /* Warna tombol berubah sedikit saat disentuh mouse (hover) */
+    
+    .btn-wa { background: #25D366; color: white; border-radius: 20px; font-weight: 700; }
+    .btn-wa:hover { background: #128C7E; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3); }
+
+    /* --- GAYA UNTUK WADAH KONTEN UTAMA --- */
+    .main-container { 
+      display: flex; flex: 1; max-width: 1400px; margin: 0 auto; /* margin: 0 auto membuat kotak berada di tengah layar */
+      width: 100%; padding: 40px 20px; gap: 30px; 
+    }
+    
+    .content-area { 
+      flex: 1; background: #ffffff; border-radius: 16px; /* Kotak konten warna putih dengan sudut melengkung */
+      box-shadow: 0 10px 30px rgba(148, 163, 184, 0.1); 
+      border: 1px solid #f1f5f9; padding: 40px; line-height: 1.6; min-width: 0;
+    }
+
+    /* Kotak peringatan (Disclaimer) */
+    .disclaimer-box {
+        background-color: #fff1f2;
+        border-left: 5px solid #e11d48;
+        padding: 15px 20px;
+        border-radius: 6px;
+        margin-bottom: 25px;
+        font-size: 14px;
+        color: #881337;
+    }
+    .disclaimer-box strong { color: #e11d48; }
+
+    /* --- GAYA UNTUK TABEL KONTEN MIKROTIK --- */
+    table {
+        width: 100%; /* Lebar tabel penuhi layar */
+        border-collapse: collapse; /* Menghilangkan jarak antar garis tabel */
+        margin-top: 20px;
+        font-size: 14px;
+    }
+    th, td {
+        border: 1px solid var(--border); /* Garis kotak pada tabel */
+        padding: 16px;
+        text-align: left; /* Teks rata kiri */
+        vertical-align: top; /* Teks dimulai dari bagian atas kotak */
+    }
+    th {
+        background-color: #f8fafc; /* Warna latar baris judul tabel */
+        font-weight: 700;
+        color: var(--text-dark);
+    }
+    tr:nth-child(even) { background-color: #f1f5f9; } /* Efek belang-belang pada baris tabel */
+
+    .port-title { font-weight: 700; color: var(--accent); display: block; margin-bottom: 5px;}
+
+    /* --- GAYA UNTUK KODE SCRIPT (MIRIP TERMINAL/CMD) --- */
+    code.routeros {
+        display: block; /* Membuat kotak tersendiri */
+        background-color: #1e293b; /* Warna latar belakang gelap khas programmer */
+        color: #f8fafc; /* Warna teks putih */
+        padding: 15px;
+        border-radius: 8px; /* Sudut agak melengkung */
+        font-family: 'JetBrains Mono', monospace; /* Jenis font mesin tik/kode */
+        font-size: 13px;
+        overflow-x: auto; /* Jika teks kepanjangan, bisa digeser (scroll) ke kanan */
+        margin-top: 15px;
+        border: 1px solid #0f172a;
+    }
+
+    /* Pewarnaan teks di dalam kode (Syntax Highlighting) */
+    .hljs-comment { color: #94a3b8; font-style: italic; } /* Komentar script warna abu-abu */
+    .hljs-built_in { color: #38bdf8; font-weight: bold; } /* Perintah dasar biru terang */
+    .hljs-builtin-name { color: #818cf8; } /* Nama fungsi warna pink */
+    .hljs-attribute { color: #a3e635; } /* Atribut warna hijau */
+    .hljs-literal { color: #facc15; } /* Nilai mutlak seperti 'yes'/'no' warna kuning */
+    .hljs-string { color: #fca5a5; } /* Teks biasa warna merah muda */
+
+    /* --- GAYA UNTUK FOOTER --- */
+    .footer { 
+      text-align: center; font-size: 13px; color: #94a3b8; 
+      padding: 30px; width: 100%; margin-top: auto;
+    }
+
+    /* --- PENGATURAN TAMPILAN HP (RESPONSIVE) --- */
+    /* Jika lebar layar kurang dari 900px, jalankan kode ini */
+    @media screen and (max-width: 900px) { 
+      .app-header { flex-direction: column; height: auto; padding: 15px 20px; gap: 15px; align-items: center; justify-content: center; text-align: center;}
+      .brand { flex-direction: column; gap: 8px; }
+      .header-actions { width: 100%; display: flex; justify-content: center; gap: 10px;}
+      .main-container { flex-direction: column; padding: 20px 15px; }
+      .content-area { padding: 20px; }
+      th, td { padding: 10px; font-size: 13px; }
+      code.routeros { padding: 10px; font-size: 12px; }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Tag <header> merepresentasikan bagian atas dari halaman website Anda -->
+  <header class="app-header">
+    
+    <!-- Tag <div> digunakan sebagai "kotak pembungkus" untuk mengelompokkan elemen -->
+    <div class="brand">
+      <div class="brand-logo">JLA</div>
+      <div class="brand-title">
+        <!-- Tag <h1> adalah judul yang paling besar/penting (Heading 1) -->
+        <h1>JAKA LINTAS AKSES</h1>
+        <!-- Tag <p> digunakan untuk menulis teks paragraf biasa -->
+        <p>Portal Script Generator</p>
+      </div>
+    </div>
+    
+    <!-- Kotak untuk menaruh tombol-tombol di kanan atas -->
+    <div class="header-actions">
+      <!-- Tag <a> adalah sebuah "link" atau tautan. Atribut 'href' adalah tujuan alamatnya -->
+      <a href="index.html" class="btn btn-secondary">🏠 Beranda</a>
+      
+      <!-- 'target="_blank"' berfungsi agar link dibuka di tab baru -->
+      <a href="https://wa.me/62818386078?text=Halo%20JLA%20Tools,%20saya%20ingin%20bertanya..." target="_blank" class="btn btn-wa">
+        <!-- Tag <svg> digunakan untuk memunculkan gambar icon berupa vektor (di sini icon WhatsApp) -->
+        <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Hubungi Kami
+      </a>
+    </div>
+  </header>
+
+  <!-- Tag <main> mengindikasikan bahwa ini adalah konten utama dari halaman ini -->
+  <main class="main-container">
+    <div class="content-area">
+      
+      <!-- Tag <h2> untuk judul yang ukurannya lebih kecil sedikit dari <h1> -->
+      <h2 style="margin-top: 0; color: #0f172a; margin-bottom: 20px;">ADVANCED MIKROTIK ROUTER-OS PROTECTIONS</h2>
+      
+      <div class="disclaimer-box">
+        <!-- Tag <strong> membuat tulisan menjadi tebal (bold) -->
+        <strong>DISCLAIMER:</strong> We are not responsible for any error, failure, damage or your router being locked due to intentional or accidental factors. Our Tool works independently, not under the auspices of the MikroTik Company, all problems that occur on your router are your own responsibility and you must be prepared to accept all the risks. If you "Agree", please continue.
+      </div>
+
+      <!-- Tag <table> digunakan untuk membuat tabel bersusun baris dan kolom -->
+      <table>
+        <!-- Tag <thead> digunakan khusus mengelompokkan baris bagian 'Kepala Tabel' -->
+        <thead>
+          <!-- Tag <tr> (Table Row) untuk membuat baris mendatar pada tabel -->
+          <tr>
+            <!-- Tag <th> (Table Heading) untuk membuat kotak judul di dalam baris (huruf tebal otomatis) -->
+            <th style="width: 30%;">Mikrotik Port Service</th>
+            <th style="width: 70%;">Description & Script</th>
+          </tr>
+        </thead>
+        
+        <!-- Tag <tbody> mengelompokkan baris isi dari tabel -->
+        <tbody>
+          
+          <!-- Baris ke-1: API Port -->
+          <tr>
+            <!-- Tag <td> (Table Data) untuk membuat kotak isi (kolom) di dalam baris -->
+            <td><span class="port-title">API (8728)</span></td>
+            <td>
+              Application Programmable Interface (API), a service that allows users to create custom software or applications that communicate with the router...
+              <!-- Tag <br> digunakan untuk Enter atau Pindah ke baris bawahnya -->
+              <br><br>
+              <!-- Tag <code> digunakan untuk mendefinisikan teks sebagai kode komputer -->
+              <code class="routeros">
+                <!-- Tag <span> digunakan membungkus bagian teks agar bisa diberi warna lewat CSS (Syntax Highlight) -->
+                <span class="hljs-comment"># API Port Enable</span><br>
+                <span class="hljs-built_in">/ip service</span> <span class="hljs-builtin-name">set</span> api <span class="hljs-attribute">port</span>=8728 <span class="hljs-attribute">address</span>=0.0.0.0/0 <span class="hljs-attribute">disabled</span>=<span class="hljs-literal">no</span><br>
+                <span class="hljs-comment"># API Port Disable</span><br>
+                <span class="hljs-built_in">/ip service</span> <span class="hljs-builtin-name">set</span> api <span class="hljs-attribute">port</span>=8728 <span class="hljs-attribute">address</span>=0.0.0.0/0 <span class="hljs-attribute">disabled</span>=<span class="hljs-literal">yes</span>
+              </code>
+            </td>
+          </tr>
+
+          <!-- Baris ke-2: FTP -->
+          <tr>
+            <td><span class="port-title">FTP (21)</span></td>
+            <td>
+              Mikrotik provides a standard FTP service that uses ports 20 and 21. FTP is usually used to upload or download router data...
+              <br><br>
+              <code class="routeros">
+                <span class="hljs-comment"># FTP Port Enable</span><br>
+                <span class="hljs-built_in">/ip service</span> <span class="hljs-builtin-name">set</span> ftp <span class="hljs-attribute">port</span>=21 <span class="hljs-attribute">address</span>=0.0.0.0/0 <span class="hljs-attribute">disabled</span>=<span class="hljs-literal">no</span><br>
+                <span class="hljs-comment"># FTP Port Disable</span><br>
+                <span class="hljs-built_in">/ip service</span> <span class="hljs-builtin-name">set</span> ftp <span class="hljs-attribute">port</span>=21 <span class="hljs-attribute">address</span>=0.0.0.0/0 <span class="hljs-attribute">disabled</span>=<span class="hljs-literal">yes</span>
+              </code>
+            </td>
+          </tr>
+
+          <!-- Baris ke-3: SSH -->
+          <tr>
+            <td><span class="port-title">SSH (22)</span></td>
+            <td>
+              Is one way to remote router in a console with secure. Data transmitted by SSH is encrypted...
+              <br><br>
+              <code class="routeros">
+                <span class="hljs-comment"># SSH Port Enable</span><br>
+                <span class="hljs-built_in">/ip service</span> <span class="hljs-builtin-name">set</span> ssh <span class="hljs-attribute">port</span>=22 <span class="hljs-attribute">address</span>=0.0.0.0/0 <span class="hljs-attribute">disabled</span>=<span class="hljs-literal">no</span><br>
+                <span class="hljs-comment"># SSH Port Disable</span><br>
+                <span class="hljs-built_in">/ip service</span> <span class="hljs-builtin-name">set</span> ssh <span class="hljs-attribute">port</span>=22 <span class="hljs-attribute">address</span>=0.0.0.0/0 <span class="hljs-attribute">disabled</span>=<span class="hljs-literal">yes</span>
+              </code>
+            </td>
+          </tr>
+
+          <!-- Baris ke-4: WINBOX -->
+          <tr>
+            <td><span class="port-title">WINBOX (8291)</span></td>
+            <td>
+              The service that allows the Winbox application to connect to the router. You can change the Port for more Secure!
+              <br><br>
+              <code class="routeros">
+                <span class="hljs-comment"># WINBOX Port Enable</span><br>
+                <span class="hljs-built_in">/ip service</span> <span class="hljs-builtin-name">set</span> winbox <span class="hljs-attribute">port</span>=8291 <span class="hljs-attribute">address</span>=0.0.0.0/0 <span class="hljs-attribute">disabled</span>=<span class="hljs-literal">no</span><br>
+                <span class="hljs-comment"># WINBOX Port Disable</span><br>
+                <span class="hljs-built_in">/ip service</span> <span class="hljs-builtin-name">set</span> winbox <span class="hljs-attribute">port</span>=8291 <span class="hljs-attribute">address</span>=0.0.0.0/0 <span class="hljs-attribute">disabled</span>=<span class="hljs-literal">yes</span>
+              </code>
+            </td>
+          </tr>
+
+          <!-- Menambahkan baris pembatas sebagai Judul Sub-Kategori di dalam tabel -->
+          <tr>
+            <th colspan="2" style="background-color: var(--accent); color: #fff; padding: 10px 16px;">
+              Advanced Router Security
+            </th>
+          </tr>
+
+          <!-- Baris ke-5: Protect Mac Server -->
+          <tr>
+            <td><span class="port-title">Protect Mac Server</span></td>
+            <td>
+              If you want the router to be unable to be remotely using MAC-address either through Winbox or via telnet, turn off the MAC-Server feature.
+              <br><br>
+              <code class="routeros">
+                <span class="hljs-comment"># Protect login from Mac Address</span><br>
+                <span class="hljs-built_in">/tool mac-server mac-winbox</span> <span class="hljs-builtin-name">set</span> <span class="hljs-attribute">allowed-interface-list</span>=none <br>
+                <span class="hljs-built_in">/tool mac-server ping</span> <span class="hljs-builtin-name">set</span> <span class="hljs-attribute">enabled</span>=<span class="hljs-literal">no</span> <br>
+              </code>
+            </td>
+          </tr>
+
+          <!-- Baris ke-6: Anti Netcut -->
+          <tr>
+            <td><span class="port-title">Anti NETCUT</span></td>
+            <td>
+              Anti Netcut, Netcut broadcasts ARP and attacks on Layer2. Use the script below to block naughty users.
+              <br><br>
+              <code class="routeros">
+                <span class="hljs-comment"># ANTI NETCUT</span><br>
+                <span class="hljs-built_in">/ip firewall address-list</span> <span class="hljs-builtin-name">add</span> <span class="hljs-attribute">list</span>=netcut <span class="hljs-attribute">address</span>=www.arcai.com <br>
+                <span class="hljs-built_in">/ip firewall mangle</span> <span class="hljs-builtin-name">add</span> <span class="hljs-attribute">action</span>=add-src-to-address-list <span class="hljs-attribute">address-list</span>=NetcutUser ... <br>
+                <span class="hljs-built_in">/ip firewall filter</span> <span class="hljs-builtin-name">add</span> <span class="hljs-attribute">action</span>=drop <span class="hljs-attribute">chain</span>=forward <span class="hljs-attribute">src-address-list</span>=NetcutUser <br>
+              </code>
+            </td>
+          </tr>
+          
+          <!-- Baris ke-7: Anti DDoS -->
+          <tr>
+            <td><span class="port-title">Anti DDoS Attacks</span></td>
+            <td>
+              Anticipate DDoS attacks, namely by limiting the number of connections in firewall rules.
+              <br><br>
+              <code class="routeros">
+                <span class="hljs-comment"># Anti DDoS Attacks</span><br>
+                <span class="hljs-built_in">/ip firewall filter</span><br>
+                <span class="hljs-builtin-name">add</span> <span class="hljs-attribute">chain</span>=forward <span class="hljs-attribute">connection-state</span>=new <span class="hljs-attribute">action</span>=jump <span class="hljs-attribute">jump-target</span>=block-ddos <br>
+                <span class="hljs-builtin-name">add</span> <span class="hljs-attribute">chain</span>=forward <span class="hljs-attribute">connection-state</span>=new <span class="hljs-attribute">src-address-list</span>=ddoser <span class="hljs-attribute">action</span>=drop<br>
+              </code>
+            </td>
+          </tr>
+
+        </tbody>
+      </table>
+
+    </div> <!-- Tutup content-area -->
+  </main> <!-- Tutup main-container -->
+
+  <!-- Tag <footer> merepresentasikan catatan kaki pada bagian paling bawah halaman -->
+  <footer class="footer">
+    Jaka Lintas Akses © 2019 - 2026. Premium RouterOS Script Tools Portal.
+  </footer>
+
+</body>
+</html>
