@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <!-- Meta tag wajib untuk memastikan website responsif (menyesuaikan ukuran layar HP/Laptop) -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <!-- Judul yang akan tampil di tab browser -->
+    <title>MikroTik Queue QoS Generator | Belajar HTML</title>
+    
+    <!-- Memuat font dari Google Fonts: 'Inter' untuk teks biasa, 'JetBrains Mono' untuk teks terminal -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Memuat Tailwind CSS langsung dari CDN (Content Delivery Network). Ini membuat kita bisa styling tanpa file CSS terpisah -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Konfigurasi kustom Tailwind untuk menambahkan warna tema (Orange) dan warna spesifik Terminal -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            500: '#ff6600', // Warna utama orange Buananet/JLA
+                            600: '#ea580c', // Warna orange saat tombol di-hover
+                        },
+                        terminal: {
+                            bg: '#111111',  // Background terminal standar
+                            text: '#cccccc' // Teks terminal standar abu-abu terang
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Custom CSS untuk transisi halus dan menyembunyikan scrollbar bawaan di terminal -->
+    <style>
+        * { transition: all 0.2s ease-in-out; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+
+<!-- class="bg-slate-50" memberi warna background abu-abu sangat terang ke seluruh halaman -->
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col">
+
+    <!-- HEADER: Bagian atas website -->
+    <!-- sticky top-0 membuat header tetap di atas saat di-scroll -->
+    <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                
+                <!-- Logo & Judul di sebelah kiri -->
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-brand-500 to-brand-600 rounded-xl text-white font-mono font-bold text-lg flex items-center justify-center shadow-lg shadow-brand-500/30">
+                        QoS
+                    </div>
+                    <div>
+                        <h1 class="text-sm font-extrabold text-slate-900 tracking-tight leading-tight">BUANANET / JLA</h1>
+                        <p class="text-xs text-slate-500 font-mono font-medium">Queue QoS Generator</p>
+                    </div>
+                </div>
+
+                <!-- Tombol navigasi di sebelah kanan (Sembunyi di HP, tampil di layar besar/sm) -->
+                <div class="hidden sm:flex items-center gap-3">
+                    <a href="#" class="px-4 py-2 rounded-lg text-sm font-semibold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50">
+                        🏠 Beranda
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN: Konten utama website -->
+    <main class="flex-grow w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Judul Halaman -->
+        <div class="mb-8">
+            <h2 class="text-2xl sm:text-3xl font-bold text-slate-900">Queue QoS Priority</h2>
+            <p class="mt-2 text-slate-600 max-w-3xl">Generate script MikroTik Queue Simple / Tree otomatis untuk memprioritaskan traffic Youtube, Tiktok, Game, dll.</p>
+        </div>
+
+        <!-- Layout Utama: Form di atas (Memanjang Horizontal), Terminal di bawah -->
+        <div class="flex flex-col gap-6">
+            
+            <!-- BAGIAN ATAS: FORM INPUT -->
+            <div class="w-full">
+                
+                <!-- Kotak Form dengan background putih -->
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                        <!-- Pilihan Tipe Queue -->
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Queue Options</label>
+                            <!-- onchange="generateScript()" memanggil fungsi JS tiap kali dropdown diubah -->
+                            <select id="queue-options" onchange="generateScript()" class="w-full bg-slate-50 border border-slate-300 text-slate-900 text-sm rounded-lg focus:ring-brand-500 focus:border-brand-500 block p-2 font-medium cursor-pointer">
+                                <option value="Queue-Simple" selected>Queue Simple</option>
+                                <option value="Queue-Tree">Queue Tree</option>
+                            </select>
+                        </div>
+
+                        <!-- Pilihan Target / Website -->
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Queue List</label>
+                            <select id="queue-list" onchange="updateQueueName(); generateScript()" class="w-full bg-slate-50 border border-slate-300 text-slate-900 text-sm rounded-lg focus:ring-brand-500 focus:border-brand-500 block p-2 font-medium cursor-pointer">
+                                <optgroup label="[ Streaming ]">
+                                    <option value="Youtube" selected>Youtube</option>
+                                    <option value="Tiktok">Tiktok</option>
+                                    <option value="Netflix">Netflix</option>
+                                    <option value="Spotify">Spotify</option>
+                                </optgroup>
+                                <optgroup label="[ Social Media ]">
+                                    <option value="Facebook">Facebook</option>
+                                    <option value="Instagram">Instagram</option>
+                                    <option value="WhatsApp">WhatsApp</option>
+                                </optgroup>
+                                <optgroup label="[ E-Commerce ]">
+                                    <option value="Shopee">Shopee</option>
+                                    <option value="Tokopedia">Tokopedia</option>
+                                </optgroup>
+                            </select>
+                        </div>
+
+                        <!-- Input Nama Queue -->
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Queue Name</label>
+                            <!-- oninput="generateScript()" memanggil fungsi JS tiap kali ada tombol ditekan (mengetik) -->
+                            <input type="text" id="queue-name" oninput="generateScript()" value="-> YOUTUBE" placeholder="Contoh: -> YOUTUBE" class="w-full bg-slate-50 border border-slate-300 text-slate-900 text-sm rounded-lg focus:ring-brand-500 focus:border-brand-500 block p-2 font-medium outline-none">
+                        </div>
+
+                        <!-- Input Prioritas -->
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Priority (1-8)</label>
+                            <input type="number" id="priority" oninput="generateScript()" value="8" min="1" max="8" class="w-full bg-slate-50 border border-slate-300 text-slate-900 text-sm rounded-lg focus:ring-brand-500 focus:border-brand-500 block p-2 font-medium outline-none">
+                        </div>
+
+                        <!-- Input Max Limit -->
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Max-Limit</label>
+                            <input type="text" id="max-limit" oninput="generateScript()" value="20M" placeholder="Contoh: 20M" class="w-full bg-slate-50 border border-slate-300 text-slate-900 text-sm rounded-lg focus:ring-brand-500 focus:border-brand-500 block p-2 font-medium outline-none">
+                        </div>
+
+                        <!-- Pilihan Metode Match -->
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Match Filter RAW</label>
+                            <select id="match-condition" onchange="generateScript()" class="w-full bg-slate-50 border border-slate-300 text-slate-900 text-sm rounded-lg focus:ring-brand-500 focus:border-brand-500 block p-2 font-medium cursor-pointer">
+                                <option value="tls" selected>TLS-HOST</option>
+                                <option value="content">CONTENT</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BAGIAN BAWAH: TERMINAL OUTPUT -->
+            <div class="w-full space-y-6">
+                
+                <!-- TERMINAL STEP 1 -->
+                <div class="bg-terminal-bg rounded-xl shadow-xl overflow-hidden border border-slate-800 flex flex-col">
+                    
+                    <!-- Header Terminal (Tombol Mac OS & Tombol Copy) -->
+                    <div class="flex items-center justify-between px-4 py-3 bg-slate-800/50 border-b border-slate-700/50">
+                        <div class="flex items-center gap-2">
+                            <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                            <span class="ml-2 text-slate-300 text-xs font-mono font-semibold">Step-1-Download.rsc</span>
+                        </div>
+                        <button onclick="copyTerminalText('terminal-step1', this)" class="bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold py-1.5 px-3 rounded-md flex items-center gap-1">
+                            <span>📋</span> Copy Step 1
+                        </button>
+                    </div>
+
+                    <!-- Isi Terminal 1 -->
+                    <!-- Tempat span dengan class 'dyn-...' yang akan dirubah isinya oleh JavaScript -->
+                    <div class="p-5 text-sm font-mono leading-relaxed overflow-x-auto whitespace-pre-wrap text-terminal-text" id="terminal-step1">
+<span class="text-green-500 font-bold"># STEP 1 - Paste ke New Terminal MikroTik</span>
+/file remove "<span class="text-brand-500 dyn-target">Youtube</span>.rsc"
+/tool fetch url="https://raw.githubusercontent.com/Masjuna86/Mikrotik-rsc/refs/heads/main/<span class="text-brand-500 dyn-match">tls-host</span>/<span class="text-brand-500 dyn-target">Youtube</span>.rsc" dst-path="<span class="text-brand-500 dyn-target">Youtube</span>.rsc"</div>
+                </div>
+
+                <!-- TERMINAL STEP 2 -->
+                <div class="bg-terminal-bg rounded-xl shadow-xl overflow-hidden border border-slate-800 flex flex-col">
+                    <div class="flex items-center justify-between px-4 py-3 bg-slate-800/50 border-b border-slate-700/50">
+                        <div class="flex items-center gap-2">
+                            <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                            <span class="ml-2 text-slate-300 text-xs font-mono font-semibold">Step-2-Queue-Mangle.rsc</span>
+                        </div>
+                        <button onclick="copyTerminalText('terminal-step2', this)" class="bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold py-1.5 px-3 rounded-md flex items-center gap-1">
+                            <span>📋</span> Copy Step 2
+                        </button>
+                    </div>
+                    
+                    <!-- Isi Terminal 2 -->
+                    <div class="p-5 text-sm font-mono leading-relaxed overflow-x-auto whitespace-pre-wrap text-terminal-text" id="terminal-step2">
+<span class="text-green-500 font-bold"># STEP 2 - Import Script dan Hapus File</span>
+/import file-name="<span class="text-brand-500 dyn-target">Youtube</span>.rsc"
+/file remove "<span class="text-brand-500 dyn-target">Youtube</span>.rsc"
+
+<span class="text-green-500 font-bold"># Pengaturan Queue</span>
+<!-- Blok untuk Queue Simple (Bisa disembunyikan/ditampilkan oleh JS) -->
+<span id="script-queue-simple">/queue simple
+add priority=<span class="text-brand-500"><span class="dyn-priority">8</span>/<span class="dyn-priority">8</span></span> max-limit="<span class="text-brand-500"><span class="dyn-max-limit">20M</span>/<span class="dyn-max-limit">20M</span></span>" name="<span class="text-brand-500 dyn-queue-name">-> YOUTUBE</span>" packet-marks="<span class="text-brand-500"><span class="dyn-target">Youtube</span>-Up,<span class="dyn-target">Youtube</span>-Down</span>" target="<span class="text-brand-500">192.168.0.0/16,172.16.0.0/12,10.0.0.0/8</span>"</span>
+<!-- Blok untuk Queue Tree (Bisa disembunyikan/ditampilkan oleh JS) -->
+<span id="script-queue-tree" style="display: none;">/queue tree
+add parent=global priority=<span class="text-brand-500 dyn-priority">8</span> max-limit="<span class="text-brand-500 dyn-max-limit">20M</span>" name="<span class="text-brand-500"><span class="dyn-queue-name">-> YOUTUBE</span> UP</span>" packet-mark="<span class="text-brand-500"><span class="dyn-target">Youtube</span>-Up</span>"
+add parent=global priority=<span class="text-brand-500 dyn-priority">8</span> max-limit="<span class="text-brand-500 dyn-max-limit">20M</span>" name="<span class="text-brand-500"><span class="dyn-queue-name">-> YOUTUBE</span> DOWN</span>" packet-mark="<span class="text-brand-500"><span class="dyn-target">Youtube</span>-Down</span>"</span>
+
+<span class="text-green-500 font-bold"># Mangle Rules</span>
+/ip firewall mangle
+add action=mark-connection chain=prerouting new-connection-mark="<span class="text-brand-500"><span class="dyn-target">Youtube</span>-conn</span>" dst-address-list="<span class="text-brand-500">Mikrotik-<span class="dyn-target">Youtube</span></span>" passthrough=yes src-address-list=<span class="text-brand-500">LOCAL-IP</span> comment="<span class="text-brand-500"><span class="dyn-target">Youtube</span> Mangle - Generated</span>"
+add action=mark-packet chain=prerouting connection-mark="<span class="text-brand-500"><span class="dyn-target">Youtube</span>-conn</span>" src-address-list=<span class="text-brand-500">LOCAL-IP</span> new-packet-mark="<span class="text-brand-500"><span class="dyn-target">Youtube</span>-Up</span>" passthrough=no
+add action=mark-packet chain=postrouting connection-mark="<span class="text-brand-500"><span class="dyn-target">Youtube</span>-conn</span>" dst-address-list=<span class="text-brand-500">LOCAL-IP</span> new-packet-mark="<span class="text-brand-500"><span class="dyn-target">Youtube</span>-Down</span>" passthrough=no
+
+<span class="text-green-500 font-bold"># Address List Local</span>
+/ip firewall address-list
+add address=<span class="text-brand-500">192.168.0.0/16</span> list=<span class="text-brand-500">LOCAL-IP</span>
+add address=<span class="text-brand-500">172.16.0.0/12</span> list=<span class="text-brand-500">LOCAL-IP</span>
+add address=<span class="text-brand-500">10.0.0.0/8</span> list=<span class="text-brand-500">LOCAL-IP</span></div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-white border-t border-slate-200 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 py-6 text-center text-sm text-slate-500">
+            &copy; 2024 Belajar HTML Script Generator - Design by JLA
+        </div>
+    </footer>
+
+    <!-- LOGIKA JAVASCRIPT -->
+    <script>
+        // Fungsi untuk mengupdate otomatis "Nama Queue" di form jika dropdown web diubah
+        // Sama seperti fitur `myChangeName()` di kode asli
+        function updateQueueName() {
+            const target = document.getElementById('queue-list').value;
+            // Mengubah input nama queue otomatis ke format huruf besar, misal "Youtube" jadi "-> YOUTUBE"
+            document.getElementById('queue-name').value = "-> " + target.toUpperCase();
+        }
+
+        // Fungsi utama untuk mengubah teks dalam terminal sesuai inputan form
+        function generateScript() {
+            // 1. Ambil semua nilai dari elemen form (Berdasarkan ID nya)
+            const queueType = document.getElementById('queue-options').value;
+            const target = document.getElementById('queue-list').value;
+            const queueName = document.getElementById('queue-name').value || "-> TARGET";
+            const priority = document.getElementById('priority').value || "8";
+            const maxLimit = document.getElementById('max-limit').value || "0";
+            const matchFilter = document.getElementById('match-condition').value;
+
+            // 2. Buat fungsi bantuan untuk merubah banyak teks sekaligus
+            // Contoh: Mengganti semua elemen yang punya class '.dyn-target' dengan kata "Youtube"
+            function updateAll(selector, value) {
+                const elements = document.querySelectorAll(selector);
+                elements.forEach(el => {
+                    el.textContent = value;
+                });
+            }
+
+            // 3. Eksekusi perubahan ke dalam class Terminal
+            updateAll('.dyn-target', target);
+            updateAll('.dyn-queue-name', queueName);
+            updateAll('.dyn-priority', priority);
+            updateAll('.dyn-max-limit', maxLimit);
+            updateAll('.dyn-match', matchFilter);
+
+            // 4. Logika menyembunyikan/menampilkan baris kode Queue Simple / Queue Tree
+            const simpleBlock = document.getElementById('script-queue-simple');
+            const treeBlock = document.getElementById('script-queue-tree');
+
+            if (queueType === 'Queue-Simple') {
+                simpleBlock.style.display = 'inline'; // Tampilkan Simple
+                treeBlock.style.display = 'none';     // Sembunyikan Tree
+            } else {
+                simpleBlock.style.display = 'none';   // Sembunyikan Simple
+                treeBlock.style.display = 'inline';   // Tampilkan Tree
+            }
+        }
+
+        // Fungsi untuk menyalin teks yang ada di dalam div terminal
+        function copyTerminalText(containerId, btnElement) {
+            // Ambil wadah terminal
+            const container = document.getElementById(containerId);
+            
+            // Ambil teks polos dari terminal (mengabaikan kode warna span)
+            const textToCopy = container.innerText;
+
+            // Buat elemen textarea palsu untuk proses copy
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = textToCopy;
+            document.body.appendChild(tempTextArea);
+            
+            // Pilih dan copy
+            tempTextArea.select();
+            document.execCommand('copy');
+            
+            // Hapus textarea palsu
+            document.body.removeChild(tempTextArea);
+
+            // Animasi Tombol: Berubah warna dan teks jadi "Copied!"
+            const originalHTML = btnElement.innerHTML;
+            btnElement.innerHTML = '<span>✔️</span> Copied!';
+            btnElement.classList.replace('bg-slate-700', 'bg-green-600');
+            btnElement.classList.replace('hover:bg-slate-600', 'hover:bg-green-500');
+
+            // Kembalikan tombol ke bentuk semula setelah 2 detik
+            setTimeout(() => {
+                btnElement.innerHTML = originalHTML;
+                btnElement.classList.replace('bg-green-600', 'bg-slate-700');
+                btnElement.classList.replace('hover:bg-green-500', 'hover:bg-slate-600');
+            }, 2000);
+        }
+
+        // Agar script langsung disesuaikan dengan nilai awal form saat halaman baru di-refresh
+        window.onload = function() {
+            generateScript();
+        }
+    </script>
+</body>
+</html>
