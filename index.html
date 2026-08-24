@@ -1,11 +1,15 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+<!-- Bagian <head> ini memuat pengaturan dasar halaman, judul, dan font dari Google -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Portal JLA Script Tools - Jaka Lintas Akses</title>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Sora:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- Bagian <style> ini berisi kode CSS untuk mengatur warna, ukuran, dan tata letak (desain) -->
 <style>
+/* :root digunakan untuk menyimpan variabel warna agar mudah diganti sekaligus */
 :root {
   --bg-app: #f8fafc;
   --surface: #ffffff;
@@ -47,11 +51,13 @@ body {
   flex-direction: column;
 }
 
+/* Modifikasi Scrollbar */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--accent-orange); }
 
+/* Desain Header Utama di paling atas */
 .app-header {
   height: 64px;
   background: rgba(255, 255, 255, 0.95);
@@ -81,6 +87,7 @@ body {
 
 .header-actions { display: flex; align-items: center; gap: 12px; }
 
+/* Pembungkus area tengah (Sidebar + Workspace) */
 .app-body {
   display: flex;
   flex: 1;
@@ -88,6 +95,7 @@ body {
   overflow: hidden;
 }
 
+/* Desain Sidebar Kiri */
 .sidebar {
   width: var(--sidebar-width);
   background: var(--surface);
@@ -99,7 +107,7 @@ body {
   height: 100%;
 }
 
-/* Custom Scrollbar for Sidebar */
+/* Custom Scrollbar khusus Sidebar */
 .sidebar::-webkit-scrollbar { width: 6px; }
 .sidebar::-webkit-scrollbar-track { background: var(--surface-sub); border-radius: 8px; }
 .sidebar::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 8px; }
@@ -119,7 +127,7 @@ body {
   font-size: 13px; font-weight: 800; text-transform: uppercase; color: var(--text-main); letter-spacing: 0.5px;
 }
 
-/* Search Tool Box */
+/* Search Tool Box (Kotak Pencarian) */
 .search-box {
   margin-bottom: 16px; position: relative;
 }
@@ -131,7 +139,7 @@ body {
 .search-input:focus { border-color: var(--accent-orange); background: var(--surface); }
 .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 12px; }
 
-/* Tool Directory List */
+/* Desain List Menu / Kategori di Sidebar */
 .tool-list { list-style: none; padding: 0; margin: 0; }
 .tool-list li { margin-bottom: 4px; }
 .tool-category-header {
@@ -158,6 +166,7 @@ body {
 .badge-ready { background: rgba(22, 163, 74, 0.1); color: var(--accent-green); }
 .badge-dev { background: rgba(217, 119, 6, 0.1); color: var(--accent-yellow); }
 
+/* Area Utama (Sebelah kanan sidebar) */
 .main-workspace {
   flex: 1;
   display: flex;
@@ -168,6 +177,7 @@ body {
   padding: 20px 24px;
 }
 
+/* Kumpulan Desain Tombol (Buttons) */
 .btn {
   display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px;
   border-radius: 8px; border: 1px solid transparent; font-family: 'Sora', sans-serif;
@@ -181,12 +191,14 @@ body {
 .btn-wa { background: #25D366; color: white; border-radius: 20px; font-weight: 700; }
 .btn-wa:hover { background: #128C7E; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3); }
 
+/* Header di dalam Workspace */
 .workspace-topbar {
   background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
   padding: 16px 20px; margin-bottom: 20px; display: flex; align-items: center;
   justify-content: space-between; flex-wrap: wrap; gap: 12px; box-shadow: var(--shadow-sm);
 }
 
+/* Kartu Sambutan (Siapa Kami?) */
 .welcome-card {
   background: linear-gradient(135deg, #ffffff 0%, #fffbf7 100%);
   border: 1px solid #ffedd5;
@@ -198,7 +210,7 @@ body {
 .welcome-card h2 { font-size: 20px; font-weight: 800; color: var(--text-main); margin-bottom: 10px; }
 .welcome-card p { color: var(--text-muted); font-size: 13.5px; line-height: 1.7; }
 
-/* Feature Grid Cards */
+/* Grid untuk 3 Kartu Fitur (Cepat, Aman, Premium) */
 .feature-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -219,7 +231,7 @@ body {
 .feature-title { font-weight: 700; font-size: 14px; color: var(--text-main); margin-bottom: 6px; }
 .feature-desc { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
 
-/* Quick Tools Grid */
+/* Grid untuk Kotak-Kotak Quick Tools */
 .section-title {
   font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px;
   color: var(--text-main); margin-bottom: 14px; font-family: 'JetBrains Mono', monospace;
@@ -254,7 +266,7 @@ body {
 .tool-card-title { font-size: 14px; font-weight: 700; color: var(--text-main); margin-bottom: 6px; }
 .tool-card-desc { font-size: 12px; color: var(--text-muted); line-height: 1.5; flex: 1; margin-bottom: 14px; }
 
-/* Footer Styling */
+/* Desain Footer Paling Bawah */
 .app-footer {
   margin-top: auto;
   padding: 20px 0 10px 0;
@@ -265,7 +277,7 @@ body {
   font-family: 'JetBrains Mono', monospace;
 }
 
-/* Modals & Toasts */
+/* Desain Modal (Pop-up Info) & Notifikasi Toast */
 .modal-overlay {
   display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4);
   z-index: 1000; align-items: center; justify-content: center; padding: 16px; backdrop-filter: blur(3px);
@@ -293,7 +305,7 @@ body {
 .toast-error { border-left: 4px solid var(--accent-red); }
 .toast-info { border-left: 4px solid var(--primary); }
 
-/* Mobile Menu Button & Overlay */
+/* Responsif untuk Layar HP (Mobile) */
 .mobile-menu-btn {
   display: none; background: none; border: none; color: var(--text-main);
   cursor: pointer; padding: 4px; border-radius: 6px; transition: background 0.2s;
@@ -319,7 +331,7 @@ body {
   
   .app-body { overflow: hidden; }
   
-  /* Sidebar dirubah menjadi Drawer Off-canvas */
+  /* Sidebar dirubah menjadi Drawer Off-canvas untuk HP */
   .sidebar { 
     position: fixed; top: 64px; left: -100%; bottom: 0; height: calc(100vh - 64px);
     width: 280px; z-index: 100; transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -339,6 +351,7 @@ body {
 </head>
 <body>
 
+<!-- Header Website (Logo dan Tombol Kontak) -->
 <header class="app-header">
   <div class="brand">
     <button class="mobile-menu-btn" onclick="toggleSidebar()" aria-label="Toggle Menu">
@@ -361,9 +374,10 @@ body {
 
 <div class="app-body">
   
-  <!-- Overlay Sidebar Mobile -->
+  <!-- Overlay gelap untuk HP saat sidebar terbuka -->
   <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
+  <!-- SIDEBAR (Menu Kiri) -->
   <aside class="sidebar" id="mainSidebar">
     <div class="sidebar-padding">
       
@@ -372,13 +386,13 @@ body {
         <span style="font-size: 10px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace;">ROSv6 / ROSv7</span>
       </div>
 
-      <!-- Search Tool Box -->
+      <!-- Kotak Pencarian Sidebar -->
       <div class="search-box">
         <span class="search-icon">🔍</span>
         <input type="text" id="toolSearch" class="search-input" placeholder="Cari script..." onkeyup="filterTools()">
       </div>
 
-      <!-- Script Items List -->
+      <!-- Daftar Menu Script -->
       <ul class="tool-list" id="toolList">
         <li class="tool-category-header primary">MENU UTAMA</li>
         <li>
@@ -402,12 +416,13 @@ body {
             <span class="tool-badge badge-ready">READY</span>
           </a>
         </li>
+        <!-- PERBAIKAN: Menambahkan tag penutup </li> yang hilang di bawah ini -->
         <li class="tool-item">
           <a href="Config_explorer.html" target="_blank">
             <span>Config Explorer</span>
             <span class="tool-badge badge-ready">READY</span>
           </a>
-        
+        </li>
 		        
         <!-- Kategori ROUTE//MANGLE//NAT//VPN -->
         <li class="tool-category-header">☰ ROUTE//MANGLE//NAT//VPN</li>
@@ -481,7 +496,8 @@ body {
           <a href="pbr_generator.html" target="_blank">
             <span>Policy Based Routing</span>
             <span class="tool-badge badge-ready">READY</span>
-          </a>		  
+          </a>
+        </li>		  
   
         <!-- Kategori DNS//DHCP//SNTP -->
         <li class="tool-category-header">☰ DNS//DHCP//SNTP</li>
@@ -644,13 +660,13 @@ body {
           </a>
         </li>
       </ul>
-
     </div>
   </aside>
 
+  <!-- AREA KONTEN UTAMA (Bagian Kanan) -->
   <main class="main-workspace">
     
-    <!-- Topbar Header -->
+    <!-- Topbar (Judul selamat datang & Tombol Info) -->
     <div class="workspace-topbar">
       <div>
         <h2 style="font-size: 16px; font-weight: 800; color: var(--text-main);">Selamat Datang di Portal JLA Script Tools</h2>
@@ -662,7 +678,7 @@ body {
       </div>
     </div>
 
-    <!-- Welcome Hero Card -->
+    <!-- Welcome Hero Card (Kotak "Siapa Kami?") -->
     <div class="welcome-card">
       <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px;">
         <h2>Siapa Kami?</h2>
@@ -673,7 +689,7 @@ body {
       </p>
     </div>
 
-    <!-- Feature Cards Grid -->
+    <!-- Feature Cards Grid (3 Kotak Keunggulan) -->
     <div class="feature-grid">
       <div class="feature-card">
         <div class="feature-icon">⚡</div>
@@ -692,14 +708,14 @@ body {
       </div>
     </div>
 
-    <!-- Quick Access Generator Tools -->
+    <!-- Quick Access Generator Tools (Kumpulan Card Tools) -->
     <div class="section-title">
       <span>🚀 Quick Access Generator Tools</span>
     </div>
 
     <div class="tools-grid">
       
-      <!-- Tool Item: Config Explorer -->
+      <!-- Tool Item 1: Vlan Managemen -->
       <div class="tool-card" style="opacity: 0.85;">
         <div>
           <div class="tool-card-header">
@@ -714,7 +730,7 @@ body {
         </div>
       </div>
 
-      <!-- Tool Item: Port Forwarding NAT -->
+      <!-- Tool Item 2: Port Forwarding NAT (Ini dibungkus dengan tag <a> agar seluruh kotaknya bisa diklik) -->
       <a href="Port_forwarding.html" target="_blank" class="tool-card">
         <div>
           <div class="tool-card-header">
@@ -729,7 +745,7 @@ body {
         </div>
       </a>
 
-      <!-- Tool Item: Simple Queue -->
+      <!-- Tool Item 3: Simple Queue -->
       <a href="mikrotik_bandwidth_management.html" target="_blank" class="tool-card">
         <div>
           <div class="tool-card-header">
@@ -744,7 +760,7 @@ body {
         </div>
       </a>
 
-      <!-- Tool Item: SNTP Client -->
+      <!-- Tool Item 4: SNTP Client -->
       <a href="indonesia-timezone.html" target="_blank" class="tool-card">
         <div>
           <div class="tool-card-header">
@@ -757,11 +773,11 @@ body {
         <div style="display: flex; justify-content: flex-end;">
            <span class="btn btn-secondary" style="padding: 4px 10px; font-size: 11px;">Buka Tool ↗</span>
         </div>
-      </div>
+      </a> <!-- PERBAIKAN: Sebelumnya tertulis </div> di sini. Diganti jadi </a> agar linknya tidak bablas ke footer -->
 
     </div>
 
-    <!-- App Footer -->
+    <!-- App Footer (Kaki Halaman) -->
     <footer class="app-footer">
       Jaka Lintas Akses © 2019. Premium RouterOS Script Tools Portal.
     </footer>
@@ -769,7 +785,7 @@ body {
   </main>
 </div>
 
-<!-- Modal Information -->
+<!-- Modal Information (Kotak Pop-up saat tombol "Info Portal" diklik) -->
 <div class="modal-overlay" id="infoModal">
   <div class="modal">
     <div class="modal-header">
@@ -792,11 +808,12 @@ body {
   </div>
 </div>
 
-<!-- Toast Container -->
+<!-- Toast Container (Tempat munculnya notifikasi kecil di pojok kanan bawah) -->
 <div class="toast-container" id="toastContainer"></div>
 
+<!-- Area Script JavaScript untuk logika interaksi website -->
 <script>
-  // Open & Close Modal Functions
+  // Fungsi untuk Membuka & Menutup Modal (Pop-up)
   function openModal(modalId) {
     document.getElementById(modalId).classList.add('show');
   }
@@ -805,13 +822,13 @@ body {
     document.getElementById(modalId).classList.remove('show');
   }
 
-  // Sidebar Mobile Toggle Logic
+  // Fungsi untuk membuka Sidebar saat dibuka di Layar HP
   function toggleSidebar() {
     document.getElementById('mainSidebar').classList.toggle('open');
     document.getElementById('sidebarOverlay').classList.toggle('show');
   }
 
-  // Close Modal on backdrop click
+  // Fungsi menutup Modal jika klik di area luar kotak
   document.querySelectorAll('.modal-overlay').forEach(overlay => {
     overlay.addEventListener('click', function(e) {
       if (e.target === this) {
@@ -820,7 +837,7 @@ body {
     });
   });
 
-  // Toast Notifications
+  // Fungsi memunculkan Notifikasi Toast (contoh: "Script dalam tahap pengembangan")
   function showToast(msg, type = 'info') {
     const container = document.getElementById('toastContainer');
     const toast = document.createElement('div');
@@ -833,6 +850,7 @@ body {
     toast.innerHTML = `<span>${icon}</span><span>${msg}</span>`;
     container.appendChild(toast);
     
+    // Menghilangkan toast secara otomatis setelah 3 detik
     setTimeout(() => { 
       toast.style.opacity = '0';
       toast.style.transform = 'translateX(20px)';
@@ -841,7 +859,7 @@ body {
     }, 3000);
   }
 
-  // Filter Tools in Sidebar Search
+  // Fungsi Filter/Pencarian menu script di Sidebar
   function filterTools() {
     const input = document.getElementById('toolSearch');
     const filter = input.value.toLowerCase();
@@ -851,6 +869,7 @@ body {
     for (let i = 0; i < items.length; i++) {
       const a = items[i].getElementsByTagName('a')[0];
       const txtValue = a.textContent || a.innerText;
+      // Jika kata kunci cocok, tampilkan. Jika tidak, sembunyikan.
       if (txtValue.toLowerCase().indexOf(filter) > -1) {
         items[i].style.display = "";
       } else {
