@@ -10,8 +10,8 @@
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap');
 
     * {
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       box-sizing: border-box;
+      transition: all 0.25s ease;
     }
 
     :root {
@@ -19,41 +19,68 @@
       --text: #334155;
       --text-dark: #0f172a;
       --text-muted: #64748b;
+
       --accent: #ff6600;
       --accent-hover: #ea580c;
+
       --border: #e2e8f0;
       --input-bg: #f8fafc;
+
       --code-bg: #0f172a;
       --code-text: #e2e8f0;
-      --shadow-sm: 0 1px 2px 0 rgba(0,0,0,.05);
-      --shadow-md: 0 4px 6px -1px rgba(0,0,0,.1),
-                   0 2px 4px -1px rgba(0,0,0,.06);
+
+      --success: #10b981;
+      --warning: #f59e0b;
+
+      --shadow-sm:
+        0 1px 2px rgba(0,0,0,.05);
+
+      --shadow-md:
+        0 4px 6px -1px rgba(0,0,0,.1),
+        0 2px 4px -1px rgba(0,0,0,.06);
     }
 
     body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: var(--bg);
-      color: var(--text);
       margin: 0;
       padding: 0;
+      min-height: 100vh;
+
       display: flex;
       flex-direction: column;
-      min-height: 100vh;
+
+      background: var(--bg);
+      color: var(--text);
+
+      font-family:
+        'Inter',
+        -apple-system,
+        BlinkMacSystemFont,
+        sans-serif;
     }
 
+    /* =========================================================
+       HEADER
+    ========================================================= */
+
     .app-header {
-      height: 64px;
-      background: rgba(255,255,255,.95);
+      min-height: 64px;
+
+      background: rgba(255,255,255,.96);
       backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
+
       border-bottom: 1px solid var(--border);
+
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 24px;
+
+      padding: 12px 24px;
+
       position: sticky;
       top: 0;
+
       z-index: 100;
+
       box-shadow: var(--shadow-sm);
     }
 
@@ -66,60 +93,96 @@
     .brand-logo {
       width: 40px;
       height: 40px;
-      background: linear-gradient(135deg,var(--accent),#ea580c);
+
+      background:
+        linear-gradient(
+          135deg,
+          var(--accent),
+          #ea580c
+        );
+
       border-radius: 10px;
-      color: #fff;
-      font-family: 'JetBrains Mono',monospace;
+
+      color: white;
+
+      font-family:
+        'JetBrains Mono',
+        monospace;
+
       font-weight: 800;
       font-size: 16px;
+
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 4px 12px rgba(255,102,0,.3);
+
+      box-shadow:
+        0 4px 12px
+        rgba(255,102,0,.3);
     }
 
     .brand-title h1 {
+      margin: 0;
+
+      color: var(--text-dark);
+
       font-size: 15px;
       font-weight: 800;
-      color: var(--text-dark);
+
       letter-spacing: .3px;
-      line-height: 1.2;
-      margin: 0;
     }
 
     .brand-title p {
-      font-size: 11px;
+      margin: 2px 0 0;
+
       color: var(--text-muted);
-      font-family: 'JetBrains Mono',monospace;
-      font-weight: 500;
-      margin: 0;
+
+      font-size: 11px;
+
+      font-family:
+        'JetBrains Mono',
+        monospace;
     }
 
     .header-actions {
       display: flex;
+      gap: 10px;
       align-items: center;
-      gap: 12px;
     }
 
+    /* =========================================================
+       BUTTON
+    ========================================================= */
+
     .btn {
+      border: none;
+
       display: inline-flex;
       align-items: center;
       justify-content: center;
+
       gap: 7px;
+
       padding: 9px 16px;
+
       border-radius: 8px;
-      border: none;
-      font-family: 'Inter',sans-serif;
+
+      font-family: 'Inter', sans-serif;
+
       font-size: 13px;
       font-weight: 600;
+
       cursor: pointer;
-      white-space: nowrap;
+
       text-decoration: none;
+
+      white-space: nowrap;
     }
 
     .btn-secondary {
-      background: #fff;
+      background: white;
       color: var(--text);
+
       border: 1px solid var(--border);
     }
 
@@ -129,36 +192,47 @@
 
     .btn-wa {
       background: #25D366;
-      color: #fff;
+      color: white;
+
       border-radius: 20px;
-      font-weight: 700;
     }
 
     .btn-wa:hover {
       background: #128C7E;
+
       transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(37,211,102,.3);
+
+      box-shadow:
+        0 4px 12px
+        rgba(37,211,102,.3);
     }
 
     .btn-primary {
       background: var(--accent);
-      color: #fff;
-      box-shadow: 0 4px 12px rgba(255,102,0,.2);
+      color: white;
+
       padding: 12px 24px;
+
       font-size: 14px;
+
+      box-shadow:
+        0 4px 12px
+        rgba(255,102,0,.2);
     }
 
     .btn-primary:hover {
       background: var(--accent-hover);
+
       transform: translateY(-1px);
     }
 
     .btn-copy {
       background: #334155;
-      color: #fff;
+      color: white;
+
       padding: 6px 12px;
+
       font-size: 12px;
-      border-radius: 6px;
     }
 
     .btn-copy:hover {
@@ -166,82 +240,151 @@
     }
 
     .btn-copy.copied {
-      background: #10b981;
+      background: var(--success);
     }
 
+    /* =========================================================
+       MAIN
+    ========================================================= */
+
     .main-container {
+      width: 100%;
+      max-width: 1200px;
+
+      margin: 0 auto;
+
+      padding: 40px 20px;
+
       display: flex;
       flex: 1;
-      max-width: 1200px;
-      margin: 0 auto;
-      width: 100%;
-      padding: 40px 20px;
-      gap: 30px;
-      align-items: flex-start;
     }
 
     .content-area {
-      flex: 1;
-      background: #fff;
-      border-radius: 16px;
-      box-shadow: 0 10px 30px rgba(148,163,184,.1);
-      border: 1px solid #f1f5f9;
-      padding: 40px;
-      min-width: 0;
       width: 100%;
+
+      background: white;
+
+      border-radius: 16px;
+
+      border: 1px solid #f1f5f9;
+
+      padding: 40px;
+
+      box-shadow:
+        0 10px 30px
+        rgba(148,163,184,.1);
     }
 
     .page-title {
-      margin-top: 0;
+      margin:
+        0 0 8px;
+
       color: var(--text-dark);
+
       font-size: 24px;
-      margin-bottom: 8px;
     }
 
     .page-desc {
+      margin:
+        0 0 30px;
+
       color: var(--text-muted);
+
       font-size: 14px;
-      margin-bottom: 30px;
+
       line-height: 1.6;
     }
 
+    /* =========================================================
+       INFO
+    ========================================================= */
+
+    .info-box {
+      margin-bottom: 25px;
+
+      padding: 15px 18px;
+
+      border-radius: 12px;
+
+      background: #fff7ed;
+
+      border: 1px solid #fed7aa;
+
+      color: #9a3412;
+
+      font-size: 13px;
+
+      line-height: 1.6;
+    }
+
+    .info-box strong {
+      color: #7c2d12;
+    }
+
+    /* =========================================================
+       FORM
+    ========================================================= */
+
     .form-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
+
+      grid-template-columns:
+        repeat(
+          auto-fit,
+          minmax(220px, 1fr)
+        );
+
       gap: 24px;
+
       margin-bottom: 30px;
+
       background: #f8fafc;
+
       padding: 30px;
+
       border-radius: 16px;
+
       border: 1px solid var(--border);
-      box-shadow: inset 0 2px 4px 0 rgba(0,0,0,.02);
     }
 
     .form-group {
       display: flex;
       flex-direction: column;
+
       gap: 10px;
     }
 
     .form-group label {
+      color: var(--text-dark);
+
       font-size: 14px;
       font-weight: 700;
-      color: var(--text-dark);
-      letter-spacing: .2px;
     }
 
     .form-control {
+      width: 100%;
+
       padding: 12px 16px;
-      border: 1px solid #cbd5e1;
+
+      border:
+        1px solid #cbd5e1;
+
       border-radius: 10px;
-      font-family: 'Inter',sans-serif;
+
+      background: white;
+
+      color: var(--text-dark);
+
+      font-family: 'Inter', sans-serif;
+
       font-size: 14px;
       font-weight: 500;
-      color: var(--text-dark);
-      background: #fff;
+
       outline: none;
-      width: 100%;
-      box-shadow: 0 1px 3px rgba(0,0,0,.05);
+
+      box-shadow:
+        0 1px 3px
+        rgba(0,0,0,.05);
     }
 
     .form-control:hover {
@@ -250,88 +393,129 @@
 
     .form-control:focus {
       border-color: var(--accent);
+
       box-shadow:
-        0 0 0 4px rgba(255,102,0,.15),
-        0 1px 2px rgba(0,0,0,.05);
-      transform: translateY(-1px);
+        0 0 0 4px
+        rgba(255,102,0,.15);
     }
 
     select.form-control {
       cursor: pointer;
+
       appearance: none;
-      background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns='http://www.w3.org/2000/svg' width='292.4' height='292.4'%3E%3Cpath fill='%2364748b' d='M287 69.4a17.6 17.6 0 0 0-13-5.4H18.4c-5 0-9.3 1.8-12.9 5.4A17.6 17.6 0 0 0 0 82.2c0 5 1.8 9.3 5.4 12.9l128 127.9c3.6 3.6 7.8 5.4 12.8 5.4s9.2-1.8 12.8-5.4L287 95c3.5-3.5 5.4-7.8 5.4-12.8 0-5-1.9-9.2-5.5-12.8z'/%3E%3C/svg%3E");
+
+      background-image:
+        url("data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns='http://www.w3.org/2000/svg' width='292.4' height='292.4'%3E%3Cpath fill='%2364748b' d='M287 69.4a17.6 17.6 0 0 0-13-5.4H18.4c-5 0-9.3 1.8-12.9 5.4A17.6 17.6 0 0 0 0 82.2c0 5 1.8 9.3 5.4 12.9l128 127.9c3.6 3.6 7.8 5.4 12.8 5.4s9.2-1.8 12.8-5.4L287 95c3.5-3.5 5.4-7.8 5.4-12.8 0-5-1.9-9.2-5.5-12.8z'/%3E%3C/svg%3E");
+
       background-repeat: no-repeat;
-      background-position: right 16px top 50%;
-      background-size: 10px auto;
-      padding-right: 40px;
+
+      background-position:
+        right 16px center;
+
+      background-size: 10px;
     }
 
     select.form-control optgroup {
-      font-weight: 700;
       color: var(--accent);
-      background: #fff;
+
+      font-weight: 800;
     }
 
     select.form-control option {
-      font-weight: 500;
       color: var(--text-dark);
-      background: #fff;
+
+      font-weight: 500;
     }
+
+    /* =========================================================
+       OUTPUT
+    ========================================================= */
 
     .output-wrapper {
       margin-top: 30px;
+
       display: flex;
       flex-direction: column;
+
       gap: 24px;
     }
 
     .output-box {
       background: var(--code-bg);
+
       border-radius: 12px;
+
       overflow: hidden;
+
       box-shadow: var(--shadow-md);
     }
 
     .output-header {
       display: flex;
+
       justify-content: space-between;
       align-items: center;
+
       padding: 12px 16px;
-      background: rgba(255,255,255,.05);
-      border-bottom: 1px solid rgba(255,255,255,.1);
+
+      background:
+        rgba(255,255,255,.05);
+
+      border-bottom:
+        1px solid rgba(255,255,255,.1);
     }
 
     .output-title {
-      color: #fff;
+      color: white;
+
       font-size: 13px;
       font-weight: 600;
-      font-family: 'JetBrains Mono',monospace;
+
+      font-family:
+        'JetBrains Mono',
+        monospace;
+
       display: flex;
       align-items: center;
+
       gap: 8px;
     }
 
     .output-title::before {
       content: '';
-      display: inline-block;
+
       width: 8px;
       height: 8px;
+
       border-radius: 50%;
-      background: #10b981;
+
+      background:
+        var(--success);
     }
 
     .output-content {
       margin: 0;
-      padding: 16px;
+
+      padding: 18px;
+
       color: var(--code-text);
-      font-family: 'JetBrains Mono',monospace;
+
+      font-family:
+        'JetBrains Mono',
+        monospace;
+
       font-size: 13px;
-      line-height: 1.6;
+
+      line-height: 1.65;
+
       overflow-x: auto;
+
       white-space: pre-wrap;
-      word-wrap: break-word;
-      min-height: 120px;
+
+      word-break: break-word;
     }
+
+    /* Syntax */
 
     .hl-var {
       color: #f97316;
@@ -350,61 +534,60 @@
       color: #f472b6;
     }
 
-    .notice {
-      margin-top: 20px;
-      background: #fff7ed;
-      border: 1px solid #fed7aa;
-      border-left: 4px solid #f97316;
-      border-radius: 10px;
-      padding: 14px 16px;
-      font-size: 13px;
-      line-height: 1.6;
-      color: #7c2d12;
+    .hl-comment {
+      color: #94a3b8;
     }
+
+    /* =========================================================
+       FOOTER
+    ========================================================= */
 
     .footer {
       text-align: center;
-      font-size: 13px;
+
       color: #94a3b8;
+
+      font-size: 13px;
+
       padding: 30px;
-      width: 100%;
-      margin-top: auto;
     }
 
-    @media screen and (max-width:768px) {
+    /* =========================================================
+       MOBILE
+    ========================================================= */
+
+    @media screen and (max-width: 768px) {
 
       .app-header {
         flex-direction: column;
-        height: auto;
-        padding: 15px 20px;
+
         gap: 15px;
-        align-items: center;
-        justify-content: center;
+
         text-align: center;
       }
 
       .brand {
         flex-direction: column;
-        gap: 8px;
       }
 
       .header-actions {
-        width: 100%;
         justify-content: center;
+
         flex-wrap: wrap;
       }
 
-      .main-container {
-        flex-direction: column;
-        padding: 20px 15px;
-      }
-
       .content-area {
-        padding: 40px 20px;
+        padding: 25px 18px;
       }
 
       .form-grid {
         grid-template-columns: 1fr;
+
+        padding: 20px;
+      }
+
+      .main-container {
+        padding: 20px 12px;
       }
     }
   </style>
@@ -421,23 +604,34 @@
     </div>
 
     <div class="brand-title">
-      <h1>JAKA LINTAS AKSES GENERATOR</h1>
-      <p>Portal Script Generator Premium JLA</p>
+
+      <h1>
+        JAKA LINTAS AKSES GENERATOR
+      </h1>
+
+      <p>
+        Portal Script Generator Premium JLA
+      </p>
+
     </div>
 
   </div>
 
   <div class="header-actions">
 
-    <a href="index.html"
-       class="btn btn-secondary">
+    <a
+      href="index.html"
+      class="btn btn-secondary"
+    >
       🏠 Beranda
     </a>
 
-    <a href="https://wa.me/62818386078?text=Halo%20JLA%20Tools"
-       target="_blank"
-       class="btn btn-wa">
-      WhatsApp
+    <a
+      href="https://wa.me/62818386078?text=Halo%20JLA%20Tools"
+      target="_blank"
+      class="btn btn-wa"
+    >
+      📱 Hubungi Kami
     </a>
 
   </div>
@@ -447,636 +641,676 @@
 
 <main class="main-container">
 
-  <div class="content-area">
+<div class="content-area">
 
-    <h2 class="page-title">
-      MikroTik Access Block Generator
-    </h2>
+  <h2 class="page-title">
+    MikroTik Access Block Generator
+  </h2>
 
-    <p class="page-desc">
-      Generate script Firewall Filter otomatis untuk memblokir
-      aplikasi, website, streaming, social media, game,
-      P2P, VPN, dan layanan internet lainnya.
-    </p>
+  <p class="page-desc">
+    Generate script MikroTik otomatis untuk memblokir
+    website, aplikasi, streaming, social media,
+    game, P2P dan VPN menggunakan Content,
+    TLS Host atau Layer7.
+  </p>
 
 
-    <!-- ================= FORM ================= -->
+  <div class="info-box">
 
-    <div class="form-grid">
+    <strong>⚠️ Catatan Layer7:</strong>
 
-      <!-- TARGET -->
+    Layer7 memeriksa pola trafik sehingga dapat
+    menggunakan CPU lebih tinggi. Untuk trafik HTTPS
+    modern, TLS Host dan Address List biasanya lebih
+    efektif. Gunakan Layer7 hanya jika memang diperlukan.
 
-      <div class="form-group">
+    <br><br>
 
-        <label for="target-list">
-          Website / Application Target
-        </label>
+    <strong>GitHub:</strong>
 
-        <select id="target-list"
-                class="form-control"
-                onchange="toggleCustomDomain();generateScript();">
+    Content dan TLS tetap menggunakan repository
+    GitHub JLA.
 
-          <option value="Custom">
-            ✏️ Input Domain Manual / Custom
+  </div>
+
+
+  <div class="form-grid">
+
+    <!-- TARGET -->
+
+    <div class="form-group">
+
+      <label for="target-list">
+        Website / Aplikasi Target
+      </label>
+
+      <select
+        id="target-list"
+        class="form-control"
+        onchange="
+          toggleCustomDomain();
+          generateScript();
+        "
+      >
+
+        <option value="Custom">
+          ✏️ Input Domain Manual / Custom
+        </option>
+
+
+        <!-- =====================================================
+             STREAMING
+        ====================================================== -->
+
+        <optgroup label="[ Streaming ]">
+
+          <option value="Streaming">
+            ALL Streaming
           </option>
 
-
-          <!-- ================= STREAMING ================= -->
-
-          <optgroup label="[ Streaming ]">
-
-            <option value="Streaming">
-              ALL Streaming
-            </option>
-
-            <option value="Youtube" selected>
-              Youtube
-            </option>
-
-            <option value="Tiktok">
-              Tiktok
-            </option>
-
-            <option value="Vidio">
-              Vidio
-            </option>
-
-            <option value="Iflix">
-              Iflix
-            </option>
-
-            <option value="Netflix">
-              Netflix
-            </option>
-
-            <option value="Spotify">
-              Spotify
-            </option>
-
-            <option value="Wetv">
-              Wetv
-            </option>
-
-            <option value="Vimeo">
-              Vimeo
-            </option>
-
-            <option value="Twitch">
-              Twitch
-            </option>
-
-            <option value="Prime-Video">
-              Prime Video
-            </option>
-
-            <option value="Disney-Plus">
-              Disney+
-            </option>
-
-            <option value="Apple-TV">
-              Apple TV
-            </option>
-
-            <option value="HBO">
-              HBO / Max
-            </option>
-
-            <option value="Viu">
-              Viu
-            </option>
-
-            <option value="iQIYI">
-              iQIYI
-            </option>
-
-            <option value="Bilibili">
-              Bilibili
-            </option>
-
-            <option value="RCTI-Plus">
-              RCTI+
-            </option>
-
-            <option value="Vision-Plus">
-              Vision+
-            </option>
-
-          </optgroup>
-
-
-          <!-- ================= SOCIAL ================= -->
-
-          <optgroup label="[ Social Media ]">
-
-            <option value="Social-Media">
-              ALL Social Media
-            </option>
-
-            <option value="Facebook">
-              Facebook
-            </option>
-
-            <option value="Instagram">
-              Instagram
-            </option>
-
-            <option value="WhatsApp">
-              WhatsApp
-            </option>
-
-            <option value="Twitter-X">
-              Twitter / X
-            </option>
-
-            <option value="Telegram">
-              Telegram
-            </option>
-
-            <option value="Threads">
-              Threads
-            </option>
-
-            <option value="Imo">
-              Imo.im
-            </option>
-
-            <option value="Snapchat">
-              Snapchat
-            </option>
-
-            <option value="Linkedin">
-              LinkedIn
-            </option>
-
-            <option value="Pinterest">
-              Pinterest
-            </option>
-
-            <option value="Line">
-              LINE
-            </option>
-
-            <option value="WeChat">
-              WeChat
-            </option>
-
-            <option value="Viber">
-              Viber
-            </option>
-
-            <option value="Reddit">
-              Reddit
-            </option>
-
-            <option value="Tumblr">
-              Tumblr
-            </option>
-
-            <option value="Kakaotalk">
-              KakaoTalk
-            </option>
-
-            <option value="Signal">
-              Signal
-            </option>
-
-          </optgroup>
-
-
-          <!-- ================= ECOMMERCE ================= -->
-
-          <optgroup label="[ E-Commerce ]">
-
-            <option value="E-Commerce">
-              ALL E-Commerce
-            </option>
-
-            <option value="Amazon">
-              Amazon
-            </option>
-
-            <option value="Alibaba">
-              Alibaba
-            </option>
-
-            <option value="Etsy">
-              Etsy
-            </option>
-
-            <option value="Rakuten">
-              Rakuten
-            </option>
-
-            <option value="Shopify">
-              Shopify
-            </option>
-
-            <option value="Wish">
-              Wish
-            </option>
-
-            <option value="Temu">
-              Temu
-            </option>
-
-            <option value="Ralali">
-              Ralali
-            </option>
-
-            <option value="Shopee">
-              Shopee
-            </option>
-
-            <option value="Tokopedia">
-              Tokopedia
-            </option>
-
-            <option value="Bukalapak">
-              Bukalapak
-            </option>
-
-            <option value="Lazada">
-              Lazada
-            </option>
-
-            <option value="Blibli">
-              Blibli
-            </option>
-
-            <option value="Olx">
-              OLX
-            </option>
-
-          </optgroup>
-
-
-          <!-- ================= CONFERENCE ================= -->
-
-          <optgroup label="[ Video Conference ]">
-
-            <option value="Video-Conference">
-              ALL Video Conference
-            </option>
-
-            <option value="Zoom">
-              Zoom Meeting
-            </option>
-
-            <option value="Teams">
-              Microsoft Teams
-            </option>
-
-            <option value="Google-Meet">
-              Google Meet
-            </option>
-
-            <option value="Discord">
-              Discord
-            </option>
-
-            <option value="Webex">
-              Webex
-            </option>
-
-            <option value="Skype">
-              Skype
-            </option>
-
-            <option value="Jitsi">
-              Jitsi
-            </option>
-
-            <option value="Whereby">
-              Whereby
-            </option>
-
-          </optgroup>
-
-
-          <!-- ================= GAMES ================= -->
-
-          <optgroup label="[ Games ]">
-
-            <option value="Games">
-              ALL Games
-            </option>
-
-            <option value="Mobile-Legends">
-              Mobile Legends
-            </option>
-
-            <option value="Free-Fire">
-              Free Fire
-            </option>
-
-            <option value="PUBG">
-              PUBG
-            </option>
-
-            <option value="PUBG-Mobile">
-              PUBG Mobile
-            </option>
-
-            <option value="Valorant">
-              Valorant
-            </option>
-
-            <option value="Roblox">
-              Roblox
-            </option>
-
-            <option value="Minecraft">
-              Minecraft
-            </option>
-
-            <option value="Dota2">
-              Dota 2
-            </option>
-
-            <option value="Steam">
-              Steam
-            </option>
-
-            <option value="Epic-Games">
-              Epic Games
-            </option>
-
-            <option value="PlayStation">
-              PlayStation
-            </option>
-
-            <option value="Xbox">
-              Xbox
-            </option>
-
-            <option value="Call-of-Duty">
-              Call of Duty
-            </option>
-
-            <option value="EA-Games">
-              EA Games
-            </option>
-
-          </optgroup>
-
-
-          <!-- ================= P2P ================= -->
-
-          <optgroup label="[ P2P / Torrent ]">
-
-            <option value="P2P">
-              ALL P2P / Torrent
-            </option>
-
-            <option value="BitTorrent">
-              BitTorrent
-            </option>
-
-            <option value="uTorrent">
-              uTorrent
-            </option>
-
-            <option value="qBittorrent">
-              qBittorrent
-            </option>
-
-            <option value="Torrent">
-              Torrent
-            </option>
-
-          </optgroup>
-
-
-          <!-- ================= VPN ================= -->
-
-          <optgroup label="[ VPN / Proxy ]">
-
-            <option value="VPN">
-              ALL VPN / Proxy
-            </option>
-
-            <option value="OpenVPN">
-              OpenVPN
-            </option>
-
-            <option value="WireGuard">
-              WireGuard
-            </option>
-
-            <option value="IPSec">
-              IPSec
-            </option>
-
-            <option value="L2TP">
-              L2TP
-            </option>
-
-            <option value="PPTP">
-              PPTP
-            </option>
-
-            <option value="Proxy">
-              Proxy
-            </option>
-
-            <option value="Tor">
-              TOR
-            </option>
-
-          </optgroup>
-
-
-          <!-- ================= OTHER ================= -->
-
-          <optgroup label="[ Other List IP ]">
-
-            <option value="Meta">
-              Meta
-            </option>
-
-            <option value="Google">
-              Google
-            </option>
-
-            <option value="Speedtest">
-              Speedtest
-            </option>
-
-            <option value="GGC">
-              GGC
-            </option>
-
-            <option value="NICE-OIXP">
-              NICE / IIX / OIXP
-            </option>
-
-            <option value="Bank-Indonesia">
-              All Indonesian Bank
-            </option>
-
-          </optgroup>
-
-        </select>
-
-      </div>
-
-
-      <!-- CUSTOM -->
-
-      <div class="form-group"
-           id="customDomainGroup"
-           style="display:none;">
-
-        <label for="inputDomain">
-          Domain Custom
-        </label>
-
-        <input type="text"
-               id="inputDomain"
-               class="form-control"
-               placeholder="contoh.com"
-               onkeyup="generateScript()">
-
-      </div>
-
-
-      <!-- METHOD -->
-
-      <div class="form-group">
-
-        <label for="inputMethod">
-          Metode Blokir
-        </label>
-
-        <select id="inputMethod"
-                class="form-control"
-                onchange="generateScript()">
-
-          <option value="content">
-            Content
+          <option value="Youtube" selected>
+            Youtube
           </option>
 
-          <option value="tls">
-            TLS Host
+          <option value="Tiktok">
+            Tiktok
           </option>
 
-          <option value="layer7" selected>
-            Layer7 Protocol (RegExp)
+          <option value="Vidio">
+            Vidio
           </option>
 
-        </select>
-
-      </div>
-
-
-      <!-- ACTION -->
-
-      <div class="form-group">
-
-        <label for="inputAction">
-          Aksi Firewall
-        </label>
-
-        <select id="inputAction"
-                class="form-control"
-                onchange="generateScript()">
-
-          <option value="drop" selected>
-            Drop
+          <option value="Iflix">
+            Iflix
           </option>
 
-          <option value="reject">
-            Reject
+          <option value="Netflix">
+            Netflix
           </option>
 
-        </select>
+          <option value="Spotify">
+            Spotify
+          </option>
 
-      </div>
+          <option value="Wetv">
+            Wetv
+          </option>
+
+          <option value="Vimeo">
+            Vimeo
+          </option>
+
+          <option value="Twitch">
+            Twitch
+          </option>
+
+          <option value="Prime-Video">
+            Prime Video
+          </option>
+
+          <option value="Disney-Plus">
+            Disney+
+          </option>
+
+          <option value="Apple-TV">
+            Apple TV
+          </option>
+
+          <option value="HBO">
+            HBO Go / Max
+          </option>
+
+          <option value="Viu">
+            Viu
+          </option>
+
+          <option value="iQIYI">
+            iQIYI
+          </option>
+
+          <option value="Bilibili">
+            Bilibili
+          </option>
+
+          <option value="RCTI-Plus">
+            RCTI+
+          </option>
+
+          <option value="Vision-Plus">
+            Vision+
+          </option>
+
+        </optgroup>
+
+
+        <!-- =====================================================
+             SOCIAL MEDIA
+        ====================================================== -->
+
+        <optgroup label="[ Social Media ]">
+
+          <option value="Social-Media">
+            ALL Social Media
+          </option>
+
+          <option value="Facebook">
+            Facebook
+          </option>
+
+          <option value="Instagram">
+            Instagram
+          </option>
+
+          <option value="WhatsApp">
+            WhatsApp
+          </option>
+
+          <option value="Twitter-X">
+            Twitter / X
+          </option>
+
+          <option value="Telegram">
+            Telegram
+          </option>
+
+          <option value="Threads">
+            Threads
+          </option>
+
+          <option value="Imo">
+            Imo.im
+          </option>
+
+          <option value="Snapchat">
+            Snapchat
+          </option>
+
+          <option value="Linkedin">
+            Linkedin
+          </option>
+
+          <option value="Pinterest">
+            Pinterest
+          </option>
+
+          <option value="Line">
+            Line
+          </option>
+
+          <option value="WeChat">
+            WeChat
+          </option>
+
+          <option value="Viber">
+            Viber
+          </option>
+
+          <option value="Reddit">
+            Reddit
+          </option>
+
+          <option value="Tumblr">
+            Tumblr
+          </option>
+
+          <option value="Kakaotalk">
+            Kakaotalk
+          </option>
+
+          <option value="Signal">
+            Signal
+          </option>
+
+        </optgroup>
+
+
+        <!-- =====================================================
+             E-COMMERCE
+        ====================================================== -->
+
+        <optgroup label="[ E-Commerce ]">
+
+          <option value="Amazon">
+            Amazon
+          </option>
+
+          <option value="Alibaba">
+            Alibaba
+          </option>
+
+          <option value="Etsy">
+            Etsy
+          </option>
+
+          <option value="Rakuten">
+            Rakuten
+          </option>
+
+          <option value="Shopify">
+            Shopify
+          </option>
+
+          <option value="Wish">
+            Wish
+          </option>
+
+          <option value="Temu">
+            Temu
+          </option>
+
+          <option value="Ralali">
+            Ralali
+          </option>
+
+          <option value="Shopee">
+            Shopee
+          </option>
+
+          <option value="Tokopedia">
+            Tokopedia
+          </option>
+
+          <option value="Bukalapak">
+            Bukalapak
+          </option>
+
+          <option value="Lazada">
+            Lazada
+          </option>
+
+          <option value="Blibli">
+            Blibli
+          </option>
+
+          <option value="Olx">
+            OLX
+          </option>
+
+        </optgroup>
+
+
+        <!-- =====================================================
+             VIDEO CONFERENCE
+        ====================================================== -->
+
+        <optgroup label="[ Video Conference ]">
+
+          <option value="Zoom">
+            Zoom Meeting
+          </option>
+
+          <option value="Teams">
+            Microsoft Teams
+          </option>
+
+          <option value="Google-Meet">
+            Google Meet
+          </option>
+
+          <option value="Discord">
+            Discord
+          </option>
+
+          <option value="Webex">
+            Webex
+          </option>
+
+          <option value="Skype">
+            Skype
+          </option>
+
+          <option value="Jitsi">
+            Jitsi
+          </option>
+
+          <option value="Whereby">
+            Whereby
+          </option>
+
+        </optgroup>
+
+
+        <!-- =====================================================
+             GAME
+        ====================================================== -->
+
+        <optgroup label="[ Game ]">
+
+          <option value="Game">
+            ALL Game
+          </option>
+
+          <option value="Mobile-Legends">
+            Mobile Legends
+          </option>
+
+          <option value="Free-Fire">
+            Free Fire
+          </option>
+
+          <option value="PUBG">
+            PUBG
+          </option>
+
+          <option value="PUBG-Mobile">
+            PUBG Mobile
+          </option>
+
+          <option value="Valorant">
+            Valorant
+          </option>
+
+          <option value="Roblox">
+            Roblox
+          </option>
+
+          <option value="Minecraft">
+            Minecraft
+          </option>
+
+          <option value="Steam">
+            Steam
+          </option>
+
+          <option value="Epic-Games">
+            Epic Games
+          </option>
+
+          <option value="PlayStation">
+            PlayStation
+          </option>
+
+          <option value="Xbox">
+            Xbox
+          </option>
+
+          <option value="Nintendo">
+            Nintendo
+          </option>
+
+        </optgroup>
+
+
+        <!-- =====================================================
+             P2P
+        ====================================================== -->
+
+        <optgroup label="[ P2P / Torrent ]">
+
+          <option value="P2P">
+            ALL P2P
+          </option>
+
+          <option value="BitTorrent">
+            BitTorrent
+          </option>
+
+          <option value="uTorrent">
+            uTorrent
+          </option>
+
+          <option value="qBittorrent">
+            qBittorrent
+          </option>
+
+          <option value="Torrent">
+            Torrent
+          </option>
+
+          <option value="Transmission">
+            Transmission
+          </option>
+
+          <option value="Deluge">
+            Deluge
+          </option>
+
+        </optgroup>
+
+
+        <!-- =====================================================
+             VPN
+        ====================================================== -->
+
+        <optgroup label="[ VPN / Proxy ]">
+
+          <option value="VPN">
+            ALL VPN
+          </option>
+
+          <option value="OpenVPN">
+            OpenVPN
+          </option>
+
+          <option value="WireGuard">
+            WireGuard
+          </option>
+
+          <option value="L2TP">
+            L2TP VPN
+          </option>
+
+          <option value="PPTP">
+            PPTP VPN
+          </option>
+
+          <option value="IPSec">
+            IPsec VPN
+          </option>
+
+          <option value="SSTP">
+            SSTP VPN
+          </option>
+
+          <option value="Proxy">
+            Proxy
+          </option>
+
+        </optgroup>
+
+
+        <!-- =====================================================
+             OTHER
+        ====================================================== -->
+
+        <optgroup label="[ Other List IP ]">
+
+          <option value="Meta">
+            Meta
+          </option>
+
+          <option value="Google">
+            Google
+          </option>
+
+          <option value="Speedtest">
+            Speedtest
+          </option>
+
+          <option value="GGC">
+            GGC (Google Global Cache)
+          </option>
+
+          <option value="NICE-OIXP">
+            Nice IIX / OIXP Indonesia
+          </option>
+
+          <option value="Bank-Indonesia">
+            All Indonesian Bank
+          </option>
+
+        </optgroup>
+
+      </select>
 
     </div>
 
 
-    <button class="btn btn-primary"
-            onclick="generateScript()">
+    <!-- CUSTOM -->
 
-      🚀 Generate Script
+    <div
+      class="form-group"
+      id="customDomainGroup"
+      style="display:none;"
+    >
 
-    </button>
+      <label for="inputDomain">
+        Ketik Domain Target Custom
+      </label>
 
-
-    <div class="notice">
-
-      <b>⚠️ Catatan Layer7:</b>
-
-      Layer7 bekerja dengan pencocokan pola trafik.
-      Karena sebagian besar aplikasi modern menggunakan
-      HTTPS/QUIC dan CDN, Layer7 tidak menjamin deteksi
-      100% seluruh trafik aplikasi.
-
-      Untuk produksi ISP, pertimbangkan kombinasi
-      <b>Layer7 + TLS Host + Address List</b>.
+      <input
+        type="text"
+        id="inputDomain"
+        class="form-control"
+        placeholder="Contoh: facebook.com"
+        onkeyup="generateScript()"
+      >
 
     </div>
 
 
-    <!-- ================= OUTPUT ================= -->
+    <!-- METHOD -->
 
-    <div class="output-wrapper">
+    <div class="form-group">
+
+      <label for="inputMethod">
+        Metode Blokir
+      </label>
+
+      <select
+        id="inputMethod"
+        class="form-control"
+        onchange="generateScript()"
+      >
+
+        <option value="content" selected>
+          Content (GitHub RSC)
+        </option>
+
+        <option value="tls">
+          TLS Host (GitHub RSC)
+        </option>
+
+        <option value="layer7">
+          Layer7 Protocol (RegExp)
+        </option>
+
+      </select>
+
+    </div>
 
 
-      <!-- STEP 1 -->
+    <!-- ACTION -->
 
-      <div class="output-box">
+    <div class="form-group">
 
-        <div class="output-header">
+      <label for="inputAction">
+        Aksi Firewall
+      </label>
 
-          <div class="output-title">
-            STEP 1 - Fetch RSC
-          </div>
+      <select
+        id="inputAction"
+        class="form-control"
+        onchange="generateScript()"
+      >
 
-          <button class="btn btn-copy"
-                  onclick="copyCode('code-step1',this)">
+        <option value="drop" selected>
+          Drop
+        </option>
 
-            📋 Copy Script
+        <option value="reject">
+          Reject
+        </option>
 
-          </button>
-
-        </div>
-
-        <pre class="output-content"
-             id="code-step1"></pre>
-
-      </div>
-
-
-      <!-- STEP 2 -->
-
-      <div class="output-box">
-
-        <div class="output-header">
-
-          <div class="output-title">
-            STEP 2 - MikroTik Script
-          </div>
-
-          <button class="btn btn-copy"
-                  onclick="copyCode('code-step2',this)">
-
-            📋 Copy Script
-
-          </button>
-
-        </div>
-
-        <pre class="output-content"
-             id="code-step2"></pre>
-
-      </div>
-
+      </select>
 
     </div>
 
   </div>
+
+
+  <button
+    class="btn btn-primary"
+    onclick="generateScript()"
+  >
+    🚀 Generate Script
+  </button>
+
+
+  <!-- =========================================================
+       OUTPUT
+  ========================================================== -->
+
+  <div class="output-wrapper">
+
+
+    <!-- STEP 1 -->
+
+    <div class="output-box">
+
+      <div class="output-header">
+
+        <div class="output-title">
+          STEP 1 - Copy Paste to Terminal
+        </div>
+
+        <button
+          class="btn btn-copy"
+          onclick="
+            copyCode(
+              'code-step1',
+              this
+            )
+          "
+        >
+          📋 Copy Script
+        </button>
+
+      </div>
+
+      <pre
+        class="output-content"
+        id="code-step1"
+      ></pre>
+
+    </div>
+
+
+    <!-- STEP 2 -->
+
+    <div class="output-box">
+
+      <div class="output-header">
+
+        <div class="output-title">
+          STEP 2 - Copy Paste to Terminal
+        </div>
+
+        <button
+          class="btn btn-copy"
+          onclick="
+            copyCode(
+              'code-step2',
+              this
+            )
+          "
+        >
+          📋 Copy Script
+        </button>
+
+      </div>
+
+      <pre
+        class="output-content"
+        id="code-step2"
+      ></pre>
+
+    </div>
+
+
+  </div>
+
+</div>
 
 </main>
 
@@ -1091,417 +1325,480 @@
 
 <script>
 
-/* ============================================================
-   DATABASE LAYER7
-============================================================ */
+/* =============================================================
+   DOMAIN / PATTERN DATABASE
+============================================================= */
 
-const L7 = {
+const targets = {
 
-  /* ================= STREAMING ================= */
+  /* ---------------------------------------------------------
+     STREAMING
+  --------------------------------------------------------- */
 
   "Youtube": [
-    "youtube\\.com",
-    "youtu\\.be",
-    "googlevideo\\.com",
-    "ytimg\\.com",
-    "youtube-nocookie\\.com"
+    "youtube",
+    "youtu.be",
+    "googlevideo"
   ],
 
   "Tiktok": [
-    "tiktok\\.com",
-    "tiktokcdn\\.com",
-    "tiktokv\\.com",
-    "ibytedtos\\.com",
-    "muscdn\\.com"
+    "tiktok",
+    "tiktokcdn",
+    "tiktokv"
   ],
 
   "Vidio": [
-    "vidio\\.com",
-    "vidiocdn\\.com"
+    "vidio"
   ],
 
   "Iflix": [
-    "iflix\\.com",
-    "iflixcdn\\.com"
+    "iflix"
   ],
 
   "Netflix": [
-    "netflix\\.com",
-    "nflxvideo\\.net",
-    "nflximg\\.net",
-    "nflxso\\.net",
-    "nflxext\\.com"
+    "netflix"
   ],
 
   "Spotify": [
-    "spotify\\.com",
-    "spotifycdn\\.com",
-    "scdn\\.co"
+    "spotify",
+    "scdn.co"
   ],
 
   "Wetv": [
-    "wetv\\.vip",
-    "wetvinfo\\.com"
+    "wetv",
+    "wetvinfo"
   ],
 
   "Vimeo": [
-    "vimeo\\.com",
-    "vimeocdn\\.com"
+    "vimeo"
   ],
 
   "Twitch": [
-    "twitch\\.tv",
-    "twitchcdn\\.net",
-    "ttvnw\\.net"
+    "twitch"
   ],
 
   "Prime-Video": [
-    "primevideo\\.com",
-    "amazonvideo\\.com"
+    "primevideo",
+    "amazonvideo"
   ],
 
   "Disney-Plus": [
-    "disneyplus\\.com",
-    "disney-plus\\.net"
+    "disneyplus",
+    "disney"
   ],
 
   "Apple-TV": [
-    "tv\\.apple\\.com",
-    "apple\\.com"
+    "tv.apple",
+    "apple-tv"
   ],
 
   "HBO": [
-    "hbomax\\.com",
-    "max\\.com"
+    "hbomax",
+    "max.com",
+    "hbo"
   ],
 
   "Viu": [
-    "viu\\.com",
-    "viu\\.co"
+    "viu"
   ],
 
   "iQIYI": [
-    "iqiyi\\.com",
-    "iq\\.com"
+    "iqiyi"
   ],
 
   "Bilibili": [
-    "bilibili\\.com",
-    "bilivideo\\.com"
+    "bilibili"
   ],
 
   "RCTI-Plus": [
-    "rctiplus\\.com"
+    "rctiplus"
   ],
 
   "Vision-Plus": [
-    "visionplus\\.id"
+    "visionplus"
   ],
 
 
-  /* ================= SOCIAL MEDIA ================= */
+  /* ---------------------------------------------------------
+     ALL STREAMING
+  --------------------------------------------------------- */
+
+  "Streaming": [
+    "youtube",
+    "youtu.be",
+    "googlevideo",
+    "tiktok",
+    "tiktokcdn",
+    "tiktokv",
+    "vidio",
+    "iflix",
+    "netflix",
+    "spotify",
+    "scdn.co",
+    "wetv",
+    "vimeo",
+    "twitch",
+    "primevideo",
+    "amazonvideo",
+    "disneyplus",
+    "disney",
+    "tv.apple",
+    "hbomax",
+    "max.com",
+    "viu",
+    "iqiyi",
+    "bilibili",
+    "rctiplus",
+    "visionplus"
+  ],
+
+
+  /* ---------------------------------------------------------
+     SOCIAL MEDIA
+  --------------------------------------------------------- */
 
   "Facebook": [
-    "facebook\\.com",
-    "facebook\\.net",
-    "fbcdn\\.net",
-    "fb\\.com"
+    "facebook",
+    "fbcdn",
+    "fbsbx"
   ],
 
   "Instagram": [
-    "instagram\\.com",
-    "cdninstagram\\.com"
+    "instagram",
+    "cdninstagram"
   ],
 
   "WhatsApp": [
-    "whatsapp\\.com",
-    "whatsapp\\.net"
+    "whatsapp",
+    "whatsapp.net"
   ],
 
   "Twitter-X": [
-    "twitter\\.com",
-    "x\\.com",
-    "twimg\\.com"
+    "twitter",
+    "x.com",
+    "twimg"
   ],
 
   "Telegram": [
-    "telegram\\.org",
-    "t\\.me",
-    "telegra\\.ph"
+    "telegram",
+    "t.me"
   ],
 
   "Threads": [
-    "threads\\.net"
+    "threads"
   ],
 
   "Imo": [
-    "imo\\.im"
+    "imo.im"
   ],
 
   "Snapchat": [
-    "snapchat\\.com",
-    "sc-cdn\\.net"
+    "snapchat"
   ],
 
   "Linkedin": [
-    "linkedin\\.com",
-    "licdn\\.com"
+    "linkedin"
   ],
 
   "Pinterest": [
-    "pinterest\\.com",
-    "pinimg\\.com"
+    "pinterest"
   ],
 
   "Line": [
-    "line\\.me",
-    "line-scdn\\.net"
+    "line.me"
   ],
 
   "WeChat": [
-    "wechat\\.com",
-    "weixin\\.qq\\.com"
+    "wechat",
+    "weixin"
   ],
 
   "Viber": [
-    "viber\\.com"
+    "viber"
   ],
 
   "Reddit": [
-    "reddit\\.com",
-    "redditmedia\\.com",
-    "redd\\.it"
+    "reddit"
   ],
 
   "Tumblr": [
-    "tumblr\\.com"
+    "tumblr"
   ],
 
   "Kakaotalk": [
-    "kakao\\.com",
-    "kakaocorp\\.com"
+    "kakao"
   ],
 
   "Signal": [
-    "signal\\.org"
+    "signal"
   ],
 
 
-  /* ================= E-COMMERCE ================= */
+  "Social-Media": [
+    "facebook",
+    "fbcdn",
+    "fbsbx",
+    "instagram",
+    "cdninstagram",
+    "whatsapp",
+    "whatsapp.net",
+    "twitter",
+    "x.com",
+    "twimg",
+    "telegram",
+    "t.me",
+    "threads",
+    "imo.im",
+    "snapchat",
+    "linkedin",
+    "pinterest",
+    "line.me",
+    "wechat",
+    "weixin",
+    "viber",
+    "reddit",
+    "tumblr",
+    "kakao",
+    "signal"
+  ],
+
+
+  /* ---------------------------------------------------------
+     E-COMMERCE
+  --------------------------------------------------------- */
 
   "Amazon": [
-    "amazon\\.com",
-    "amazon\\.co\\.id",
-    "amazonaws\\.com"
+    "amazon"
   ],
 
   "Alibaba": [
-    "alibaba\\.com",
-    "alicdn\\.com"
+    "alibaba"
   ],
 
   "Etsy": [
-    "etsy\\.com",
-    "etsystatic\\.com"
+    "etsy"
   ],
 
   "Rakuten": [
-    "rakuten\\.com"
+    "rakuten"
   ],
 
   "Shopify": [
-    "shopify\\.com",
-    "myshopify\\.com"
+    "shopify"
   ],
 
   "Wish": [
-    "wish\\.com"
+    "wish.com"
   ],
 
   "Temu": [
-    "temu\\.com"
+    "temu"
   ],
 
   "Ralali": [
-    "ralali\\.com"
+    "ralali"
   ],
 
   "Shopee": [
-    "shopee\\.co\\.id",
-    "shopee\\.com"
+    "shopee"
   ],
 
   "Tokopedia": [
-    "tokopedia\\.com",
-    "tokopedia\\.net"
+    "tokopedia"
   ],
 
   "Bukalapak": [
-    "bukalapak\\.com"
+    "bukalapak"
   ],
 
   "Lazada": [
-    "lazada\\.co\\.id",
-    "lazada\\.com"
+    "lazada"
   ],
 
   "Blibli": [
-    "blibli\\.com"
+    "blibli"
   ],
 
   "Olx": [
-    "olx\\.co\\.id",
-    "olx\\.com"
+    "olx"
   ],
 
 
-  /* ================= VIDEO CONFERENCE ================= */
+  /* ---------------------------------------------------------
+     VIDEO CONFERENCE
+  --------------------------------------------------------- */
 
   "Zoom": [
-    "zoom\\.us",
-    "zoom\\.com"
+    "zoom.us",
+    "zoom"
   ],
 
   "Teams": [
-    "teams\\.microsoft\\.com",
-    "teams\\.live\\.com"
+    "teams.microsoft",
+    "microsoftteams"
   ],
 
   "Google-Meet": [
-    "meet\\.google\\.com"
+    "meet.google",
+    "googleusercontent"
   ],
 
   "Discord": [
-    "discord\\.com",
-    "discordapp\\.com",
-    "discord\\.gg"
+    "discord",
+    "discordapp"
   ],
 
   "Webex": [
-    "webex\\.com",
-    "cisco\\.com"
+    "webex"
   ],
 
   "Skype": [
-    "skype\\.com"
+    "skype"
   ],
 
   "Jitsi": [
-    "jitsi\\.org"
+    "jitsi"
   ],
 
   "Whereby": [
-    "whereby\\.com"
+    "whereby"
   ],
 
 
-  /* ================= GAMES ================= */
+  /* ---------------------------------------------------------
+     GAME
+  --------------------------------------------------------- */
+
+  "Game": [
+    "mobilelegends",
+    "moonton",
+    "freefire",
+    "garena",
+    "pubg",
+    "pubgmobile",
+    "valorant",
+    "riotgames",
+    "roblox",
+    "minecraft",
+    "steam",
+    "epicgames",
+    "playstation",
+    "xbox",
+    "nintendo"
+  ],
 
   "Mobile-Legends": [
-    "mobilelegends\\.com",
-    "moonton\\.com"
+    "mobilelegends",
+    "moonton"
   ],
 
   "Free-Fire": [
-    "garena\\.com",
-    "freefiremobile\\.com"
+    "freefire",
+    "garena"
   ],
 
   "PUBG": [
-    "pubg\\.com",
-    "pubgmobile\\.com"
+    "pubg"
   ],
 
   "PUBG-Mobile": [
-    "pubgmobile\\.com",
-    "proximabeta\\.com"
+    "pubgmobile"
   ],
 
   "Valorant": [
-    "playvalorant\\.com",
-    "riotgames\\.com",
-    "riotcdn\\.net"
+    "valorant",
+    "riotgames"
   ],
 
   "Roblox": [
-    "roblox\\.com",
-    "rbxcdn\\.com"
+    "roblox"
   ],
 
   "Minecraft": [
-    "minecraft\\.net",
-    "mojang\\.com"
-  ],
-
-  "Dota2": [
-    "steampowered\\.com",
-    "dota2\\.com"
+    "minecraft"
   ],
 
   "Steam": [
-    "steampowered\\.com",
-    "steamcommunity\\.com",
-    "steamcontent\\.com"
+    "steam"
   ],
 
   "Epic-Games": [
-    "epicgames\\.com",
-    "epicgamescdn\\.com"
+    "epicgames"
   ],
 
   "PlayStation": [
-    "playstation\\.com",
-    "playstation\\.net"
+    "playstation"
   ],
 
   "Xbox": [
-    "xbox\\.com",
-    "xboxlive\\.com"
+    "xbox"
   ],
 
-  "Call-of-Duty": [
-    "callofduty\\.com",
-    "activision\\.com"
-  ],
-
-  "EA-Games": [
-    "ea\\.com",
-    "origin\\.com"
+  "Nintendo": [
+    "nintendo"
   ],
 
 
-  /* ================= P2P ================= */
+  /* ---------------------------------------------------------
+     P2P
+  --------------------------------------------------------- */
+
+  "P2P": [
+    "bittorrent",
+    "torrent",
+    "utorrent",
+    "qbittorrent",
+    "transmission",
+    "deluge",
+    "peer"
+  ],
 
   "BitTorrent": [
-    "bittorrent\\.com"
+    "bittorrent"
   ],
 
   "uTorrent": [
-    "utorrent\\.com"
+    "utorrent"
   ],
 
   "qBittorrent": [
-    "qbittorrent\\.org"
+    "qbittorrent"
   ],
 
   "Torrent": [
     "torrent"
   ],
 
+  "Transmission": [
+    "transmission"
+  ],
 
-  /* ================= VPN / PROXY ================= */
+  "Deluge": [
+    "deluge"
+  ],
+
+
+  /* ---------------------------------------------------------
+     VPN / PROXY
+  --------------------------------------------------------- */
+
+  "VPN": [
+    "openvpn",
+    "wireguard",
+    "l2tp",
+    "pptp",
+    "ipsec",
+    "sstp",
+    "vpn",
+    "proxy"
+  ],
 
   "OpenVPN": [
-    "openvpn\\.net",
-    "openvpn\\.com"
+    "openvpn"
   ],
 
   "WireGuard": [
-    "wireguard\\.com"
-  ],
-
-  "IPSec": [
-    "ipsec"
+    "wireguard"
   ],
 
   "L2TP": [
@@ -1512,170 +1809,216 @@ const L7 = {
     "pptp"
   ],
 
+  "IPSec": [
+    "ipsec"
+  ],
+
+  "SSTP": [
+    "sstp"
+  ],
+
   "Proxy": [
     "proxy"
   ],
 
-  "Tor": [
-    "torproject\\.org"
-  ],
 
-
-  /* ================= OTHER ================= */
+  /* ---------------------------------------------------------
+     OTHER
+  --------------------------------------------------------- */
 
   "Meta": [
-    "meta\\.com",
-    "facebook\\.com",
-    "fbcdn\\.net",
-    "instagram\\.com"
+    "facebook",
+    "instagram",
+    "whatsapp",
+    "meta"
   ],
 
   "Google": [
-    "google\\.com",
-    "googleapis\\.com",
-    "googleusercontent\\.com",
-    "gstatic\\.com"
+    "google",
+    "googlevideo",
+    "googleusercontent"
   ],
 
   "Speedtest": [
-    "speedtest\\.net",
-    "ookla\\.com",
-    "speedtest\\.com"
+    "speedtest",
+    "ookla"
   ],
 
   "GGC": [
-    "googlevideo\\.com",
-    "gvt1\\.com",
-    "gvt2\\.com"
+    "google",
+    "googlevideo",
+    "googleusercontent"
   ],
 
   "NICE-OIXP": [
-    "nice\\.co\\.id",
-    "ixp\\.net\\.id"
+    "nice",
+    "ixp",
+    "oixp"
   ],
 
   "Bank-Indonesia": [
-    "bi\\.go\\.id"
+    "bank",
+    "bankmandiri",
+    "bri",
+    "bni",
+    "bca",
+    "btn",
+    "cimb",
+    "danamon",
+    "permata",
+    "bsi"
   ]
 
 };
 
 
-/* ============================================================
-   GROUP / ALL
-============================================================ */
-
-const GROUPS = {
-
-  "Streaming": [
-    "Youtube",
-    "Tiktok",
-    "Vidio",
-    "Iflix",
-    "Netflix",
-    "Spotify",
-    "Wetv",
-    "Vimeo",
-    "Twitch",
-    "Prime-Video",
-    "Disney-Plus",
-    "Apple-TV",
-    "HBO",
-    "Viu",
-    "iQIYI",
-    "Bilibili",
-    "RCTI-Plus",
-    "Vision-Plus"
-  ],
-
-  "Social-Media": [
-    "Facebook",
-    "Instagram",
-    "WhatsApp",
-    "Twitter-X",
-    "Telegram",
-    "Threads",
-    "Imo",
-    "Snapchat",
-    "Linkedin",
-    "Pinterest",
-    "Line",
-    "WeChat",
-    "Viber",
-    "Reddit",
-    "Tumblr",
-    "Kakaotalk",
-    "Signal"
-  ],
-
-  "E-Commerce": [
-    "Amazon",
-    "Alibaba",
-    "Etsy",
-    "Rakuten",
-    "Shopify",
-    "Wish",
-    "Temu",
-    "Ralali",
-    "Shopee",
-    "Tokopedia",
-    "Bukalapak",
-    "Lazada",
-    "Blibli",
-    "Olx"
-  ],
-
-  "Video-Conference": [
-    "Zoom",
-    "Teams",
-    "Google-Meet",
-    "Discord",
-    "Webex",
-    "Skype",
-    "Jitsi",
-    "Whereby"
-  ],
-
-  "Games": [
-    "Mobile-Legends",
-    "Free-Fire",
-    "PUBG",
-    "PUBG-Mobile",
-    "Valorant",
-    "Roblox",
-    "Minecraft",
-    "Dota2",
-    "Steam",
-    "Epic-Games",
-    "PlayStation",
-    "Xbox",
-    "Call-of-Duty",
-    "EA-Games"
-  ],
-
-  "P2P": [
-    "BitTorrent",
-    "uTorrent",
-    "qBittorrent",
-    "Torrent"
-  ],
-
-  "VPN": [
-    "OpenVPN",
-    "WireGuard",
-    "IPSec",
-    "L2TP",
-    "PPTP",
-    "Proxy",
-    "Tor"
-  ]
-
-};
-
-
-/* ============================================================
+/* =============================================================
    CUSTOM DOMAIN
-============================================================ */
+============================================================= */
+
+function getCustomDomain() {
+
+  let input =
+    document
+      .getElementById("inputDomain")
+      .value
+      .trim()
+      .toLowerCase();
+
+  if (!input) {
+    return "facebook.com";
+  }
+
+  return input
+    .replace(/^https?:\/\//, "")
+    .replace(/^www\./, "")
+    .split("/")[0];
+
+}
+
+
+/* =============================================================
+   TARGET NAME
+============================================================= */
+
+function getTargetName() {
+
+  const select =
+    document.getElementById("target-list");
+
+  return select.value;
+
+}
+
+
+/* =============================================================
+   GET LAYER7 PATTERNS
+============================================================= */
+
+function getLayer7Patterns() {
+
+  const target =
+    getTargetName();
+
+
+  /* CUSTOM */
+
+  if (target === "Custom") {
+
+    const domain =
+      getCustomDomain();
+
+    return [
+      domain
+    ];
+
+  }
+
+
+  /* DATABASE */
+
+  if (targets[target]) {
+
+    return targets[target];
+
+  }
+
+
+  return [
+    target.toLowerCase()
+  ];
+
+}
+
+
+/* =============================================================
+   ESCAPE REGEX
+============================================================= */
+
+function escapeRegex(value) {
+
+  return value
+    .replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+}
+
+
+/* =============================================================
+   MAKE LAYER7 REGEX
+============================================================= */
+
+function makeLayer7Regex(patterns) {
+
+  const clean =
+    patterns
+      .filter(Boolean)
+      .map(p => escapeRegex(p.toLowerCase()))
+      .join("|");
+
+  /*
+   * Pola dibuat sederhana agar bisa digunakan
+   * pada RouterOS 6 dan RouterOS 7.
+   */
+
+  return "^.+(" + clean + ").*$";
+
+}
+
+
+/* =============================================================
+   SAFE NAME
+============================================================= */
+
+function safeName(value) {
+
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+
+}
+
+
+/* =============================================================
+   HTML ESCAPE
+============================================================= */
+
+function escapeHtml(text) {
+
+  return String(text)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+
+}
+
+
+/* =============================================================
+   CUSTOM DOMAIN TOGGLE
+============================================================= */
 
 function toggleCustomDomain() {
 
@@ -1685,126 +2028,27 @@ function toggleCustomDomain() {
   const group =
     document.getElementById("customDomainGroup");
 
-  group.style.display =
-    target === "Custom"
-      ? "flex"
-      : "none";
-
-}
-
-
-/* ============================================================
-   GET PATTERNS
-============================================================ */
-
-function getPatterns(target) {
-
-  /* CUSTOM */
-
   if (target === "Custom") {
 
-    const domain =
-      document
-        .getElementById("inputDomain")
-        .value
-        .trim()
-        .toLowerCase();
+    group.style.display = "flex";
 
-    if (!domain) {
-      return ["example\\.com"];
-    }
+  } else {
 
-    return [
-      domain.replace(
-        /[.*+?^${}()|[\]\\]/g,
-        "\\$&"
-      )
-    ];
-  }
-
-
-  /* GROUP */
-
-  if (GROUPS[target]) {
-
-    let result = [];
-
-    GROUPS[target].forEach(app => {
-
-      if (L7[app]) {
-
-        result =
-          result.concat(
-            L7[app]
-          );
-
-      }
-
-    });
-
-    return [
-      ...new Set(result)
-    ];
+    group.style.display = "none";
 
   }
-
-
-  /* SINGLE APPLICATION */
-
-  if (L7[target]) {
-
-    return L7[target];
-
-  }
-
-
-  /* FALLBACK */
-
-  return [
-    target
-      .toLowerCase()
-      .replace(/[^a-z0-9.-]/g,"")
-  ];
 
 }
 
 
-/* ============================================================
-   REGEX BUILDER
-============================================================ */
-
-function buildRegex(patterns) {
-
-  return "^.+(" +
-    patterns.join("|") +
-    ").*$";
-
-}
-
-
-/* ============================================================
-   SAFE NAME
-============================================================ */
-
-function safeName(value) {
-
-  return value
-    .toLowerCase()
-    .replace(/[^a-z0-9-]/g,"-")
-    .replace(/-+/g,"-")
-    .replace(/^-|-$/g,"");
-
-}
-
-
-/* ============================================================
-   GENERATE
-============================================================ */
+/* =============================================================
+   GENERATOR
+============================================================= */
 
 function generateScript() {
 
   const target =
-    document.getElementById("target-list").value;
+    getTargetName();
 
   const method =
     document.getElementById("inputMethod").value;
@@ -1813,20 +2057,16 @@ function generateScript() {
     document.getElementById("inputAction").value;
 
 
-  let domain = target;
-
+  let domain = "";
 
   if (target === "Custom") {
 
     domain =
-      document
-        .getElementById("inputDomain")
-        .value
-        .trim();
+      getCustomDomain();
 
-    if (!domain) {
-      domain = "example.com";
-    }
+  } else {
+
+    domain = target;
 
   }
 
@@ -1834,257 +2074,271 @@ function generateScript() {
   const safe =
     safeName(domain);
 
-  const layerName =
-    "jla-" + safe;
 
-
-  /* ========================================================
+  /* =========================================================
      STEP 1
-  ======================================================== */
-
-  let fetchFolder =
-    "content";
-
-  if (method === "tls") {
-    fetchFolder = "tls-host";
-  }
-
-  if (method === "layer7") {
-    fetchFolder = "layer7";
-  }
-
+  ========================================================= */
 
   let step1 = "";
 
-  step1 +=
-    `<span class="hl-cmd">/file remove</span> ` +
-    `<span class="hl-str">"${domain}.rsc"</span>\n`;
 
-  step1 +=
-    `<span class="hl-cmd">/tool fetch</span> ` +
-    `url=<span class="hl-str">"https://raw.githubusercontent.com/Masjuna86/Mikrotik-rsc/refs/heads/main/${fetchFolder}/${domain}.rsc"</span> ` +
-    `dst-path=<span class="hl-str">"${domain}.rsc"</span>`;
+  if (method === "layer7") {
+
+    step1 =
+`# =========================================================
+# JLA LAYER7
+# Tidak membutuhkan file .rsc dari GitHub
+# Layer7 dibuat langsung pada STEP 2
+# =========================================================
+
+# RouterOS 6 / RouterOS 7`;
+
+  } else {
+
+    let fetchFolder = "content";
+
+    if (method === "tls") {
+
+      fetchFolder = "tls-host";
+
+    }
 
 
-  /* ========================================================
+    /*
+     * LINK GITHUB TETAP DIPERTAHANKAN
+     */
+
+    step1 =
+`/file remove "${domain}.rsc"
+ /tool fetch url="https://raw.githubusercontent.com/Masjuna86/Mikrotik-rsc/refs/heads/main/${fetchFolder}/${domain}.rsc" dst-path="${domain}.rsc"`;
+
+  }
+
+
+  /* =========================================================
      STEP 2
-  ======================================================== */
+  ========================================================= */
 
   let step2 = "";
 
-  step2 +=
-    `<span class="hl-cmd">/import</span> ` +
-    `file-name=<span class="hl-str">"${domain}.rsc"</span>\n`;
 
-  step2 +=
-    `<span class="hl-cmd">/file remove</span> ` +
-    `<span class="hl-str">"${domain}.rsc"</span>\n\n`;
-
-
-  /* ========================================================
+  /* =========================================================
      LAYER7
-  ======================================================== */
+  ========================================================= */
 
   if (method === "layer7") {
 
     const patterns =
-      getPatterns(target);
+      getLayer7Patterns();
 
     const regex =
-      buildRegex(patterns);
+      makeLayer7Regex(patterns);
 
 
-    step2 +=
-      `<span class="hl-cmd"># ==================================================</span>\n`;
+    step2 =
+`# =========================================================
+# JLA MIKROTIK LAYER7 BLOCK
+# Target : ${domain}
+# Action : ${action}
+# Compatible : RouterOS 6 / RouterOS 7
+# =========================================================
 
-    step2 +=
-      `<span class="hl-cmd"># JLA LAYER7 GENERATOR</span>\n`;
+/ip firewall layer7-protocol
+add name="jla-${safe}" regexp="${regex}"
 
-    step2 +=
-      `<span class="hl-cmd"># Target : ${domain}</span>\n`;
+# =========================================================
+# FIREWALL FILTER
+# =========================================================
 
-    step2 +=
-      `<span class="hl-cmd"># ==================================================</span>\n\n`;
+/ip firewall filter
+add chain=forward action=${action} layer7-protocol="jla-${safe}" comment="JLA Layer7 Block ${domain}"
 
+# =========================================================
+# LAYER7 REGEXP
+# =========================================================
+# ${patterns.join(" | ")}
 
-    step2 +=
-      `<span class="hl-cmd">/ip firewall layer7-protocol</span>\n`;
-
-    step2 +=
-      `<span class="hl-cmd">add</span> ` +
-      `name=<span class="hl-var">"${layerName}"</span> ` +
-      `regexp=<span class="hl-str">"${regex}"</span>\n\n`;
-
-
-    step2 +=
-      `<span class="hl-cmd">/ip firewall filter</span>\n`;
-
-    step2 +=
-      `<span class="hl-cmd">add</span> ` +
-      `chain=forward ` +
-      `action=<span class="hl-var">${action}</span> ` +
-      `layer7-protocol=<span class="hl-var">"${layerName}"</span> ` +
-      `comment=<span class="hl-str">"JLA Layer7 ${domain}"</span>\n\n`;
-
-
-    step2 +=
-      `<span class="hl-cmd"># Pattern yang digunakan:</span>\n`;
-
-
-    patterns.forEach(pattern => {
-
-      step2 +=
-        `<span class="hl-str"># ${pattern}</span>\n`;
-
-    });
-
-
-    step2 +=
-      `\n<span class="hl-cmd"># ==================================================</span>\n`;
-
-    step2 +=
-      `<span class="hl-cmd"># WARNING</span>\n`;
-
-    step2 +=
-      `<span class="hl-str"># Layer7 tidak menjamin 100% untuk HTTPS/QUIC.</span>\n`;
-
-    step2 +=
-      `<span class="hl-str"># Pertimbangkan TLS Host / Address List untuk trafik modern.</span>\n`;
+`;
 
   }
 
 
-  /* ========================================================
+  /* =========================================================
      CONTENT
-  ======================================================== */
+  ========================================================= */
 
   else if (method === "content") {
 
-    step2 +=
-      `<span class="hl-cmd">/ip firewall filter</span>\n`;
+    step2 =
+`# =========================================================
+# JLA CONTENT BLOCK
+# Target : ${domain}
+# =========================================================
 
-    step2 +=
-      `<span class="hl-cmd">add</span> ` +
-      `chain=forward ` +
-      `action=<span class="hl-var">${action}</span> ` +
-      `content=<span class="hl-str">"${domain.toLowerCase()}"</span> ` +
-      `comment=<span class="hl-str">"JLA Content ${domain}"</span>\n`;
+/import file-name="${domain}.rsc"
+
+/file remove "${domain}.rsc"
+
+/ip firewall filter
+add chain=forward action=${action} content="${domain.toLowerCase()}" comment="JLA Content Block ${domain}"
+
+# =========================================================
+# ADDRESS LIST DARI FILE RSC
+# =========================================================
+
+/ip firewall filter
+add chain=forward action=${action} dst-address-list="${domain}" comment="JLA Address List Block ${domain}"
+`;
 
   }
 
 
-  /* ========================================================
+  /* =========================================================
      TLS HOST
-  ======================================================== */
+  ========================================================= */
 
   else if (method === "tls") {
 
-    step2 +=
-      `<span class="hl-cmd">/ip firewall filter</span>\n`;
+    step2 =
+`# =========================================================
+# JLA TLS HOST BLOCK
+# Target : ${domain}
+# =========================================================
 
-    step2 +=
-      `<span class="hl-cmd">add</span> ` +
-      `chain=forward ` +
-      `action=<span class="hl-var">${action}</span> ` +
-      `protocol=tcp ` +
-      `dst-port=443 ` +
-      `tls-host=<span class="hl-str">"*${domain.toLowerCase()}*"</span> ` +
-      `comment=<span class="hl-str">"JLA TLS ${domain}"</span>\n`;
+/import file-name="${domain}.rsc"
+
+/file remove "${domain}.rsc"
+
+/ip firewall filter
+add chain=forward action=${action} protocol=tcp dst-port=443 tls-host="*${domain.toLowerCase()}*" comment="JLA TLS Block ${domain}"
+
+# =========================================================
+# ADDRESS LIST DARI FILE RSC
+# =========================================================
+
+/ip firewall filter
+add chain=forward action=${action} dst-address-list="${domain}" comment="JLA Address List Block ${domain}"
+`;
 
   }
 
 
-  /* ========================================================
-     OUTPUT
-  ======================================================== */
+  /* =========================================================
+     SYNTAX HIGHLIGHT
+  ========================================================= */
 
-  document.getElementById(
-    "code-step1"
-  ).innerHTML = step1;
+  document
+    .getElementById("code-step1")
+    .innerHTML =
+      highlightCode(step1);
 
-  document.getElementById(
-    "code-step2"
-  ).innerHTML = step2;
+
+  document
+    .getElementById("code-step2")
+    .innerHTML =
+      highlightCode(step2);
 
 }
 
 
-/* ============================================================
-   COPY
-============================================================ */
+/* =============================================================
+   HIGHLIGHT
+============================================================= */
 
-function copyCode(
+function highlightCode(code) {
+
+  let safe =
+    escapeHtml(code);
+
+
+  /*
+   * Command highlighting
+   */
+
+  safe =
+    safe.replace(
+      /(^|[\n ])(\/[a-z0-9 _-]+)/gi,
+      '$1<span class="hl-cmd">$2</span>'
+    );
+
+
+  /*
+   * Comment
+   */
+
+  safe =
+    safe.replace(
+      /(#.*)/g,
+      '<span class="hl-comment">$1</span>'
+    );
+
+
+  return safe;
+
+}
+
+
+/* =============================================================
+   COPY
+============================================================= */
+
+async function copyCode(
   elementId,
-  btnElement
+  button
 ) {
 
   const element =
-    document.getElementById(
-      elementId
-    );
+    document.getElementById(elementId);
 
-  const textarea =
-    document.createElement(
-      "textarea"
-    );
-
-  textarea.value =
+  const text =
     element.textContent;
 
-  document.body.appendChild(
-    textarea
-  );
-
-  textarea.select();
 
   try {
 
-    document.execCommand(
-      "copy"
-    );
+    await navigator.clipboard.writeText(text);
 
-    const original =
-      btnElement.innerHTML;
+  } catch (error) {
 
-    btnElement.innerHTML =
-      "✔️ Copied!";
+    const textarea =
+      document.createElement("textarea");
 
-    btnElement.classList.add(
-      "copied"
-    );
+    textarea.value = text;
 
-    setTimeout(() => {
+    document.body.appendChild(textarea);
 
-      btnElement.innerHTML =
-        original;
+    textarea.select();
 
-      btnElement.classList.remove(
-        "copied"
-      );
+    document.execCommand("copy");
 
-    },2000);
+    document.body.removeChild(textarea);
 
   }
 
-  catch(error) {
 
-    console.error(
-      "Copy gagal:",
-      error
-    );
+  const old =
+    button.innerHTML;
 
-  }
+  button.innerHTML =
+    "✔️ Copied!";
 
-  document.body.removeChild(
-    textarea
-  );
+  button.classList.add("copied");
+
+
+  setTimeout(() => {
+
+    button.innerHTML = old;
+
+    button.classList.remove("copied");
+
+  }, 2000);
 
 }
 
 
-/* ============================================================
-   INITIALIZE
-============================================================ */
+/* =============================================================
+   INITIAL LOAD
+============================================================= */
 
 window.onload = function() {
 
