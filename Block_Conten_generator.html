@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MikroTik Block Generator | JLA Tools</title>
+  
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap');
+    
+    * { 
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+      box-sizing: border-box; 
+    }
+    
+    :root {
+      --bg: #f4f7f6;
+      --text: #334155;
+      --text-dark: #0f172a;
+      --text-muted: #64748b;
+      --accent: #ff6600;
+      --accent-hover: #ea580c;
+      --border: #e2e8f0;
+      --input-bg: #f8fafc;
+      --code-bg: #0f172a;
+      --code-text: #e2e8f0;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    body { 
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
+      background: var(--bg);
+      color: var(--text); 
+      margin: 0; 
+      padding: 0; 
+      display: flex; 
+      flex-direction: column; 
+      min-height: 100vh;
+    }
+
+    .app-header {
+      height: 64px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-logo {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, var(--accent), #ea580c);
+      border-radius: 10px; color: #fff;
+      font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 16px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 12px rgba(255, 102, 0, 0.3);
+    }
+    .brand-title h1 { font-size: 15px; font-weight: 800; color: var(--text-dark); letter-spacing: 0.3px; line-height: 1.2; margin: 0;}
+    .brand-title p { font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; font-weight: 500; margin: 0;}
+
+    .header-actions { display: flex; align-items: center; gap: 12px; }
+
+    .btn { 
+      display: inline-flex; align-items: center; justify-content: center; gap: 7px; 
+      padding: 9px 16px; border-radius: 8px; border: none; 
+      font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; 
+      cursor: pointer; transition: all .15s; white-space: nowrap; text-decoration: none; 
+    }
+    .btn-secondary { background: #ffffff; color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: #f8fafc; }
+    .btn-wa { background: #25D366; color: white; border-radius: 20px; font-weight: 700; }
+    .btn-wa:hover { background: #128C7E; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3); }
+    .btn-primary { background: var(--accent); color: white; box-shadow: 0 4px 12px rgba(255, 102, 0, 0.2); padding: 12px 24px; font-size: 14px;}
+    .btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); }
+    
+    .btn-copy { background: #334155; color: white; padding: 6px 12px; font-size: 12px; border-radius: 6px;}
+    .btn-copy:hover { background: #475569; }
+    .btn-copy.copied { background: #10b981; color: white; }
+
+    .main-container { 
+      display: flex; flex: 1; max-width: 1200px; margin: 0 auto; 
+      width: 100%; padding: 40px 20px; gap: 30px; 
+      align-items: flex-start;
+    }
+    
+    .content-area { 
+      flex: 1; background: #ffffff; border-radius: 16px; 
+      box-shadow: 0 10px 30px rgba(148, 163, 184, 0.1); 
+      border: 1px solid #f1f5f9; padding: 40px; 
+      min-width: 0; width: 100%;
+    }
+
+    .page-title { margin-top: 0; color: var(--text-dark); font-size: 24px; margin-bottom: 8px;}
+    .page-desc { color: var(--text-muted); font-size: 14px; margin-bottom: 30px; line-height: 1.6;}
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 24px;
+      margin-bottom: 30px;
+      background: #f8fafc;
+      padding: 30px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.02);
+    }
+
+    .form-group { display: flex; flex-direction: column; gap: 10px; }
+    .form-group label { font-size: 14px; font-weight: 700; color: var(--text-dark); letter-spacing: 0.2px;}
+    
+    .form-control {
+      padding: 12px 16px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-dark);
+      background-color: #ffffff;
+      outline: none;
+      width: 100%;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+      transition: all 0.2s ease;
+    }
+    
+    .form-control:hover { border-color: #94a3b8; }
+    .form-control:focus { 
+      border-color: var(--accent); 
+      box-shadow: 0 0 0 4px rgba(255, 102, 0, 0.15), 0 1px 2px 0 rgba(0, 0, 0, 0.05); 
+      transform: translateY(-1px);
+    }
+    
+    select.form-control { 
+      cursor: pointer; 
+      appearance: none; 
+      background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2364748b%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E"); 
+      background-repeat: no-repeat; 
+      background-position: right 16px top 50%; 
+      background-size: 10px auto; 
+      padding-right: 40px;
+    }
+    select.form-control optgroup { font-weight: 700; color: var(--accent); background-color: #fff; }
+    select.form-control option { font-weight: 500; color: var(--text-dark); background-color: #fff;}
+
+    .output-wrapper { margin-top: 30px; display: flex; flex-direction: column; gap: 24px; }
+    .output-box {
+      background: var(--code-bg);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+    }
+    
+    .output-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      background: rgba(255,255,255,0.05);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .output-title { color: #fff; font-size: 13px; font-weight: 600; font-family: 'JetBrains Mono', monospace; display: flex; align-items: center; gap: 8px;}
+    .output-title::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #10b981; }
+
+    .output-content {
+      margin: 0; padding: 16px;
+      color: var(--code-text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+    
+    /* Warna Syntax Highlighting ala Code Editor */
+    .hl-var { color: #f97316; font-weight: 600; } /* Variabel (Orange) */
+    .hl-cmd { color: #38bdf8; } /* Command (Biru Muda) */
+    .hl-str { color: #a3e635; } /* String/Teks (Hijau) */
+    .hl-ip { color: #f472b6; } /* Highlight IPs */
+
+    .footer { text-align: center; font-size: 13px; color: #94a3b8; padding: 30px; width: 100%; margin-top: auto; }
+
+    @media screen and (max-width: 768px) { 
+      .app-header { flex-direction: column; height: auto; padding: 15px 20px; gap: 15px; align-items: center; justify-content: center; text-align: center;}
+      .brand { flex-direction: column; gap: 8px; }
+      .header-actions { width: 100%; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;}
+      .main-container { flex-direction: column; padding: 20px 15px; }
+      .content-area { padding: 40px 20px; }
+      .form-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-logo">JLA</div>
+      <div class="brand-title">
+        <h1>JAKA LINTAS AKSES GENERATOR</h1>
+        <p>Portal Script Generator Premium JLA</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <a href="#" class="btn btn-secondary">🏠 Beranda</a>
+      <a href="https://wa.me/62818386078?text=Halo%20JLA%20Tools" target="_blank" class="btn btn-wa">
+        <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Hubungi Kami
+      </a>
+    </div>
+  </header>
+
+  <main class="main-container">
+    <div class="content-area">
+      <h2 class="page-title">MikroTik Access Block Generator</h2>
+      <p class="page-desc">Generate script Firewall Filter otomatis untuk memblokir akses ke domain atau website tertentu (Youtube, Facebook, dll) dengan opsi Layer7, Content, maupun TLS Host.</p>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="target-list">Website / Domain Target</label>
+          <select id="target-list" class="form-control" onchange="toggleCustomDomain(); generateScript();">
+            <option value="Custom">✏️ Input Domain Manual / Custom</option>
+            <optgroup label="[ Streaming ]">
+              <option value="Streaming">ALL Streaming</option>
+              <option value="Youtube" selected>Youtube</option>
+              <option value="Tiktok">Tiktok</option>
+              <option value="Vidio">Vidio</option>
+              <option value="Iflix">Iflix</option>
+              <option value="Netflix">Netflix</option>
+              <option value="Spotify">Spotify</option>
+              <option value="Wetv">Wetv</option>
+              <option value="Vimeo">Vimeo</option>
+              <option value="Twitch">Twitch</option>
+              <option value="Prime-Video">Prime Video</option>
+              <option value="Disney-Plus">Disney+</option>
+              <option value="Apple-TV">Apple TV</option>
+              <option value="HBO">HBO Go / Max</option>
+              <option value="Viu">Viu</option>
+              <option value="iQIYI">iQIYI</option>
+              <option value="Bilibili">Bilibili</option>
+              <option value="RCTI-Plus">RCTI+</option>
+              <option value="Vision-Plus">Vision+</option>
+            </optgroup>
+            <optgroup label="[ Social Media ]">
+              <option value="Social-Media">ALL Social-Media</option>
+              <option value="Facebook">Facebook</option>
+              <option value="Instagram">Instagram</option>
+              <option value="WhatsApp">WhatsApp</option>
+              <option value="Twitter-X">Twitter / X</option>
+              <option value="Telegram">Telegram</option>
+              <option value="Threads">Threads</option>
+              <option value="Imo">Imo.im</option>
+              <option value="Snapchat">Snapchat</option>
+              <option value="Linkedin">Linkedin</option>
+              <option value="Pinterest">Pinterest</option>
+              <option value="Line">Line</option>
+              <option value="WeChat">WeChat</option>
+              <option value="Viber">Viber</option>
+              <option value="Reddit">Reddit</option>
+              <option value="Tumblr">Tumblr</option>
+              <option value="Kakaotalk">Kakaotalk</option>
+              <option value="Signal">Signal</option>
+            </optgroup>
+            <optgroup label="[ E-Commerce ]">
+              <option value="Amazon">Amazon</option>
+              <option value="Alibaba">Alibaba</option>
+              <option value="Etsy">Etsy</option>
+              <option value="Rakuten">Rakuten</option>
+              <option value="Shopify">Shopify</option>
+              <option value="Wish">Wish</option>
+              <option value="Temu">Temu</option>
+              <option value="Ralali">Ralali</option>
+              <option value="Shopee">Shopee</option>
+              <option value="Tokopedia">Tokopedia</option>
+              <option value="Bukalapak">Bukalapak</option>
+              <option value="Lazada">Lazada</option>
+              <option value="Blibli">Blibli</option>
+              <option value="Olx">Olx</option>
+            </optgroup>
+            <optgroup label="[ Video Conference ]">
+              <option value="Zoom">Zoom Meeting</option>
+              <option value="Teams">Microsoft Teams</option>
+              <option value="Google-Meet">Google Meet</option>
+              <option value="Discord">Discord</option>
+              <option value="Webex">Webex</option>
+              <option value="Skype">Skype</option>
+              <option value="Jitsi">Jitsi</option>
+              <option value="Whereby">Whereby</option>
+            </optgroup>
+            <optgroup label="[ Other List IP ]">
+              <option value="Meta">Meta</option>
+              <option value="Google">Google</option>
+              <option value="Speedtest">Speedtest</option>
+              <option value="GGC">GGC (Google Global Cache)</option>
+              <option value="NICE-OIXP">Nice IIX or OIXP (Indonesia)</option>
+              <option value="Bank-Indonesia">All Indonesian Bank</option>
+            </optgroup>
+          </select>
+        </div>
+
+        <div class="form-group" id="customDomainGroup" style="display: none;">
+          <label for="inputDomain">Ketik Domain Target Custom</label>
+          <input type="text" id="inputDomain" class="form-control" placeholder="Contoh: facebook.com" onkeyup="generateScript()">
+        </div>
+
+        <div class="form-group">
+          <label for="inputMethod">Metode Blokir</label>
+          <!-- onchange digunakan agar otomatis update saat pilihan diganti -->
+          <select id="inputMethod" class="form-control" onchange="generateScript()">
+            <option value="content" selected>Content (Ringan & Cepat)</option>
+            <option value="tls">TLS Host (Khusus HTTPS)</option>
+            <option value="layer7">Layer7 Protocol (RegExp)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="inputAction">Aksi Firewall</label>
+          <select id="inputAction" class="form-control" onchange="generateScript()">
+            <option value="drop" selected>Drop (Tolak diam-diam)</option>
+            <option value="reject">Reject (Tolak beri pesan error)</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <button class="btn btn-primary" onclick="generateScript()">🚀 Generate Script</button>
+      </div>
+
+      <div class="output-wrapper">
+        <!-- STEP 1 -->
+        <div class="output-box">
+          <div class="output-header">
+            <div class="output-title">STEP 1 - Copy Paste to Terminal</div>
+            <button class="btn btn-copy" onclick="copyCode('code-step1', this)">📋 Copy Script</button>
+          </div>
+          <pre class="output-content" id="code-step1"></pre>
+        </div>
+
+        <!-- STEP 2 -->
+        <div class="output-box">
+          <div class="output-header">
+            <div class="output-title">STEP 2 - Copy Paste to Terminal</div>
+            <button class="btn btn-copy" onclick="copyCode('code-step2', this)">📋 Copy Script</button>
+          </div>
+          <pre class="output-content" id="code-step2"></pre>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    Jaka Lintas Akses © 2024. Premium RouterOS Script Tools Portal.
+  </footer>
+
+  <script>
+    /**
+     * Menampilkan/menyembunyikan input domain manual jika memilih opsi Custom
+     */
+    function toggleCustomDomain() {
+      const targetSelect = document.getElementById("target-list").value;
+      const customGroup = document.getElementById("customDomainGroup");
+      if (targetSelect === "Custom") {
+        customGroup.style.display = "flex";
+      } else {
+        customGroup.style.display = "none";
+      }
+    }
+
+    /**
+     * Fungsi utama untuk merangkai script MikroTik 2 Step
+     * dan memberikan warna syntax highlighting
+     */
+    function generateScript() {
+      // 1. Ambil nilai dari form input/select
+      const targetSelect = document.getElementById("target-list").value;
+      let domain = "";
+
+      if (targetSelect === "Custom") {
+        let domainInput = document.getElementById("inputDomain").value.trim();
+        domain = domainInput !== "" ? domainInput : "facebook.com";
+      } else {
+        domain = targetSelect;
+      }
+      
+      let method = document.getElementById("inputMethod").value;
+      let action = document.getElementById("inputAction").value;
+
+      // Penentuan folder di repository github berdasarkan metode
+      let fetchFolder = "content";
+      if (method === "tls") fetchFolder = "tls-host";
+      if (method === "layer7") fetchFolder = "layer7";
+
+      // --- STEP 1: Mengunduh File RSC Address List ---
+      let step1Html = `<span class="hl-cmd">/file remove</span> <span class="hl-str">"${domain}.rsc"</span>\n`;
+      step1Html += `<span class="hl-cmd">/tool fetch</span> url=<span class="hl-str">"https://raw.githubusercontent.com/Masjuna86/Mikrotik-rsc/refs/heads/main/${fetchFolder}/${domain}.rsc"</span> dst-path=<span class="hl-str">"${domain}.rsc"</span>`;
+
+      // --- STEP 2: Mengimpor RSC & Menerapkan Firewall Filter ---
+      let step2Html = `<span class="hl-cmd">/import</span> file-name=<span class="hl-str">"${domain}.rsc"</span>\n`;
+      step2Html += `<span class="hl-cmd">/file remove</span> <span class="hl-str">"${domain}.rsc"</span>\n\n`;
+
+      if (method === "layer7") {
+         step2Html += `<span class="hl-cmd">/ip firewall layer7-protocol</span>\n`;
+         step2Html += `<span class="hl-cmd">add</span> name=<span class="hl-var">block-${domain.toLowerCase()}</span> regexp=<span class="hl-str">"^.+(${domain.toLowerCase()}).*$"</span>\n\n`;
+         
+         step2Html += `<span class="hl-cmd">/ip firewall filter</span>\n`;
+         step2Html += `<span class="hl-cmd">add</span> action=<span class="hl-var">${action}</span> chain=forward layer7-protocol=<span class="hl-var">block-${domain.toLowerCase()}</span> comment=<span class="hl-str">"JLA Block ${domain}"</span>\n`;
+         step2Html += `<span class="hl-cmd">/ip firewall filter</span>\n`;
+         step2Html += `<span class="hl-cmd">add</span> action=<span class="hl-var">${action}</span> chain=forward dst-address-list=<span class="hl-str">"${domain}"</span> comment=<span class="hl-str">"JLA Block Address List ${domain}"</span>\n`;
+      } else if (method === "content") {
+         step2Html += `<span class="hl-cmd">/ip firewall filter</span>\n`;
+         step2Html += `<span class="hl-cmd">add</span> action=<span class="hl-var">${action}</span> chain=forward content=<span class="hl-str">"${domain.toLowerCase()}"</span> comment=<span class="hl-str">"JLA Block ${domain}"</span>\n`;
+         step2Html += `<span class="hl-cmd">/ip firewall filter</span>\n`;
+         step2Html += `<span class="hl-cmd">add</span> action=<span class="hl-var">${action}</span> chain=forward dst-address-list=<span class="hl-str">"${domain}"</span> comment=<span class="hl-str">"JLA Block Address List ${domain}"</span>\n`;
+      } else if (method === "tls") {
+         step2Html += `<span class="hl-cmd">/ip firewall filter</span>\n`;
+         step2Html += `<span class="hl-cmd">add</span> action=<span class="hl-var">${action}</span> chain=forward protocol=tcp dst-port=443 tls-host=<span class="hl-str">"*${domain.toLowerCase()}*"</span> comment=<span class="hl-str">"JLA Block HTTPS ${domain}"</span>\n`;
+         step2Html += `<span class="hl-cmd">/ip firewall filter</span>\n`;
+         step2Html += `<span class="hl-cmd">add</span> action=<span class="hl-var">${action}</span> chain=forward dst-address-list=<span class="hl-str">"${domain}"</span> comment=<span class="hl-str">"JLA Block Address List ${domain}"</span>\n`;
+      }
+
+      // Inject teks HTML ke masing-masing output box terminal
+      document.getElementById("code-step1").innerHTML = step1Html;
+      document.getElementById("code-step2").innerHTML = step2Html;
+    }
+
+    /**
+     * Fungsi untuk menyalin isi dari code block
+     */
+    function copyCode(elementId, btnElement) {
+      const codeBlock = document.getElementById(elementId);
+      
+      // Menggunakan textarea sementara agar tag span (warna) tidak ikut tersalin,
+      // melainkan hanya murni teks script MikroTik nya saja.
+      const tempTextArea = document.createElement('textarea');
+      tempTextArea.value = codeBlock.textContent;
+      document.body.appendChild(tempTextArea);
+      tempTextArea.select();
+      
+      try {
+        // Eksekusi copy
+        document.execCommand('copy');
+        
+        // Ubah tampilan tombol sementara sebagai indikasi berhasil
+        const originalText = btnElement.innerHTML;
+        btnElement.innerHTML = '✔️ Copied!';
+        btnElement.classList.add('copied');
+        
+        // Kembalikan tulisan tombol setelah 2 detik
+        setTimeout(() => {
+          btnElement.innerHTML = originalText;
+          btnElement.classList.remove('copied');
+        }, 2000);
+
+      } catch (err) {
+        console.error('Gagal melakukan copy teks', err);
+      }
+      
+      // Hapus textarea sementara dari memori
+      document.body.removeChild(tempTextArea);
+    }
+
+    // Jalankan fungsi ini otomatis sekali saat halaman web baru saja dibuka (Load)
+    window.onload = () => {
+      toggleCustomDomain();
+      generateScript();
+    };
+  </script>
+</body>
+</html>
