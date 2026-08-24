@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Judul halaman yang akan muncul di tab browser -->
+  <title>MikroTik Ninja: Hide Routerboard Info | JLA Tools</title>
+  
+  <!-- Mengimpor font Inter untuk teks biasa dan JetBrains Mono untuk teks kode/terminal -->
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap');
+    
+    /* Reset CSS dasar untuk memastikan tampilan konsisten di semua browser */
+    * { 
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+      box-sizing: border-box; 
+    }
+    
+    /* Variabel warna untuk memudahkan perubahan tema */
+    :root {
+      --bg: #f4f7f6;
+      --text: #334155;
+      --text-dark: #0f172a;
+      --text-muted: #64748b;
+      --accent: #ff6600;
+      --border: #e2e8f0;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      /* Warna khusus untuk terminal */
+      --terminal-bg: #1e1e1e;
+      --terminal-header: #2d3748;
+      --terminal-text: #e2e8f0;
+    }
+
+    /* Styling untuk body halaman */
+    body { 
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
+      background: var(--bg);
+      color: var(--text); 
+      margin: 0; 
+      padding: 0; 
+      display: flex; 
+      flex-direction: column; 
+      min-height: 100vh;
+    }
+
+    /* --- Bagian Header (Dari Template JLA) --- */
+    .app-header {
+      height: 64px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-logo {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, var(--accent), #ea580c);
+      border-radius: 10px; color: #fff;
+      font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 16px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 12px rgba(255, 102, 0, 0.3);
+    }
+    .brand-title h1 { font-size: 15px; font-weight: 800; color: var(--text-dark); letter-spacing: 0.3px; line-height: 1.2; margin: 0;}
+    .brand-title p { font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; font-weight: 500; margin: 0;}
+
+    .header-actions { display: flex; align-items: center; gap: 12px; }
+
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 9px 16px; border-radius: 8px; border: none; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; transition: all .15s; white-space: nowrap; text-decoration: none; }
+    .btn-secondary { background: #ffffff; color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: #f8fafc; }
+    .btn-wa { background: #25D366; color: white; border-radius: 20px; font-weight: 700; }
+    .btn-wa:hover { background: #128C7E; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3); }
+
+    /* --- Container Utama --- */
+    .main-container { 
+      display: flex; 
+      flex: 1; 
+      max-width: 1400px; 
+      margin: 0 auto; 
+      width: 100%; 
+      padding: 40px 20px; 
+      gap: 30px; 
+    }
+    
+    .content-area { 
+      flex: 1; 
+      background: #ffffff; 
+      border-radius: 16px; 
+      box-shadow: 0 10px 30px rgba(148, 163, 184, 0.1); 
+      border: 1px solid #f1f5f9;
+      padding: 40px; 
+      line-height: 1.6; 
+      min-width: 0;
+    }
+
+    .footer { 
+      text-align: center; 
+      font-size: 13px; 
+      color: #94a3b8; 
+      padding: 30px; 
+      width: 100%; 
+      margin-top: auto;
+    }
+
+    /* --- Form Styling (Diadaptasi untuk Template Baru) --- */
+    .page-title {
+        color: var(--accent);
+        margin-top: 0;
+        margin-bottom: 20px;
+        font-weight: 800;
+        font-size: 24px;
+        border-bottom: 2px solid var(--border);
+        padding-bottom: 15px;
+    }
+
+    .disclaimer-box {
+        background-color: #fffbeb;
+        border-left: 4px solid #f59e0b;
+        padding: 15px;
+        border-radius: 4px;
+        font-size: 13px;
+        margin-bottom: 25px;
+        color: #92400e;
+    }
+    .disclaimer-box strong { color: #b45309; }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .input-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .input-group label {
+        font-weight: 600;
+        font-size: 14px;
+        color: var(--text-dark);
+    }
+
+    .input-field {
+        padding: 10px 15px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        width: 100%;
+        background-color: #f8fafc;
+        color: var(--text-dark);
+    }
+    .input-field:focus {
+        outline: none;
+        border-color: var(--accent);
+        background-color: #fff;
+        box-shadow: 0 0 0 3px rgba(255, 102, 0, 0.1);
+    }
+
+    .input-with-button {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-action {
+        background: var(--accent);
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        font-family: 'Inter', sans-serif;
+    }
+    .btn-action:hover {
+        background: #ea580c;
+    }
+    .btn-action.secondary {
+        background: #64748b;
+    }
+    .btn-action.secondary:hover {
+        background: #475569;
+    }
+
+    /* Checkbox Grid Styling */
+    .checkbox-section {
+        background: #f8fafc;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 30px;
+    }
+    .checkbox-section-title {
+        font-weight: 700;
+        color: var(--text-dark);
+        margin-bottom: 5px;
+        font-size: 16px;
+    }
+    .checkbox-section-desc {
+        font-size: 12px;
+        color: var(--text-muted);
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .checkbox-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+
+    .checkbox-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 14px;
+        color: var(--text);
+        cursor: pointer;
+    }
+
+    .checkbox-item input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        accent-color: var(--accent);
+        cursor: pointer;
+    }
+
+    .action-buttons-container {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 30px;
+        justify-content: flex-end;
+    }
+
+    .btn-generate {
+        background: #10b981; /* Hijau */
+        font-size: 16px;
+        padding: 12px 30px;
+    }
+    .btn-generate:hover { background: #059669; }
+
+    /* --- Terminal Output Styling (Mirip dengan gambar referensi) --- */
+    .terminal-container {
+        background-color: var(--terminal-bg);
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        margin-top: 20px;
+        border: 1px solid #3f3f46;
+    }
+
+    .terminal-header {
+        background-color: var(--terminal-header);
+        padding: 10px 15px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid #1a202c;
+    }
+
+    .terminal-header-left {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    /* Tombol macOS (Merah, Kuning, Hijau) */
+    .mac-buttons {
+        display: flex;
+        gap: 8px;
+    }
+    .mac-btn {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+    }
+    .mac-close { background-color: #ff5f56; }
+    .mac-minimize { background-color: #ffbd2e; }
+    .mac-maximize { background-color: #27c93f; }
+
+    .terminal-title {
+        color: #a0aec0;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    /* Tombol Copy Script di dalam header terminal */
+    .btn-copy-terminal {
+        background-color: var(--accent);
+        color: white;
+        border: none;
+        border-radius: 4px;
+        padding: 6px 12px;
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        transition: background-color 0.2s;
+    }
+    .btn-copy-terminal:hover {
+        background-color: #ea580c;
+    }
+    .btn-copy-terminal svg {
+        width: 14px;
+        height: 14px;
+        fill: currentColor;
+    }
+
+    .terminal-body {
+        padding: 20px;
+        color: var(--terminal-text);
+        font-family: 'JetBrains Mono', Consolas, monospace;
+        font-size: 13px;
+        line-height: 1.5;
+        overflow-x: auto;
+        white-space: pre-wrap; /* Mempertahankan format baris baru */
+        max-height: 500px;
+        overflow-y: auto;
+    }
+
+    /* Pewarnaan sintaks di dalam terminal */
+    .term-comment { color: #10b981; } /* Hijau untuk komentar */
+    .term-keyword { color: #60a5fa; } /* Biru untuk command mikrotik */
+    .term-value { color: var(--accent); } /* Oranye untuk nilai yg diinput */
+    .term-hide { display: none; } /* Class untuk menyembunyikan output yang tidak dicentang */
+
+    /* Scrollbar kustom untuk terminal */
+    .terminal-body::-webkit-scrollbar { width: 8px; height: 8px; }
+    .terminal-body::-webkit-scrollbar-track { background: var(--terminal-bg); }
+    .terminal-body::-webkit-scrollbar-thumb { background: #4a5568; border-radius: 4px; }
+    .terminal-body::-webkit-scrollbar-thumb:hover { background: #718096; }
+
+    /* Responsif untuk HP */
+    @media screen and (max-width: 768px) {
+        .form-grid { grid-template-columns: 1fr; }
+        .checkbox-grid { grid-template-columns: 1fr; }
+        .content-area { padding: 20px; }
+        .input-with-button { flex-direction: column; }
+        .input-with-button button { width: 100%; }
+        .action-buttons-container { flex-direction: column; }
+        .action-buttons-container button { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Bagian Header -->
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-logo">JLA</div>
+      <div class="brand-title">
+        <h1>JAKA LINTAS AKSES</h1>
+        <p>Portal Script Generator</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <a href="index.html" class="btn btn-secondary">🏠 Beranda</a>
+      <a href="https://wa.me/62818386078?text=Halo%20JLA%20Tools,%20saya%20ingin%20bertanya..." target="_blank" class="btn btn-wa">
+        <!-- Icon WhatsApp SVG -->
+        <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Hubungi Kami
+      </a>
+    </div>
+  </header>
+
+  <!-- Konten Utama -->
+  <main class="main-container">
+    <div class="content-area">
+      
+      <h2 class="page-title">MikroTik Ninja: Hide Info From ISP</h2>
+      
+      <!-- Box Peringatan -->
+      <div class="disclaimer-box">
+        <strong>DISCLAIMER:</strong> We are not responsible for any error, failure, damage or your router being locked due to intentional or accidental factors. Our Tool works independently, all problems that occur on your router are your own responsibility.
+      </div>
+
+      <!-- Form Input Utama -->
+      <div class="form-grid">
+        <!-- Input Interface -->
+        <div class="input-group">
+            <label for="input-interface">Interface (ether) to ISP</label>
+            <input type="text" id="input-interface" class="input-field" placeholder="e.g., ether1 or ether-ISP">
+        </div>
+
+        <!-- Input Identity -->
+        <div class="input-group">
+            <label for="input-identity">Change Router Identity</label>
+            <div class="input-with-button">
+                <input type="text" id="input-identity" class="input-field" placeholder="e.g., My Desktop PC">
+                <!-- Tombol ini memanggil fungsi genIdentity() di JS bawah -->
+                <button type="button" class="btn-action secondary" onclick="genIdentity()">Random</button>
+            </div>
+        </div>
+
+        <!-- Input MAC Address -->
+        <div class="input-group" style="grid-column: 1 / -1;">
+            <label for="input-mac-address">Change Router Mac Address</label>
+            <div class="input-with-button">
+                <input type="text" id="input-mac-address" class="input-field" placeholder="e.g., 52:E2:4F:28:8B:9F" onkeypress="return event.charCode != 32">
+                <!-- Tombol ini memanggil fungsi genMAC() di JS bawah -->
+                <button type="button" class="btn-action secondary" onclick="genMAC()">Random</button>
+            </div>
+        </div>
+      </div>
+
+      <!-- Bagian Checkbox Proteksi Tambahan -->
+      <div class="checkbox-section">
+        <div class="checkbox-section-title">More Hidden Protections from Internet (WAN) Scanning</div>
+        <div class="checkbox-section-desc">Make sure you understand all the protection options below, as a small mistake can be fatal. We recommend you only change the MAC address and identity as initial protection.</div>
+        
+        <div class="checkbox-grid">
+            <!-- Kolom Kiri -->
+            <div>
+                <label class="checkbox-item">
+                    <input type="checkbox" id="chk-random-mac" onchange="toggleAutoRandomMac()"> Auto Random MAC Address
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" id="chk-winbox"> Block Winbox Scan
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" id="chk-discovery"> Block Neighbor Discovery
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" id="chk-mac-server"> Block Mac Server
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" id="chk-traceroute"> Block Traceroute
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" id="chk-romon"> Block RoMON
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" id="chk-dns"> Block DNS Poisoning
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" id="chk-proxy"> Block Open Proxy
+                </label>
+            </div>
+            <!-- Kolom Kanan -->
+            <div>
+                <label class="checkbox-item">
+                    <input type="checkbox" id="chk-socks"> Block SOCKS Proxy
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" id="chk-icmp"> Block Ping (ICMP Echo)
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" id="chk-ssdp"> Block SSDP / UPnP
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" id="chk-btest"> Block BTest
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" id="chk-snmp"> Block SNMP
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" id="chk-thedude"> Block The Dude
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" id="chk-ipcloud"> Block IP Cloud
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" id="chk-portscan"> Log Port Scanner
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" id="chk-mask-ttl"> Mask TTL (change TTL to 65)
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" id="chk-bogon"> Drop Bogon IP
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" id="chk-disable-services"> Disable All IP Services
+                </label>
+            </div>
+        </div>
+      </div>
+
+      <!-- Tombol Aksi Bawah -->
+      <div class="action-buttons-container">
+        <!-- Tombol Download Script (Optional, implementasi sederhana) -->
+        <button type="button" class="btn-action secondary" onclick="downloadScript()">Download .rsc</button>
+        <!-- Tombol Generate akan memicu fungsi myFunction() untuk menampilkan script -->
+        <button type="button" class="btn-action btn-generate" onclick="generateScript()">Generate Script</button>
+      </div>
+
+      <!-- Area Terminal Output -->
+      <div class="terminal-container">
+          <!-- Header Terminal (Tombol Mac & Judul) -->
+          <div class="terminal-header">
+              <div class="terminal-header-left">
+                  <div class="mac-buttons">
+                      <div class="mac-btn mac-close"></div>
+                      <div class="mac-btn mac-minimize"></div>
+                      <div class="mac-btn mac-maximize"></div>
+                  </div>
+                  <div class="terminal-title">Terminal Winbox</div>
+              </div>
+              <!-- Tombol Copy khusus di dalam header terminal -->
+              <button class="btn-copy-terminal" onclick="copyToClipboard()">
+                <!-- Ikon Copy -->
+                <svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                Copy Script
+              </button>
+          </div>
+          
+          <!-- Isi Terminal tempat script akan dirender -->
+          <div class="terminal-body" id="script-output">
+<!-- Teks awal sebelum di-generate -->
+<span class="term-comment"># Click "Generate Script" to see the output here...</span>
+          </div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    Jaka Lintas Akses © 2019. Premium RouterOS Script Tools Portal.
+  </footer>
+
+  <!-- Script Logika -->
+  <script>
+    // Data untuk Random Identity (Bisa ditambah sendiri)
+    const randomIdentities = [
+        "My Desktop PC", "Laptop-Asus", "HP-Printer-01", "Smart-TV-LG",
+        "Samsung-Galaxy", "iPhone-13", "Xiaomi-Device", "Home-Router-TP",
+        "CCTV-Cam-Front", "PlayStation-5", "Xbox-Series-X", "Nintendo-Switch",
+        "Work-Laptop-Dell", "MacBook-Pro", "iPad-Air"
+    ];
+
+    // Fungsi untuk menghasilkan Identity Acak
+    function genIdentity() {
+        const randomIndex = Math.floor(Math.random() * randomIdentities.length);
+        document.getElementById('input-identity').value = randomIdentities[randomIndex];
+    }
+
+    // Fungsi untuk menghasilkan MAC Address Acak yang valid (Unicast, Locally Administered opsional)
+    function genMAC() {
+        var hexDigits = "0123456789ABCDEF";
+        var macAddress = "";
+        for (var i = 0; i < 6; i++) {
+            // Byte pertama: pastikan bit multicast 0 (Unicast).
+            if (i === 0) {
+                // Untuk amannya, kita generate karakter hex acak, tapi pastikan digit kedua genap (0,2,4,6,8,A,C,E)
+                macAddress += hexDigits.charAt(Math.floor(Math.random() * 16));
+                macAddress += "2"; // 2 menandakan Locally Administered, Unicast. Contoh: x2:...
+            } else {
+                macAddress += hexDigits.charAt(Math.floor(Math.random() * 16));
+                macAddress += hexDigits.charAt(Math.floor(Math.random() * 16));
+            }
+            if (i != 5) macAddress += ":";
+        }
+        document.getElementById('input-mac-address').value = macAddress;
+    }
+
+    // Fungsi untuk menangani checkbox Auto Random MAC (jika dicentang, input manual diabaikan)
+    function toggleAutoRandomMac() {
+        var isChecked = document.getElementById('chk-random-mac').checked;
+        var macInput = document.getElementById('input-mac-address');
+        var macBtn = macInput.nextElementSibling;
+
+        if (isChecked) {
+            macInput.disabled = true;
+            macBtn.disabled = true;
+            macInput.style.opacity = '0.5';
+            macBtn.style.opacity = '0.5';
+        } else {
+            macInput.disabled = false;
+            macBtn.disabled = false;
+            macInput.style.opacity = '1';
+            macBtn.style.opacity = '1';
+        }
+    }
+
+    // Fungsi Utama untuk merakit script berdasarkan input
+    function generateScript() {
+        var interfaceWAN = document.getElementById('input-interface').value.trim();
+        var identity = document.getElementById('input-identity').value.trim();
+        var macAddress = document.getElementById('input-mac-address').value.trim();
+
+        // Validasi dasar
+        if (interfaceWAN === "") {
+            alert("Please enter the Interface (ether) to ISP first!");
+            document.getElementById('input-interface').focus();
+            return;
+        }
+
+        var currentDate = new Date().toString();
+        var scriptOutput = document.getElementById('script-output');
+        
+        // Mulai merakit string HTML untuk output
+        // Kita menggunakan span class untuk pewarnaan sintaks di terminal
+        var outputHTML = "";
+
+        // Header Script
+        outputHTML += `<span class="term-keyword">## Mikrotik Ninja : Hide Routerboard Info From Isp / Wan Scanning</span>\n`;
+        outputHTML += `<span class="term-keyword">## Date: ${currentDate}</span>\n`;
+        outputHTML += `<span class="term-keyword">## Script generated by JLA Tools</span>\n\n`;
+
+        // Langkah krusial: Membuat Interface List
+        outputHTML += `<span class="term-comment">## Crucial step: Adding WAN interface to WAN-PROTECT list.</span>\n`;
+        outputHTML += `/interface list add name=<span class="term-value">WAN-PROTECT</span> comment="<span class="term-value">JLA Protection</span>"\n`;
+        outputHTML += `/interface list member add interface="<span class="term-value">${interfaceWAN}</span>" list=<span class="term-value">WAN-PROTECT</span> comment="<span class="term-value">JLA Protection</span>"\n\n`;
+
+        // 1. Change Identity
+        if (identity !== "") {
+            outputHTML += `<span class="term-comment">## --- Change Identity ---</span>\n`;
+            outputHTML += `<span class="term-comment">## MikroTik Router broadcasts Identity name via Neighbor Discovery.</span>\n`;
+            outputHTML += `/system identity set name="<span class="term-value">${identity}</span>"\n\n`;
+        }
+
+        // 2. Change MAC Address (Manual OR Auto)
+        if (document.getElementById('chk-random-mac').checked) {
+            outputHTML += `<span class="term-comment">## --- Auto Random Mac Address ---</span>\n`;
+            outputHTML += `<span class="term-comment">## Runs on startup to disguise router.</span>\n`;
+            outputHTML += `/system scheduler add name="Random MAC Address" on-event=":local hash ([/certificate scep-server otp generate minutes-valid=0 as-value]->\\"password\\")\\r\\n:local mac1 [:pick \\$hash 0 2]\\r\\n:local mac2 [:pick \\$hash 2 4]\\r\\n:local mac3 [:pick \\$hash 4 6]\\r\\n:local mac4 [:pick \\$hash 6 8]\\r\\n:local mac5 [:pick \\$hash 8 10]\\r\\n:local mac6 [:pick \\$hash 10 12]\\r\\n:local macAddr \\"\\$mac1:\\$mac2:\\$mac3:\\$mac4:\\$mac5:\\$mac6\\"\\r\\n/interface ethernet set \\"<span class="term-value">${interfaceWAN}</span>\\" mac-address=\\$macAddr" policy=read,write,test start-time=startup comment="Auto Random MAC"\n\n`;
+        } else if (macAddress !== "") {
+            outputHTML += `<span class="term-comment">## --- Change MAC Interface ---</span>\n`;
+            outputHTML += `<span class="term-comment">## To disguise the router to appear as other device.</span>\n`;
+            outputHTML += `/interface ethernet set "<span class="term-value">${interfaceWAN}</span>" mac-address="<span class="term-value">${macAddress}</span>"\n\n`;
+        }
+
+        // 3. Block Winbox
+        if (document.getElementById('chk-winbox').checked) {
+            outputHTML += `<span class="term-comment">## --- Block Winbox Scan ---</span>\n`;
+            outputHTML += `/ip firewall filter add action=drop chain=input dst-port=21,22,23,8291,80,443,8728,8729 in-interface-list=<span class="term-value">WAN-PROTECT</span> protocol=tcp comment="Block Winbox Scan"\n`;
+            outputHTML += `/ip firewall filter add action=drop chain=input dst-port=21,22,23,8291,80,443,8728,8729 in-interface-list=<span class="term-value">WAN-PROTECT</span> protocol=udp\n\n`;
+        }
+
+        // 4. Block Discovery
+        if (document.getElementById('chk-discovery').checked) {
+            outputHTML += `<span class="term-comment">## --- Block Neighbor Discovery ---</span>\n`;
+            outputHTML += `/ip firewall filter add action=drop chain=input in-interface-list=<span class="term-value">WAN-PROTECT</span> dst-port=5678 protocol=tcp comment="Block Neighbor Discovery"\n`;
+            outputHTML += `/ip firewall filter add action=drop chain=input in-interface-list=<span class="term-value">WAN-PROTECT</span> dst-port=5678 protocol=udp\n`;
+            outputHTML += `/ip neighbor discovery-settings set discover-interface-list=!<span class="term-value">WAN-PROTECT</span>\n\n`;
+        }
+
+        // 5. Block MAC Server
+        if (document.getElementById('chk-mac-server').checked) {
+            outputHTML += `<span class="term-comment">## --- Block MAC Server ---</span>\n`;
+            outputHTML += `/ip firewall filter add action=drop chain=input in-interface-list=<span class="term-value">WAN-PROTECT</span> dst-port=20561 protocol=tcp comment="Block MAC Address"\n`;
+            outputHTML += `/ip firewall filter add action=drop chain=input in-interface-list=<span class="term-value">WAN-PROTECT</span> dst-port=20561 protocol=udp\n`;
+            outputHTML += `/tool mac-server mac-winbox set allowed-interface-list=none\n`;
+            outputHTML += `/tool mac-server set allowed-interface-list=none\n`;
+            outputHTML += `/tool mac-server ping set enabled=no\n\n`;
+        }
+
+        // 6. Block Traceroute
+        if (document.getElementById('chk-traceroute').checked) {
+            outputHTML += `<span class="term-comment">## --- Block Traceroute ---</span>\n`;
+            outputHTML += `/ip firewall filter add action=drop chain=input in-interface-list=<span class="term-value">WAN-PROTECT</span> dst-port=33434-33534 protocol=tcp comment="Block Traceroute"\n`;
+            outputHTML += `/ip firewall filter add action=drop chain=input in-interface-list=<span class="term-value">WAN-PROTECT</span> dst-port=33434-33534 protocol=udp\n\n`;
+        }
+
+        // 7. Block RoMON
+        if (document.getElementById('chk-romon').checked) {
+            outputHTML += `<span class="term-comment">## --- Block RoMON ---</span>\n`;
+            outputHTML += `/tool romon port add disabled=no forbid=yes interface="<span class="term-value">${interfaceWAN}</span>" comment="Block RoMON"\n\n`;
+        }
+
+        // 8. Block DNS Poisoning
+        if (document.getElementById('chk-dns').checked) {
+            outputHTML += `<span class="term-comment">## --- Block DNS Poisoning ---</span>\n`;
+            outputHTML += `/ip firewall filter add chain=input dst-port=53 in-interface-list=<span class="term-value">WAN-PROTECT</span> protocol=tcp action=drop comment="Block Open Recursive DNS"\n`;
+            outputHTML += `/ip firewall filter add chain=input dst-port=53 in-interface-list=<span class="term-value">WAN-PROTECT</span> protocol=udp action=drop\n\n`;
+        }
+
+        // 9. Block Proxy
+        if (document.getElementById('chk-proxy').checked) {
+            outputHTML += `<span class="term-comment">## --- Block Open PROXY ---</span>\n`;
+            outputHTML += `/ip proxy set enabled=no\n`;
+            outputHTML += `/ip firewall filter add action=drop chain=input dst-port=3128,8080 in-interface-list=<span class="term-value">WAN-PROTECT</span> protocol=tcp comment="Block Open PROXY"\n`;
+            outputHTML += `/ip firewall filter add action=drop chain=input dst-port=3128,8080 in-interface-list=<span class="term-value">WAN-PROTECT</span> protocol=udp\n\n`;
+        }
+
+        // 10. Block SOCKS
+        if (document.getElementById('chk-socks').checked) {
+            outputHTML += `<span class="term-comment">## --- Block SOCKS Proxy ---</span>\n`;
+            outputHTML += `/ip firewall filter add action=drop chain=input dst-port=1080 in-interface-list=<span class="term-value">WAN-PROTECT</span> protocol=tcp comment="Block SOCKS Proxy"\n`;
+            outputHTML += `/ip firewall filter add action=drop chain=input dst-port=1080 in-interface-list=<span class="term-value">WAN-PROTECT</span> protocol=udp\n\n`;
+        }
+
+        // 11. Block Ping (ICMP)
+        if (document.getElementById('chk-icmp').checked) {
+            outputHTML += `<span class="term-comment">## --- Block ICMP Echo (Ping) ---</span>\n`;
+            outputHTML += `/ip firewall filter add chain=input protocol=icmp icmp-options=8:0 in-interface-list=<span class="term-value">WAN-PROTECT</span> action=drop comment="Drop Ping from WAN"\n\n`;
+        }
+
+        // 12. Block SSDP/UPnP
+        if (document.getElementById('chk-ssdp').checked) {
+            outputHTML += `<span class="term-comment">## --- Block SSDP / UPnP ---</span>\n`;
+            outputHTML += `/ip firewall filter add chain=input protocol=udp dst-port=1900 in-interface-list=<span class="term-value">WAN-PROTECT</span> action=drop comment="Block SSDP / UPnP"\n`;
+            outputHTML += `/ip firewall filter add chain=input protocol=tcp dst-port=1900 in-interface-list=<span class="term-value">WAN-PROTECT</span> action=drop\n\n`;
+        }
+
+        // 13. Block BTest
+        if (document.getElementById('chk-btest').checked) {
+            outputHTML += `<span class="term-comment">## --- Block BTest Server ---</span>\n`;
+            outputHTML += `/tool bandwidth-server set enabled=no authenticate=yes\n`;
+            outputHTML += `/ip firewall filter add action=drop chain=input dst-port=2000 in-interface-list=<span class="term-value">WAN-PROTECT</span> protocol=tcp comment="Block BTest Server"\n`;
+            outputHTML += `/ip firewall filter add action=drop chain=input dst-port=2000 in-interface-list=<span class="term-value">WAN-PROTECT</span> protocol=udp\n\n`;
+        }
+
+        // 14. Block SNMP
+        if (document.getElementById('chk-snmp').checked) {
+            outputHTML += `<span class="term-comment">## --- Block SNMP ---</span>\n`;
+            outputHTML += `/snmp set enabled=no\n`;
+            outputHTML += `/ip firewall filter add action=drop chain=input dst-port=161,162 in-interface-list=<span class="term-value">WAN-PROTECT</span> protocol=tcp comment="Block SNMP"\n`;
+            outputHTML += `/ip firewall filter add action=drop chain=input dst-port=161,162 in-interface-list=<span class="term-value">WAN-PROTECT</span> protocol=udp\n\n`;
+        }
+
+        // 15. Block The Dude
+        if (document.getElementById('chk-thedude').checked) {
+            outputHTML += `<span class="term-comment">## --- Block The Dude ---</span>\n`;
+            outputHTML += `/ip firewall filter add action=drop chain=input dst-port=2210,2211 in-interface-list=<span class="term-value">WAN-PROTECT</span> protocol=tcp comment="Block The Dude"\n`;
+            outputHTML += `/ip firewall filter add action=drop chain=input dst-port=2210,2211 in-interface-list=<span class="term-value">WAN-PROTECT</span> protocol=udp\n\n`;
+        }
+
+        // 16. Block IP Cloud
+        if (document.getElementById('chk-ipcloud').checked) {
+            outputHTML += `<span class="term-comment">## --- Block IP Cloud ---</span>\n`;
+            outputHTML += `/ip cloud set ddns-enabled=auto\n`;
+            outputHTML += `/ip cloud advanced set use-local-address=no\n`;
+            outputHTML += `/ip cloud set update-time=no\n\n`;
+        }
+
+        // 17. Log Portscan
+        if (document.getElementById('chk-portscan').checked) {
+            outputHTML += `<span class="term-comment">## --- Log Port Scanner ---</span>\n`;
+            outputHTML += `/ip firewall filter add chain=input protocol=tcp dst-port=22,23,80,8291,2000 log=yes log-prefix="<span class="term-value">PORT-SCAN</span>" action=add-src-to-address-list address-list=port-scanner address-list-timeout=1d comment="Log Port Scan"\n\n`;
+        }
+
+        // 18. Mask TTL
+        if (document.getElementById('chk-mask-ttl').checked) {
+            outputHTML += `<span class="term-comment">## --- Mask TTL (change TTL to 65) ---</span>\n`;
+            outputHTML += `/ip firewall mangle add action=change-ttl chain=postrouting new-ttl=set:65 out-interface-list=<span class="term-value">WAN-PROTECT</span> comment="Mask TTL"\n\n`;
+        }
+
+        // 19. Drop Bogon
+        if (document.getElementById('chk-bogon').checked) {
+            outputHTML += `<span class="term-comment">## --- Drop Bogon IP ---</span>\n`;
+            outputHTML += `/ip firewall address-list add list=Bogon address=0.0.0.0/8 comment="Bogon: Current Network"\n`;
+            outputHTML += `/ip firewall address-list add list=Bogon address=10.0.0.0/8 comment="Bogon: Private Class A"\n`;
+            outputHTML += `/ip firewall address-list add list=Bogon address=100.64.0.0/10 comment="Bogon: Shared Address Space"\n`;
+            outputHTML += `/ip firewall address-list add list=Bogon address=127.0.0.0/8 comment="Bogon: Loopback"\n`;
+            outputHTML += `/ip firewall address-list add list=Bogon address=169.254.0.0/16 comment="Bogon: Link-Local"\n`;
+            outputHTML += `/ip firewall address-list add list=Bogon address=172.16.0.0/12 comment="Bogon: Private Class B"\n`;
+            outputHTML += `/ip firewall filter add chain=input src-address-list=Bogon in-interface-list=<span class="term-value">WAN-PROTECT</span> action=drop comment="Drop Bogon IP"\n\n`;
+        }
+
+        // 20. Disable Services
+        if (document.getElementById('chk-disable-services').checked) {
+            outputHTML += `<span class="term-comment">## --- Disable All IP Services ---</span>\n`;
+            outputHTML += `/ip service disable telnet\n`;
+            outputHTML += `/ip service disable ftp\n`;
+            outputHTML += `/ip service disable www\n`;
+            outputHTML += `/ip service disable www-ssl\n`;
+            outputHTML += `/ip service disable api\n`;
+            outputHTML += `/ip service disable api-ssl\n\n`;
+        }
+
+        outputHTML += `<span class="term-comment">## --- End of Script ---</span>`;
+
+        // Tampilkan hasil ke div terminal
+        scriptOutput.innerHTML = outputHTML;
+    }
+
+    // Fungsi untuk menyalin teks dari terminal (tanpa tag HTML)
+    function copyToClipboard() {
+        var terminalBody = document.getElementById("script-output");
+        // Gunakan innerText untuk mengambil teks murni (mengabaikan span HTML)
+        var textToCopy = terminalBody.innerText;
+        
+        // Hapus teks default jika belum digenerate
+        if(textToCopy.includes("Click \"Generate Script\"")) {
+            alert("Please generate the script first.");
+            return;
+        }
+
+        // Membuat textarea sementara untuk proses copy
+        var tempTextArea = document.createElement("textarea");
+        tempTextArea.value = textToCopy;
+        document.body.appendChild(tempTextArea);
+        tempTextArea.select();
+        
+        try {
+            document.execCommand('copy');
+            // Ubah text tombol sementara
+            var copyBtn = document.querySelector('.btn-copy-terminal');
+            var originalText = copyBtn.innerHTML;
+            copyBtn.innerHTML = "✓ Copied!";
+            setTimeout(function() {
+                copyBtn.innerHTML = originalText;
+            }, 2000);
+        } catch (err) {
+            alert('Failed to copy script.');
+        }
+        
+        document.body.removeChild(tempTextArea);
+    }
+
+    // Fungsi untuk mendownload script sebagai file .rsc
+    function downloadScript() {
+        var terminalBody = document.getElementById("script-output");
+        var textContent = terminalBody.innerText;
+        
+        if(textContent.includes("Click \"Generate Script\"")) {
+            alert("Please generate the script first.");
+            return;
+        }
+
+        var blob = new Blob([textContent], { type: "text/plain" });
+        var url = window.URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url;
+        a.download = "jla_mikrotik_ninja.rsc";
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+    }
+  </script>
+</body>
+</html>
