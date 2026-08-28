@@ -406,12 +406,14 @@
 
       <div class="form-group">
         <label class="form-label">Kirim ke E-Mail (Penerima)</label>
-        <input type="text" id="input-to-mail" class="form-control" value="yufinetwork@gmail.com" placeholder="email-anda@domain.com">
+        <!-- Mengosongkan value dan mengisi placeholder agar menjadi teks bayangan (tipis) -->
+        <input type="text" id="input-to-mail" class="form-control" value="" placeholder="email-anda@domain.com">
       </div>
 
       <div class="form-group">
         <label class="form-label">Router Description / Judul E-Mail</label>
-        <input type="text" id="input-mail-from" class="form-control" value="PESUCEN <jakalintasakses@gmail.com>" placeholder="PESUCEN <jakalintasakses@gmail.com>">
+        <!-- Mengosongkan value dan mengisi placeholder agar menjadi teks bayangan (tipis) -->
+        <input type="text" id="input-mail-from" class="form-control" value="" placeholder="Backup From My Router">
       </div>
 
       <div class="form-group">
@@ -548,8 +550,8 @@
       const mailUser = document.getElementById('input-mail-user').value || 'jakalintasakses@gmail.com';
       const mailPass = document.getElementById('input-mail-password').value || 'rfbp xdpv yycl ollu';
       const fileOption = document.getElementById('input-file-option').value; // Mengambil pilihan menu dropdown jenis file
-      const toMail = document.getElementById('input-to-mail').value || 'yufinetwork@gmail.com';
-      const mailFrom = document.getElementById('input-mail-from').value || 'PESUCEN <jakalintasakses@gmail.com>';
+      const toMail = document.getElementById('input-to-mail').value || 'email-anda@domain.com';
+      const mailFrom = document.getElementById('input-mail-from').value || 'Backup From My Router';
       const scheduler = document.getElementById('input-scheduler').value || '7d';
 
       // b. LOGIKA KHUSUS VERSI ROUTEROS (PERBAIKAN BUG)
